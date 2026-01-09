@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ERAI - WUG Secure System (Enhanced + SFX)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -56,7 +56,9 @@
             margin: 0; padding: 0; font-family: 'Inter', sans-serif;
             background: linear-gradient(-45deg, #a8edea, #fed6e3, #d291ff, #84fab0);
             background-size: 400% 400%; animation: gradientMove 15s ease infinite;
-            height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden;
+            /* REVISI: Menggunakan dvh agar tidak kepotong search bar mobile */
+            height: 100vh; height: 100dvh; 
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
             position: relative;
         }
 
@@ -81,7 +83,9 @@
         .shape-4 { width: 100px; height: 100px; bottom: 20%; left: 25%; animation-delay: 15s; }
 
         .app-container {
-            width: 95%; max-width: 850px; height: 90vh;
+            width: 95%; max-width: 850px; 
+            /* REVISI: Menggunakan dvh */
+            height: 90vh; height: 90dvh;
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 24px;
             display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
@@ -187,19 +191,35 @@
         #loading-overlay.active { opacity: 1; visibility: visible; }
         .spinner { border: 4px solid rgba(108, 92, 231, 0.3); border-top: 4px solid #6c5ce7; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
 
-        /* --- MOBILE OPTIMIZATION (ADDITION) --- */
+        /* --- REVISI MOBILE OPTIMIZATION --- */
         @media (max-width: 600px) {
-            .app-container { width: 100%; height: 100vh; border-radius: 0; border: none; }
-            header { padding: 10px 15px; }
+            .app-container { 
+                width: 100%; 
+                height: 100vh; height: 100dvh; /* Tetap full screen di mobile */
+                border-radius: 0; 
+                border: none; 
+            }
+            header { 
+                padding: 10px 15px; 
+                /* Tambahan untuk HP dengan poni atas */
+                padding-top: calc(10px + env(safe-area-inset-top)); 
+            }
             .title-brand { font-size: 1rem; }
             .mode-selector button { font-size: 0.65rem; padding: 8px 4px; border-radius: 10px; }
             #chat-area { padding: 15px 10px; gap: 15px; }
             .bubble { max-width: 90%; padding: 12px 15px; font-size: 0.88rem; }
-            .input-box { padding: 10px; gap: 8px; padding-bottom: 20px; }
+            
+            .input-box { 
+                padding: 10px; 
+                gap: 8px; 
+                /* REVISI: padding bawah dinamis agar tidak kena search bar/home bar */
+                padding-bottom: calc(15px + env(safe-area-inset-bottom)); 
+            }
             .upload-btn { width: 40px; height: 40px; font-size: 1rem; }
             .send-btn { padding: 0 15px; height: 40px; font-size: 0.85rem; }
             input[type="text"] { padding: 10px 15px; font-size: 0.9rem; }
-            #toast-container { right: 10px; left: 10px; top: 10px; }
+            
+            #toast-container { right: 10px; left: 10px; top: calc(10px + env(safe-area-inset-top)); }
             .wug-toast { min-width: auto; width: 100%; box-sizing: border-box; }
         }
     </style>
@@ -238,10 +258,10 @@
 </div>
 
 <script>
+    // SEMUA SCRIPT ASLI DARI KODE PATEN ADMIN TETAP SAMA
     let currentMode = "belajar";
     let isSending = false;
 
-    // --- AUDIO ENGINE ---
     const sfx = {
         click: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
         send: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
@@ -257,7 +277,6 @@
             sfx[name].currentTime = 0;
             sfx[name].volume = (name === 'error') ? 0.6 : 0.4;
             sfx[name].play().catch(() => {});
-            
             if (name === 'error') {
                 const container = document.getElementById('main-container');
                 container.classList.add('security-alert');
@@ -266,7 +285,6 @@
         }
     }
 
-    // --- WUG SECURITY SMART SYSTEM ---
     document.addEventListener('keydown', function(e) {
         if (currentMode === 'pencarian') return true;
         const blockedKeys = ["F12", "u", "U", "p", "P", "c", "C"];
@@ -305,7 +323,6 @@
         }, duration);
     }
 
-    // --- FITUR SALIN ---
     function copyChatText(btn, text) {
         navigator.clipboard.writeText(text).then(() => {
             const original = btn.innerText;
