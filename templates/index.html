@@ -34,6 +34,7 @@
             animation: gradientMove 15s ease infinite;
             height: 100vh;
             display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
         }
 
         .app-container {
@@ -102,9 +103,27 @@
             padding: 12px 25px; border-radius: 25px; cursor: pointer;
             font-weight: 700; transition: 0.3s;
         }
+
+        /* WUG TOAST SYSTEM */
+        #toast-container {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .wug-toast {
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5); padding: 12px 20px;
+            border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            color: #444; font-weight: 600; font-size: 0.85rem;
+            min-width: 200px; display: flex; align-items: center; gap: 10px;
+            transform: translateX(150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .wug-toast.show { transform: translateX(0); }
+        .toast-icon { background: #6c5ce7; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
     </style>
 </head>
 <body>
+
+<div id="toast-container"></div>
 
 <div class="app-container">
     <header>
@@ -113,7 +132,7 @@
             <div style="font-size: 0.7rem; opacity: 0.6;">Admin: 082359161055</div>
         </div>
         <div class="mode-selector">
-            <button onclick="setMode('belajar')" id="btn-belajar" class="active">Mode Belajar</button>
+            <button onclick="setMode('belajar')" id="btn-belajar">Mode Belajar</button>
             <button onclick="setMode('latihan')" id="btn-latihan">Mode Latihan</button>
             <button onclick="setMode('pencarian')" id="btn-pencarian">Mode Pencarian</button>
         </div>
@@ -124,71 +143,65 @@
     <div class="input-box">
         <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)">
         <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">📸</button>
-        
         <input type="text" id="userInput" placeholder="Tulis pesan..." autocomplete="off">
         <button class="send-btn" onclick="handleSend()">Kirim</button>
     </div>
 </div>
 
 <script>
-    // Objek Riwayat Terpisah agar tidak tercampur
-    let allSessions = {
-        "belajar": [],
-        "latihan": [],
-        "pencarian": []
-    };
+    let allSessions = { "belajar": [], "latihan": [], "pencarian": [] };
     let currentMode = "belajar";
+
+    function showWugToast(msg) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'wug-toast';
+        toast.innerHTML = `<div class="toast-icon">W</div><span>${msg}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 500);
+        }, 3500);
+    }
 
     function setMode(mode) {
         currentMode = mode;
-        
-        // Update UI Tombol
         document.querySelectorAll('.mode-selector button').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`btn-${mode}`).classList.add('active');
-        
-        // Logika Tombol Upload: Sembunyikan di Mode Latihan
         document.getElementById('uploadBtn').style.display = (mode === 'latihan') ? 'none' : 'flex';
 
-        // Render ulang Chat Area sesuai riwayat mode tersebut
         const chatArea = document.getElementById('chat-area');
         chatArea.innerHTML = "";
         
         if (allSessions[mode].length === 0) {
-            displayMessage("erai", `**Mode ${mode.toUpperCase()}** aktif. Apa yang bisa ERAI bantu?`);
+            displayMessage("erai", `**[SYSTEM]** Mode **${mode.toUpperCase()}** aktif. Mari mulai, Kak!`);
         } else {
             allSessions[mode].forEach(msg => displayMessage(msg.role === "user" ? "user" : "erai", msg.content));
         }
+        showWugToast(`Mode ${mode} Aktif`);
     }
 
-    window.onload = () => {
-        setMode('belajar');
-        document.getElementById("userInput").focus();
-    };
+    window.onload = () => { setMode('belajar'); document.getElementById("userInput").focus(); };
 
     function displayMessage(role, text) {
         const chatArea = document.getElementById('chat-area');
         const row = document.createElement('div');
         row.className = role === 'user' ? 'user-row' : 'erai-row';
-        
         let cleanText = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
         let htmlContent = marked.parse(cleanText);
-        
-        row.innerHTML = `
-            <div class="bubble ${role}-bubble">
-                <small style="opacity:0.6; font-weight:bold">${role === 'user' ? 'Kamu' : 'ERAI'}</small><br>
-                <div class="tex2jax_process">${htmlContent}</div>
-            </div>`;
-        
+        row.innerHTML = `<div class="bubble ${role}-bubble"><small style="opacity:0.6; font-weight:bold">${role === 'user' ? 'Kamu' : 'ERAI'}</small><br><div class="tex2jax_process">${htmlContent}</div></div>`;
         chatArea.appendChild(row);
         if (window.MathJax) MathJax.typesetPromise([row]);
         chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // Fungsi handle upload (Placeholder untuk integrasi Vision ke depannya)
     function handleFile(input) {
         if (input.files && input.files[0]) {
-            alert("Foto " + input.files[0].name + " terpilih! (Fitur analisis gambar sedang dalam kalibrasi WUG System)");
-            // Disini Admin bisa menambahkan logika FormData untuk kirim ke API Vision
+            const fName = input.files[0].name;
+            showWugToast(`File ${fName} terdeteksi!`);
+            displayMessage("erai", `**[WUG SECURE]** Berhasil mendeteksi file: **${fName}**.\n\n*Modul Vision sedang dalam tahap kalibrasi oleh WUG System.*`);
+            input.value = '';
         }
     }
 
@@ -199,35 +212,23 @@
 
         displayMessage("user", msg);
         inputField.value = '';
-        inputField.focus();
 
         try {
             const res = await fetch('/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    message: msg, 
-                    mode: currentMode,
-                    history: allSessions[currentMode] // Kirim riwayat spesifik mode
-                })
+                body: JSON.stringify({ message: msg, mode: currentMode, history: allSessions[currentMode] })
             });
             const data = await res.json();
-            
             displayMessage("erai", data.response);
-            
-            // Simpan ke riwayat masing-masing
-            allSessions[currentMode].push(
-                {"role": "user", "content": msg}, 
-                {"role": "assistant", "content": data.response}
-            );
-        } catch (e) { 
-            displayMessage("erai", "Sistem WUG mengalami kendala transmisi."); 
+            allSessions[currentMode].push({"role": "user", "content": msg}, {"role": "assistant", "content": data.response});
+        } catch (e) {
+            showWugToast("Gangguan Transmisi!");
+            displayMessage("erai", "**[ERROR]** Sistem WUG mengalami kendala transmisi data.");
         }
     }
 
-    document.getElementById("userInput").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") handleSend();
-    });
+    document.getElementById("userInput").addEventListener("keydown", (e) => { if (e.key === "Enter") handleSend(); });
 </script>
 </body>
 </html>
