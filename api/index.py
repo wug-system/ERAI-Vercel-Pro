@@ -71,6 +71,11 @@ WAJIB: AKTIFKAN AUTO-QUIZ MODE.
 5. Gunakan format \ce{...} untuk kimia dan $...$ untuk matematika.
 6. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
 7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
+8. Jika Kakak kasih soal/materi, kamu WAJIB buat kuis 4 pilihan (A, B, C, D).
+9. Salah satu pilihan HARUS jawaban yang benar.
+10. Berikan tantangan, bukan jawaban.
+11. Gunakan \ce{...} dan $...$.
+12. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D.
 """
         else:
             mode_instruction = r"""
