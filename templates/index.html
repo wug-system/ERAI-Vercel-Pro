@@ -56,10 +56,23 @@
             margin: 0; padding: 0; font-family: 'Inter', sans-serif;
             background: linear-gradient(-45deg, #a8edea, #fed6e3, #d291ff, #84fab0);
             background-size: 400% 400%; animation: gradientMove 15s ease infinite;
-            /* REVISI: Menggunakan dvh agar tidak kepotong search bar mobile */
             height: 100vh; height: 100dvh; 
             display: flex; justify-content: center; align-items: center; overflow: hidden;
             position: relative;
+        }
+
+        /* --- WUG SECURE ANTI-SS UI --- */
+        body.blur-mode .app-container {
+            filter: blur(20px);
+            transition: filter 0.3s ease;
+        }
+
+        #wug-watermark {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 2.5rem; color: rgba(0,0,0,0.03);
+            pointer-events: none; white-space: nowrap; z-index: 9999;
+            user-select: none; font-weight: 900;
         }
 
         /* WUG SECURE: Non-selectable text except for input */
@@ -84,7 +97,6 @@
 
         .app-container {
             width: 95%; max-width: 850px; 
-            /* REVISI: Menggunakan dvh */
             height: 90vh; height: 90dvh;
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 24px;
@@ -191,42 +203,36 @@
         #loading-overlay.active { opacity: 1; visibility: visible; }
         .spinner { border: 4px solid rgba(108, 92, 231, 0.3); border-top: 4px solid #6c5ce7; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
 
-        /* --- REVISI MOBILE OPTIMIZATION --- */
+        /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 600px) {
             .app-container { 
-                width: 100%; 
-                height: 100vh; height: 100dvh; /* Tetap full screen di mobile */
-                border-radius: 0; 
-                border: none; 
+                width: 100%; height: 100vh; height: 100dvh; 
+                border-radius: 0; border: none; 
             }
             header { 
-                padding: 10px 15px; 
-                /* Tambahan untuk HP dengan poni atas */
-                padding-top: calc(10px + env(safe-area-inset-top)); 
+                padding: 10px 15px; padding-top: calc(10px + env(safe-area-inset-top)); 
             }
             .title-brand { font-size: 1rem; }
             .mode-selector button { font-size: 0.65rem; padding: 8px 4px; border-radius: 10px; }
             #chat-area { padding: 15px 10px; gap: 15px; }
             .bubble { max-width: 90%; padding: 12px 15px; font-size: 0.88rem; }
-            
             .input-box { 
-                padding: 10px; 
-                gap: 8px; 
-                /* REVISI: padding bawah dinamis agar tidak kena search bar/home bar */
+                padding: 10px; gap: 8px; 
                 padding-bottom: calc(15px + env(safe-area-inset-bottom)); 
             }
             .upload-btn { width: 40px; height: 40px; font-size: 1rem; }
             .send-btn { padding: 0 15px; height: 40px; font-size: 0.85rem; }
             input[type="text"] { padding: 10px 15px; font-size: 0.9rem; }
-            
             #toast-container { right: 10px; left: 10px; top: calc(10px + env(safe-area-inset-top)); }
             .wug-toast { min-width: auto; width: 100%; box-sizing: border-box; }
+            #wug-watermark { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
 
 <div id="toast-container"></div>
+<div id="wug-watermark">ADMIN 082359161055 - WUG SECURE</div>
 <div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div><div class="shape shape-4"></div>
 
 <div class="app-container" id="main-container">
@@ -258,7 +264,6 @@
 </div>
 
 <script>
-    // SEMUA SCRIPT ASLI DARI KODE PATEN ADMIN TETAP SAMA
     let currentMode = "belajar";
     let isSending = false;
 
@@ -285,9 +290,25 @@
         }
     }
 
+    /* ANTI-SS SECURITY LAYER */
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            document.body.classList.add('blur-mode');
+        } else {
+            document.body.classList.remove('blur-mode');
+        }
+    });
+
+    window.addEventListener('blur', () => { document.body.classList.add('blur-mode'); });
+    window.addEventListener('focus', () => { document.body.classList.remove('blur-mode'); });
+
     document.addEventListener('keydown', function(e) {
         if (currentMode === 'pencarian') return true;
         const blockedKeys = ["F12", "u", "U", "p", "P", "c", "C"];
+        if (e.key === 'PrintScreen') {
+            navigator.clipboard.writeText('WUG Secure: SS Dilarang!');
+            showWugToast("Screenshot terdeteksi & diblokir!", "⚠️", 3000, 'error');
+        }
         const isControlCombination = e.ctrlKey && blockedKeys.includes(e.key);
         const isInspectCombination = e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key);
         if (e.key === "F12" || isControlCombination || isInspectCombination) {
