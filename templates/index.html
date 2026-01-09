@@ -12,7 +12,7 @@
             inlineMath: [['$', '$'], ['\\(', '\\)']],
             displayMath: [['$$', '$$'], ['\\[', '\\]']],
             processEscapes: true,
-            packages: {'[+]': ['mhchem']} // Menambahkan dukungan rumus kimia
+            packages: {'[+]': ['mhchem']} 
         },
         loader: {load: ['[tex]/mhchem']}
     };
@@ -119,7 +119,7 @@
         </div>
     </header>
 
-    <div id="chat-area" class="tex2jax_process"></div>
+    <div id="chat-area"></div>
 
     <div class="input-box">
         <input type="text" id="userInput" placeholder="Tanya soal atau mulai latihan..." autocomplete="off">
@@ -129,19 +129,20 @@
 
 <script>
     let chatHistory = [];
-    let nameUser = "";
+    let nameUser = "Kakak"; // Nama dipatenkan
     let currentMode = "belajar";
 
     function setMode(mode) {
         currentMode = mode;
         document.getElementById('btn-belajar').className = mode === 'belajar' ? 'active' : '';
         document.getElementById('btn-latihan').className = mode === 'latihan' ? 'active' : '';
-        displayMessage("erai", `**Mode ${mode.toUpperCase()}** diaktifkan! Mau bahas apa kita sekarang?`);
+        displayMessage("erai", `**Mode ${mode.toUpperCase()}** diaktifkan! Mau bahas apa kita sekarang, **Kakak**?`);
     }
 
     window.onload = () => {
-        nameUser = prompt("Panggilannya siapa, Admin?") || "Admin";
-        displayMessage("erai", `Halo **${nameUser}**! Aku **ERAI**. Sekarang kita di **Mode Belajar**. Coba tanya rumus kimia atau matematika deh!`);
+        // Hapus prompt nama, langsung panggil Kakak
+        displayMessage("erai", `Halo **Kakak**! Aku **ERAI**. Sekarang kita di **Mode Belajar**. Coba tanya rumus kimia atau matematika deh!`);
+        document.getElementById("userInput").focus();
     };
 
     document.getElementById("userInput").addEventListener("keydown", (e) => {
@@ -153,7 +154,6 @@
         const row = document.createElement('div');
         row.className = role === 'user' ? 'user-row' : 'erai-row';
         
-        // Membersihkan format teks agar MathJax lebih stabil
         let cleanText = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
         let htmlContent = marked.parse(cleanText);
         
@@ -165,7 +165,6 @@
         
         chatArea.appendChild(row);
 
-        // Paksa render ulang untuk simbol kimia \ce dan matematika
         if (window.MathJax) {
             MathJax.typesetPromise([row]).catch((err) => console.log(err));
         }
@@ -179,6 +178,7 @@
 
         displayMessage("user", msg);
         inputField.value = '';
+        inputField.focus(); // Auto-focus balik ke input biar enak ngetiknya
 
         try {
             const res = await fetch('/chat', {
@@ -187,7 +187,7 @@
                 body: JSON.stringify({
                     message: msg, 
                     name: nameUser, 
-                    mode: currentMode, // Ini yang bikin Mode Latihan jalan
+                    mode: currentMode,
                     history: chatHistory
                 })
             });
@@ -195,7 +195,7 @@
             displayMessage("erai", data.response);
             chatHistory.push({"role": "user", "content": msg}, {"role": "assistant", "content": data.response});
         } catch (e) { 
-            displayMessage("erai", "Waduh, ada gangguan koneksi nih, Admin."); 
+            displayMessage("erai", "Waduh, ada gangguan koneksi nih, Kak."); 
         }
     }
 </script>
