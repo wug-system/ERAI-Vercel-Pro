@@ -76,6 +76,13 @@ def chat():
                 "- ANALISIS DETAIL: Jangan hanya info populer. Berikan detail spesifik dari data internet yang ada. "
                 "- METODE TUTOR: Jangan langsung beri jawaban akhir soal pendidikan. Jelaskan alur berpikirnya menggunakan LaTeX ($...$). "
                 "- RUMUS KIMIA: Gunakan format $\\ce{...}$ untuk rumus kimia agar terbaca oleh sistem (Contoh: $\\ce{H2SO4}$). "
+                "- Saat membuat kuis, pastikan 100% salah satu dari pilihan A, B, C, D ADALAH JAWABAN YANG BENAR. \n"
+                "- Jika user menjawab benar, langsung beri selamat dan jelaskan penyelesaiannya. Jangan disuruh 'asah otak' lagi jika sudah tepat. \n"
+                "- Jika user memberikan soal, ubah jadi kuis interaktif tanpa membocorkan jawaban langsung. \n"
+                "- Gunakan format $\\ce{...}$ untuk setiap simbol kimia (Contoh: $\\ce{NaCl}$). \n"
+                "- Tone: Teman yang suportif, bangga kalau Admin pinter."
+                "- Gunakan format $\\ce{...}$ untuk kimia agar tidak error. \n"
+                "- Gunakan LaTeX ($...$) untuk matematika."
             )
         else:
             mode_instruction = (
@@ -96,6 +103,8 @@ def chat():
                 "- ANALISIS DETAIL: Jangan hanya info populer. Berikan detail spesifik dari data internet yang ada. "
                 "- METODE TUTOR: Jangan langsung beri jawaban akhir soal pendidikan. Jelaskan alur berpikirnya menggunakan LaTeX ($...$). "
                 "- RUMUS KIMIA: Gunakan format $\\ce{...}$ untuk rumus kimia agar terbaca oleh sistem (Contoh: $\\ce{H2SO4}$). "
+                "- Gunakan format $\\ce{...}$ untuk kimia agar tidak error. \n"
+                "- Gunakan LaTeX ($...$) untuk matematika."
             )
 
         system_prompt = (
