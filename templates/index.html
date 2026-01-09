@@ -168,6 +168,17 @@
         displayMessage("user", msg);
         inputField.value = '';
 
+fetch('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        message: userInput,
+        mode: currentActiveMode, // 'belajar' atau 'latihan'
+        history: chatHistory,
+        name: "Admin"
+    })
+})
+        
         try {
             const res = await fetch('/chat', {
                 method: 'POST',
