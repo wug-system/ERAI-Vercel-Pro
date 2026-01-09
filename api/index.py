@@ -56,6 +56,12 @@ def chat():
         if user_mode == "latihan":
             mode_instruction = (
                 "SISTEM LATIHAN AKTIF: \n"
+                "SISTEM LATIHAN AKTIF (AUTO-QUIZ MODE): \n"
+                "- Jika user memberikan soal/pertanyaan, JANGAN berikan jawaban atau penyelesaiannya. \n"
+                "- Tugasmu adalah mengubah soal tersebut menjadi kuis interaktif. \n"
+                "- Berikan panduan awal atau petunjuk kecil (clue), lalu berikan 4 pilihan jawaban (A, B, C, D). \n"
+                "- Jika user bertanya 'apa jawabannya?', tetap jangan diberi. Tantang mereka untuk memilih dari pilihan yang kamu buat. \n"
+                "- Gunakan kalimat penyemangat seperti 'Coba asah otak dulu, Admin! Kira-kira mana jawaban yang paling tepat?'"
                 "- Jangan berikan materi panjang lebar. \n"
                 "- Berikan **Kuis Singkat** atau **Soal Latihan** terkait topik yang dibahas. \n"
                 "- Gunakan format Pilihan Ganda (A, B, C, D) jika memungkinkan. \n"
@@ -73,6 +79,10 @@ def chat():
         else:
             mode_instruction = (
                 "SISTEM BELAJAR AKTIF: \n"
+                "SISTEM BELAJAR AKTIF: \n"
+                "- Berikan penjelasan materi secara mendalam dan rumus lengkap. \n"
+                "- Selesaikan soal secara step-by-step menggunakan LaTeX ($...$). \n"
+                "- Fokus pada pemahaman konsep dasar agar user mengerti alurnya."
                 "- Fokus pada penjelasan mendalam, rumus lengkap, dan konsep dasar. \n"
                 "- Jelaskan alur berpikir (step-by-step) menggunakan LaTeX ($...$). \n"
                 "- Berikan contoh soal hanya sebagai ilustrasi materi, bukan kuis."
