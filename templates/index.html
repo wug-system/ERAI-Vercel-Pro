@@ -55,6 +55,10 @@
         body:not(.pencarian-active) {
             user-select: none; -webkit-user-select: none;
         }
+        /* Mode Pencarian allow selection */
+        body.pencarian-active {
+            user-select: text !important; -webkit-user-select: text !important;
+        }
         input { user-select: auto !important; -webkit-user-select: auto !important; }
 
         .shape {
@@ -108,6 +112,7 @@
             max-width: 85%; padding: 15px 20px; border-radius: 20px; 
             font-size: 0.95rem; line-height: 1.6; animation: bounceIn 0.5s ease-out;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            position: relative;
         }
         .user-row { display: flex; justify-content: flex-end; }
         .user-bubble { background: white; border-bottom-right-radius: 4px; }
@@ -117,6 +122,17 @@
             border: 1px solid rgba(108, 92, 231, 0.2); 
             border-bottom-left-radius: 4px;
         }
+
+        /* Tombol Salin Khusus Pencarian */
+        .copy-btn {
+            position: absolute; bottom: 5px; right: 10px;
+            background: rgba(108, 92, 231, 0.2); border: none;
+            border-radius: 8px; padding: 3px 8px; font-size: 0.6rem;
+            cursor: pointer; font-weight: bold; color: #6c5ce7;
+            transition: 0.2s; display: none; /* Default sembunyi */
+        }
+        .copy-btn:hover { background: #6c5ce7; color: white; }
+        body.pencarian-active .copy-btn { display: block; }
 
         .input-box {
             padding: 15px; display: flex; gap: 10px; align-items: center;
@@ -183,7 +199,7 @@
         <div class="mode-selector">
             <button onclick="setMode('belajar')" id="btn-belajar">Mode Belajar</button>
             <button onclick="setMode('latihan')" id="btn-latihan">Mode Latihan</button>
-            <button onclick="setMode('pencarian')" id="btn-pencarian">Mode Pencarian</button>
+            <button onclick="setMode('pencarian')" id="id-btn-pencarian">Mode Pencarian</button>
         </div>
     </header>
 
@@ -203,16 +219,13 @@
 
     // --- WUG SECURITY SMART SYSTEM ---
     document.addEventListener('keydown', function(e) {
-        // Keamanan hanya aktif di mode Belajar & Latihan
         if (currentMode === 'pencarian') return true;
 
-        // Blokir F12, Inspect, Source, Copy, Print
         const blockedKeys = ["F12", "u", "U", "p", "P", "c", "C"];
         const isControlCombination = e.ctrlKey && blockedKeys.includes(e.key);
         const isInspectCombination = e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key);
 
         if (e.key === "F12" || isControlCombination || isInspectCombination) {
-            // Kecualikan Paste (Ctrl+V) agar user bisa input soal
             if (e.ctrlKey && (e.key === "v" || e.key === "V")) {
                 return true; 
             }
@@ -265,6 +278,16 @@
         }, duration);
     }
 
+    // --- FITUR SALIN ---
+    function copyChatText(btn, text) {
+        navigator.clipboard.writeText(text).then(() => {
+            const original = btn.innerText;
+            btn.innerText = "Selesai!";
+            showWugToast("Berhasil disalin!", "📋");
+            setTimeout(() => { btn.innerText = original; }, 2000);
+        });
+    }
+
     function showLoadingOverlay(message) {
         document.getElementById('loading-text').innerText = message;
         document.getElementById('loading-overlay').classList.add('active');
@@ -282,7 +305,6 @@
         playSfx('mode');
         currentMode = mode;
 
-        // Toggle CSS class for selection security
         if (mode === 'pencarian') {
             document.body.classList.add('pencarian-active');
         } else {
@@ -290,7 +312,10 @@
         }
 
         document.querySelectorAll('.mode-selector button').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`btn-${mode}`).classList.add('active');
+        // Perbaikan id selektor mode pencarian
+        const targetBtn = mode === 'pencarian' ? document.getElementById('id-btn-pencarian') : document.getElementById(`btn-${mode}`);
+        if(targetBtn) targetBtn.classList.add('active');
+        
         document.getElementById('uploadBtn').style.display = (mode === 'latihan') ? 'none' : 'flex';
 
         const chatArea = document.getElementById('chat-area');
@@ -300,7 +325,7 @@
             let initialMsg = "";
             if (mode === 'belajar') initialMsg = `Halo **nanas**! Aku **ERAI** di **Mode Belajar**. Siap jelaskan materi apa saja!`;
             else if (mode === 'latihan') initialMsg = `Selamat datang di **Mode Latihan**, **Admin**! WUG Secure Aktif: Dilarang menyalin jawaban!`;
-            else if (mode === 'pencarian') initialMsg = `Mode Pencarian Bebas Aktif. Silakan cari informasi apa pun.`;
+            else if (mode === 'pencarian') initialMsg = `Mode Pencarian Bebas Aktif. Anda bisa menyalin pesan di sini.`;
             displayMessage("erai", `**[SYSTEM]** ${initialMsg}`, false);
         } else {
             allSessions[mode].forEach(msg => displayMessage(msg.role === "user" ? "user" : "erai", msg.content, false));
@@ -316,10 +341,19 @@
         const chatArea = document.getElementById('chat-area');
         const row = document.createElement('div');
         row.className = role === 'user' ? 'user-row' : 'erai-row';
+        
         let cleanText = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
         let htmlContent = marked.parse(cleanText);
         
-        row.innerHTML = `<div class="bubble ${role}-bubble">${role === 'user' ? '<small style="opacity:0.6; font-weight:bold">Kamu</small><br>' : ''}<div class="tex2jax_process">${htmlContent}</div></div>`;
+        // Escape quotes untuk fungsi copy
+        const escapedText = text.replace(/`/g, "\\`").replace(/"/g, "&quot;");
+        
+        row.innerHTML = `
+            <div class="bubble ${role}-bubble">
+                ${role === 'user' ? '<small style="opacity:0.6; font-weight:bold">Kamu</small><br>' : ''}
+                <div class="tex2jax_process">${htmlContent}</div>
+                ${role === 'erai' ? `<button class="copy-btn" onclick="copyChatText(this, \`${escapedText}\`)">Salin</button>` : ''}
+            </div>`;
         
         chatArea.appendChild(row);
         if (window.MathJax) MathJax.typesetPromise([row]);
