@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERAI - WUG Secure System (Enhanced)</title>
+    <title>ERAI - WUG Secure System (Enhanced + SFX)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
@@ -48,10 +48,9 @@
             background: linear-gradient(-45deg, #a8edea, #fed6e3, #d291ff, #84fab0);
             background-size: 400% 400%; animation: gradientMove 15s ease infinite;
             height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden;
-            position: relative; /* Untuk elemen animasi di background */
+            position: relative;
         }
 
-        /* Animated Background Shapes */
         .shape {
             position: absolute; background: rgba(255, 255, 255, 0.1); border-radius: 50%;
             filter: blur(50px); animation: fadeInOut 20s infinite ease-in-out;
@@ -67,7 +66,7 @@
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 24px;
             display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden; position: relative; /* Untuk loading overlay */
+            overflow: hidden; position: relative;
         }
 
         header {
@@ -99,7 +98,6 @@
             scroll-behavior: smooth;
         }
 
-        /* Chat Bubbles */
         .bubble { 
             max-width: 85%; padding: 15px 20px; border-radius: 20px; 
             font-size: 0.95rem; line-height: 1.6; animation: bounceIn 0.5s ease-out;
@@ -114,7 +112,6 @@
             border-bottom-left-radius: 4px;
         }
 
-        /* Input Area & Buttons */
         .input-box {
             padding: 15px; display: flex; gap: 10px; align-items: center;
             background: rgba(255, 255, 255, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.3);
@@ -130,25 +127,16 @@
             width: auto; padding: 0 25px; border-radius: 25px; 
             background: #6c5ce7; color: white; border: none; font-weight: 700;
         }
-        .upload-btn:hover, .send-btn:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3); }
-        .upload-btn:active, .send-btn:active, .mode-selector button:active { transform: translateY(1px); }
-
+        
         input[type="text"] {
             flex: 1; padding: 12px 20px; border-radius: 25px;
             border: 1px solid rgba(255, 255, 255, 0.8); outline: none;
             background: rgba(255, 255, 255, 0.6); font-size: 0.95rem;
             transition: all 0.3s ease;
         }
-        input[type="text"]:focus {
-            background: white; border-color: #6c5ce7;
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
-        }
+        input[type="text"]:focus { background: white; border-color: #6c5ce7; }
 
-        /* WUG TOAST SYSTEM */
-        #toast-container {
-            position: fixed; top: 20px; right: 20px; z-index: 9999;
-            display: flex; flex-direction: column; gap: 10px;
-        }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .wug-toast {
             background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.5); padding: 12px 20px;
@@ -160,51 +148,27 @@
         .wug-toast.show { transform: translateX(0); }
         .toast-icon { background: #6c5ce7; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
 
-        /* Typing Indicator / Loading Animation */
         .typing-indicator {
             display: flex; gap: 5px; padding: 15px 20px; border-radius: 20px;
             background: rgba(108, 92, 231, 0.15); border: 1px solid rgba(108, 92, 231, 0.2);
-            max-width: fit-content; margin-left: 10px;
-            animation: bounceIn 0.5s ease-out;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            max-width: fit-content; margin-left: 10px; animation: bounceIn 0.5s ease-out;
         }
-        .typing-indicator span {
-            width: 10px; height: 10px; background-color: #6c5ce7; border-radius: 50%;
-            animation: loadingDots 1.4s infinite ease-in-out;
-        }
-        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        .typing-indicator span { width: 10px; height: 10px; background-color: #6c5ce7; border-radius: 50%; animation: loadingDots 1.4s infinite ease-in-out; }
 
-        /* Overlay for "Searching" or "Processing" */
         #loading-overlay {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            position: absolute; inset: 0;
             background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
-            z-index: 99; /* Di atas chat area, di bawah toast */
-            border-radius: 24px; /* Ikuti border-radius container */
+            opacity: 0; visibility: hidden; transition: 0.3s; z-index: 99; border-radius: 24px;
         }
         #loading-overlay.active { opacity: 1; visibility: visible; }
-        #loading-overlay .spinner {
-            border: 4px solid rgba(108, 92, 231, 0.3);
-            border-top: 4px solid #6c5ce7;
-            border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
-        }
-        #loading-overlay p {
-            margin-top: 20px; font-weight: 700; color: #444; font-size: 1.1rem;
-            animation: pulseBorder 1.5s infinite;
-        }
+        .spinner { border: 4px solid rgba(108, 92, 231, 0.3); border-top: 4px solid #6c5ce7; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
     </style>
 </head>
 <body>
 
 <div id="toast-container"></div>
-
-<div class="shape shape-1"></div>
-<div class="shape shape-2"></div>
-<div class="shape shape-3"></div>
-<div class="shape shape-4"></div>
+<div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div><div class="shape shape-4"></div>
 
 <div class="app-container">
     <div id="loading-overlay">
@@ -235,25 +199,42 @@
 </div>
 
 <script>
+    // --- AUDIO ENGINE ---
+    const sfx = {
+        click: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
+        send: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
+        receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
+        toast: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
+        error: new Audio('https://assets.mixkit.co/active_storage/sfx/2511/2511-preview.mp3'),
+        mode: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3')
+    };
+
+    function playSfx(name) {
+        if(sfx[name]) {
+            sfx[name].currentTime = 0;
+            sfx[name].volume = 0.4;
+            sfx[name].play().catch(() => {});
+        }
+    }
+
     let allSessions = { "belajar": [], "latihan": [], "pencarian": [] };
     let currentMode = "belajar";
-    let isSending = false; // Flag untuk mencegah double send
+    let isSending = false;
 
-    // --- WUG TOAST SYSTEM ---
     function showWugToast(msg, icon = '🚀', duration = 3500) {
+        playSfx('toast');
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = 'wug-toast';
         toast.innerHTML = `<div class="toast-icon">${icon}</div><span>${msg}</span>`;
         container.appendChild(toast);
-        setTimeout(() => toast.classList.add('show'), 50); // Sedikit delay untuk animasi
+        setTimeout(() => toast.classList.add('show'), 50);
         setTimeout(() => {
             toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 400); // Tunggu animasi keluar selesai
+            setTimeout(() => toast.remove(), 400);
         }, duration);
     }
 
-    // --- LOADING OVERLAY SYSTEM ---
     function showLoadingOverlay(message) {
         document.getElementById('loading-text').innerText = message;
         document.getElementById('loading-overlay').classList.add('active');
@@ -263,12 +244,12 @@
         document.getElementById('loading-overlay').classList.remove('active');
     }
 
-    // --- MODE SELECTION ---
     function setMode(mode) {
         if (isSending) {
             showWugToast("Tunggu ERAI selesai merespons dulu ya, Kak!", '⏳');
             return;
         }
+        playSfx('mode');
         currentMode = mode;
         document.querySelectorAll('.mode-selector button').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`btn-${mode}`).classList.add('active');
@@ -282,9 +263,9 @@
             if (mode === 'belajar') initialMsg = `Halo **Kakak**! Aku **ERAI** di **Mode Belajar**. Siap jelaskan materi apa saja!`;
             else if (mode === 'latihan') initialMsg = `Selamat datang di **Mode Latihan**, **Kakak**! Siapkan dirimu untuk kuis interaktif!`;
             else if (mode === 'pencarian') initialMsg = `Masuk **Mode Pencarian**, **Kakak**! Tanyakan berita atau info real-time!`;
-            displayMessage("erai", `**[SYSTEM]** ${initialMsg}`);
+            displayMessage("erai", `**[SYSTEM]** ${initialMsg}`, false);
         } else {
-            allSessions[mode].forEach(msg => displayMessage(msg.role === "user" ? "user" : "erai", msg.content));
+            allSessions[mode].forEach(msg => displayMessage(msg.role === "user" ? "user" : "erai", msg.content, false));
         }
         showWugToast(`Mode ${mode.toUpperCase()} Aktif`, '✅');
         document.getElementById("userInput").focus();
@@ -292,8 +273,8 @@
 
     window.onload = () => { setMode('belajar'); };
 
-    // --- DISPLAY CHAT MESSAGES ---
-    function displayMessage(role, text, animate = true) {
+    function displayMessage(role, text, withSfx = true) {
+        if (withSfx) playSfx(role === 'user' ? 'send' : 'receive');
         const chatArea = document.getElementById('chat-area');
         const row = document.createElement('div');
         row.className = role === 'user' ? 'user-row' : 'erai-row';
@@ -302,65 +283,42 @@
         
         row.innerHTML = `<div class="bubble ${role}-bubble">${role === 'user' ? '<small style="opacity:0.6; font-weight:bold">Kamu</small><br>' : ''}<div class="tex2jax_process">${htmlContent}</div></div>`;
         
-        // Tambahkan typing indicator untuk ERAI jika itu balasan dari AI
-        if (role === 'erai' && text === '') {
-            row.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
-            row.classList.add('erai-row');
-        }
-
         chatArea.appendChild(row);
         if (window.MathJax) MathJax.typesetPromise([row]);
-        if (animate) chatArea.scrollTop = chatArea.scrollHeight;
+        chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // --- FILE UPLOAD ---
     function handleFile(input) {
-        if (isSending) {
-            showWugToast("Tunggu ERAI selesai merespons dulu ya, Kak!", '⏳');
-            input.value = '';
-            return;
-        }
-
+        if (isSending) return;
         if (input.files && input.files[0]) {
+            playSfx('click');
             const fileName = input.files[0].name;
             showWugToast(`File ${fileName} terdeteksi!`);
-            displayMessage("user", `[FILE] ${fileName}`); // Tampilkan di chat sebagai pesan user
-
-            // --- Mulai proses upload ke backend (placeholder) ---
+            displayMessage("user", `[FILE] ${fileName}`);
             showLoadingOverlay("ERAI sedang menganalisis gambar...");
             isSending = true;
 
-            setTimeout(() => { // Simulasi loading, nanti diganti dengan fetch API
+            setTimeout(() => {
                 hideLoadingOverlay();
-                displayMessage("erai", `**[WUG SECURE]** Berhasil menerima file: **${fileName}**.\n\n*Modul Vision sedang dalam tahap kalibrasi oleh WUG System.*`);
-                showWugToast("Analisis gambar selesai!", '✨');
+                displayMessage("erai", `**[WUG SECURE]** Berhasil menerima file: **${fileName}**.\n\n*Modul Vision sedang dalam tahap kalibrasi.*`);
+                showWugToast("Analisis selesai!", '✨');
                 isSending = false;
-            }, 3000); // 3 detik simulasi
-            
-            input.value = ''; // Reset input file
+            }, 3000);
+            input.value = '';
         }
     }
 
-    // --- SEND MESSAGE ---
     async function handleSend() {
-        if (isSending) {
-            showWugToast("Tunggu ERAI selesai merespons dulu ya, Kak!", '⏳');
-            return;
-        }
-
+        if (isSending) return;
         const inputField = document.getElementById('userInput');
         const msg = inputField.value.trim();
         if (!msg) return;
 
         displayMessage("user", msg);
         inputField.value = '';
-        inputField.focus();
-
         isSending = true;
-        let loadingMessage = "ERAI sedang berpikir keras...";
-        if (currentMode === 'pencarian') loadingMessage = "ERAI sedang mencari data terbaru di internet...";
-        else if (currentMode === 'latihan') loadingMessage = "ERAI sedang menyiapkan soal terbaik untukmu...";
 
+        let loadingMessage = "ERAI sedang berpikir...";
         showLoadingOverlay(loadingMessage);
 
         try {
@@ -370,23 +328,19 @@
                 body: JSON.stringify({ message: msg, mode: currentMode, history: allSessions[currentMode] })
             });
             const data = await res.json();
-            
             hideLoadingOverlay();
             displayMessage("erai", data.response);
-            showWugToast("Respons diterima!", '💬');
             allSessions[currentMode].push({"role": "user", "content": msg}, {"role": "assistant", "content": data.response});
         } catch (e) {
+            playSfx('error');
             hideLoadingOverlay();
-            showWugToast("Gangguan Transmisi!", '❌');
-            displayMessage("erai", "**[ERROR]** Sistem WUG mengalami kendala transmisi data.");
+            showWugToast("Koneksi Terputus!", '❌');
         } finally {
             isSending = false;
         }
     }
 
-    document.getElementById("userInput").addEventListener("keydown", (e) => { 
-        if (e.key === "Enter") handleSend(); 
-    });
+    document.getElementById("userInput").addEventListener("keydown", (e) => { if (e.key === "Enter") handleSend(); });
 </script>
 </body>
 </html>
