@@ -61,10 +61,10 @@
             position: relative;
         }
 
-        /* --- WUG SECURE ANTI-SS UI (REVISED) --- */
+        /* --- WUG SECURE ANTI-SS UI --- */
         body.blur-mode .app-container {
             filter: blur(25px);
-            transition: filter 0.1s ease-out; /* Blur dipercepat (0.1s) */
+            transition: filter 0.1s ease-out;
         }
 
         #wug-watermark {
@@ -267,6 +267,7 @@
 <script>
     let currentMode = "belajar";
     let isSending = false;
+    let allSessions = { "belajar": [], "latihan": [], "pencarian": [] };
 
     const sfx = {
         click: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
@@ -291,7 +292,7 @@
         }
     }
 
-    /* ANTI-SS SECURITY LAYER (REVISED: FASTER BLUR) */
+    /* ANTI-SS SECURITY LAYER (FASTER BLUR) */
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             document.body.classList.add('blur-mode');
@@ -328,8 +329,6 @@
             showWugToast("WUG Secure: Klik kanan dilarang!", "🚫");
         }
     });
-
-    let allSessions = { "belajar": [], "latihan": [], "pencarian": [] };
 
     function showWugToast(msg, icon = '🚀', duration = 3500, type = 'normal') {
         if (type === 'copy') playSfx('copy'); else playSfx('toast');
@@ -381,11 +380,13 @@
         document.getElementById('uploadBtn').style.display = (mode === 'latihan') ? 'none' : 'flex';
         const chatArea = document.getElementById('chat-area');
         chatArea.innerHTML = "";
+        
         if (allSessions[mode].length === 0) {
             let initialMsg = "";
-            if (mode === 'belajar') initialMsg = `Halo **nanas**! Aku **ERAI** di **Mode Belajar**. Siap jelaskan materi apa saja!`;
-            else if (mode === 'latihan') initialMsg = `Selamat datang di **Mode Latihan**. WUG Secure Aktif: Dilarang menyalin jawaban!`;
-            else if (mode === 'pencarian') initialMsg = `Mode Pencarian Bebas Aktif. Anda bisa menyalin pesan di sini.`;
+            // REVISI SEBUTAN KAK/KAKAK
+            if (mode === 'belajar') initialMsg = `Halo **Kak**! Aku **ERAI** di **Mode Belajar**. Siap jelaskan materi apa saja untuk Kakak!`;
+            else if (mode === 'latihan') initialMsg = `Selamat datang di **Mode Latihan**, **Kak**. WUG Secure Aktif: Dilarang menyalin jawaban!`;
+            else if (mode === 'pencarian') initialMsg = `Mode Pencarian Bebas Aktif. Kakak bisa menyalin pesan di sini.`;
             displayMessage("erai", `**[SYSTEM]** ${initialMsg}`, false);
         } else {
             allSessions[mode].forEach(msg => displayMessage(msg.role === "user" ? "user" : "erai", msg.content, false));
@@ -406,7 +407,7 @@
         const escapedText = text.replace(/`/g, "\\`").replace(/"/g, "&quot;");
         row.innerHTML = `
             <div class="bubble ${role}-bubble">
-                ${role === 'user' ? '<small style="opacity:0.6; font-weight:bold">Kamu</small><br>' : ''}
+                ${role === 'user' ? '<small style="opacity:0.6; font-weight:bold">Kakak</small><br>' : ''}
                 <div class="tex2jax_process">${htmlContent}</div>
                 ${role === 'erai' ? `<button class="copy-btn" onclick="copyChatText(this, \`${escapedText}\`)">Salin</button>` : ''}
             </div>`;
