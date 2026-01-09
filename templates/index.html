@@ -3,56 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERAI - WUG Secure System</title>
+    <title>ERAI - WUG Secure System (Enhanced)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-    window.MathJax = {
-        tex: {
-            inlineMath: [['$', '$'], ['\\(', '\\)']],
-            displayMath: [['$$', '$$'], ['\\[', '\\]']],
-            processEscapes: true,
-            packages: {'[+]': ['mhchem']} 
-        },
-        loader: {load: ['[tex]/mhchem']}
-    };
+    window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true, packages: {'[+]': ['mhchem']} }, loader: {load: ['[tex]/mhchem']} };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <style>
+        /* Base Styling & Background Animation */
         @keyframes gradientMove {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
+        @keyframes pulseBorder {
+            0% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(108, 92, 231, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0); }
+        }
+        @keyframes loadingDots {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+            60% { opacity: 1; transform: translateY(-5px) scale(1.05); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
 
         body {
-            margin: 0; padding: 0;
-            font-family: 'Inter', sans-serif;
+            margin: 0; padding: 0; font-family: 'Inter', sans-serif;
             background: linear-gradient(-45deg, #a8edea, #fed6e3, #d291ff, #84fab0);
-            background-size: 400% 400%;
-            animation: gradientMove 15s ease infinite;
-            height: 100vh;
-            display: flex; justify-content: center; align-items: center;
-            overflow: hidden;
+            background-size: 400% 400%; animation: gradientMove 15s ease infinite;
+            height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden;
+            position: relative; /* Untuk elemen animasi di background */
         }
+
+        /* Animated Background Shapes */
+        .shape {
+            position: absolute; background: rgba(255, 255, 255, 0.1); border-radius: 50%;
+            filter: blur(50px); animation: fadeInOut 20s infinite ease-in-out;
+            opacity: 0;
+        }
+        .shape-1 { width: 200px; height: 200px; top: 10%; left: 15%; animation-delay: 0s; }
+        .shape-2 { width: 150px; height: 150px; bottom: 5%; right: 10%; animation-delay: 5s; background: rgba(231, 92, 186, 0.15); }
+        .shape-3 { width: 180px; height: 180px; top: 40%; right: 20%; animation-delay: 10s; background: rgba(92, 231, 158, 0.15); }
+        .shape-4 { width: 100px; height: 100px; bottom: 20%; left: 25%; animation-delay: 15s; }
 
         .app-container {
             width: 95%; max-width: 850px; height: 90vh;
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 24px;
-            display: flex; flex-direction: column;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
+            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 24px;
+            display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden; position: relative; /* Untuk loading overlay */
         }
 
         header {
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.3);
+            padding: 15px 20px; background: rgba(255, 255, 255, 0.3);
             display: flex; flex-direction: column; gap: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative; z-index: 10;
         }
 
         .header-top { display: flex; justify-content: space-between; align-items: center; }
@@ -60,48 +82,66 @@
 
         .mode-selector { display: flex; gap: 5px; justify-content: center; }
         .mode-selector button {
-            background: rgba(255, 255, 255, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            padding: 8px 12px; border-radius: 15px;
-            color: #444; cursor: pointer; font-size: 0.75rem;
-            transition: 0.3s; font-weight: 700; flex: 1;
+            background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 8px 12px; border-radius: 15px; color: #444; cursor: pointer;
+            font-size: 0.75rem; transition: 0.3s; font-weight: 700; flex: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
+        .mode-selector button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .mode-selector button.active {
             background: #6c5ce7; color: white;
             box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+            transform: translateY(-1px);
         }
 
-        #chat-area { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+        #chat-area { 
+            flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; 
+            scroll-behavior: smooth;
+        }
 
-        .bubble { max-width: 85%; padding: 15px 20px; border-radius: 20px; font-size: 0.95rem; line-height: 1.6; }
+        /* Chat Bubbles */
+        .bubble { 
+            max-width: 85%; padding: 15px 20px; border-radius: 20px; 
+            font-size: 0.95rem; line-height: 1.6; animation: bounceIn 0.5s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
         .user-row { display: flex; justify-content: flex-end; }
         .user-bubble { background: white; border-bottom-right-radius: 4px; }
         .erai-row { display: flex; justify-content: flex-start; }
-        .erai-bubble { background: rgba(108, 92, 231, 0.15); border: 1px solid rgba(108, 92, 231, 0.2); border-bottom-left-radius: 4px; }
-
-        .input-box {
-            padding: 15px; display: flex; gap: 10px; align-items: center;
-            background: rgba(255, 255, 255, 0.3);
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        .erai-bubble { 
+            background: rgba(108, 92, 231, 0.15); 
+            border: 1px solid rgba(108, 92, 231, 0.2); 
+            border-bottom-left-radius: 4px;
         }
 
-        .upload-btn {
+        /* Input Area & Buttons */
+        .input-box {
+            padding: 15px; display: flex; gap: 10px; align-items: center;
+            background: rgba(255, 255, 255, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative; z-index: 10;
+        }
+        .upload-btn, .send-btn {
             background: #fff; color: #6c5ce7; border: 2px solid #6c5ce7;
             width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
             font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
-            transition: 0.3s;
+            transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(108, 92, 231, 0.2);
         }
+        .send-btn { 
+            width: auto; padding: 0 25px; border-radius: 25px; 
+            background: #6c5ce7; color: white; border: none; font-weight: 700;
+        }
+        .upload-btn:hover, .send-btn:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3); }
+        .upload-btn:active, .send-btn:active, .mode-selector button:active { transform: translateY(1px); }
 
         input[type="text"] {
             flex: 1; padding: 12px 20px; border-radius: 25px;
             border: 1px solid rgba(255, 255, 255, 0.8); outline: none;
             background: rgba(255, 255, 255, 0.6); font-size: 0.95rem;
+            transition: all 0.3s ease;
         }
-
-        .send-btn {
-            background: #6c5ce7; color: white; border: none;
-            padding: 12px 25px; border-radius: 25px; cursor: pointer;
-            font-weight: 700; transition: 0.3s;
+        input[type="text"]:focus {
+            background: white; border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
         }
 
         /* WUG TOAST SYSTEM */
@@ -119,13 +159,59 @@
         }
         .wug-toast.show { transform: translateX(0); }
         .toast-icon { background: #6c5ce7; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
+
+        /* Typing Indicator / Loading Animation */
+        .typing-indicator {
+            display: flex; gap: 5px; padding: 15px 20px; border-radius: 20px;
+            background: rgba(108, 92, 231, 0.15); border: 1px solid rgba(108, 92, 231, 0.2);
+            max-width: fit-content; margin-left: 10px;
+            animation: bounceIn 0.5s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .typing-indicator span {
+            width: 10px; height: 10px; background-color: #6c5ce7; border-radius: 50%;
+            animation: loadingDots 1.4s infinite ease-in-out;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        /* Overlay for "Searching" or "Processing" */
+        #loading-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 99; /* Di atas chat area, di bawah toast */
+            border-radius: 24px; /* Ikuti border-radius container */
+        }
+        #loading-overlay.active { opacity: 1; visibility: visible; }
+        #loading-overlay .spinner {
+            border: 4px solid rgba(108, 92, 231, 0.3);
+            border-top: 4px solid #6c5ce7;
+            border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
+        }
+        #loading-overlay p {
+            margin-top: 20px; font-weight: 700; color: #444; font-size: 1.1rem;
+            animation: pulseBorder 1.5s infinite;
+        }
     </style>
 </head>
 <body>
 
 <div id="toast-container"></div>
 
+<div class="shape shape-1"></div>
+<div class="shape shape-2"></div>
+<div class="shape shape-3"></div>
+<div class="shape shape-4"></div>
+
 <div class="app-container">
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-text">ERAI sedang memproses data...</p>
+    </div>
+
     <header>
         <div class="header-top">
             <div class="title-brand">🤖 ERAI | WUG SECURE</div>
@@ -151,21 +237,38 @@
 <script>
     let allSessions = { "belajar": [], "latihan": [], "pencarian": [] };
     let currentMode = "belajar";
+    let isSending = false; // Flag untuk mencegah double send
 
-    function showWugToast(msg) {
+    // --- WUG TOAST SYSTEM ---
+    function showWugToast(msg, icon = '🚀', duration = 3500) {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = 'wug-toast';
-        toast.innerHTML = `<div class="toast-icon">W</div><span>${msg}</span>`;
+        toast.innerHTML = `<div class="toast-icon">${icon}</div><span>${msg}</span>`;
         container.appendChild(toast);
-        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => toast.classList.add('show'), 50); // Sedikit delay untuk animasi
         setTimeout(() => {
             toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 500);
-        }, 3500);
+            setTimeout(() => toast.remove(), 400); // Tunggu animasi keluar selesai
+        }, duration);
     }
 
+    // --- LOADING OVERLAY SYSTEM ---
+    function showLoadingOverlay(message) {
+        document.getElementById('loading-text').innerText = message;
+        document.getElementById('loading-overlay').classList.add('active');
+    }
+
+    function hideLoadingOverlay() {
+        document.getElementById('loading-overlay').classList.remove('active');
+    }
+
+    // --- MODE SELECTION ---
     function setMode(mode) {
+        if (isSending) {
+            showWugToast("Tunggu ERAI selesai merespons dulu ya, Kak!", '⏳');
+            return;
+        }
         currentMode = mode;
         document.querySelectorAll('.mode-selector button').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`btn-${mode}`).classList.add('active');
@@ -175,43 +278,90 @@
         chatArea.innerHTML = "";
         
         if (allSessions[mode].length === 0) {
-            displayMessage("erai", `**[SYSTEM]** Mode **${mode.toUpperCase()}** aktif. Mari mulai, Kak!`);
+            let initialMsg = "";
+            if (mode === 'belajar') initialMsg = `Halo **Kakak**! Aku **ERAI** di **Mode Belajar**. Siap jelaskan materi apa saja!`;
+            else if (mode === 'latihan') initialMsg = `Selamat datang di **Mode Latihan**, **Kakak**! Siapkan dirimu untuk kuis interaktif!`;
+            else if (mode === 'pencarian') initialMsg = `Masuk **Mode Pencarian**, **Kakak**! Tanyakan berita atau info real-time!`;
+            displayMessage("erai", `**[SYSTEM]** ${initialMsg}`);
         } else {
             allSessions[mode].forEach(msg => displayMessage(msg.role === "user" ? "user" : "erai", msg.content));
         }
-        showWugToast(`Mode ${mode} Aktif`);
+        showWugToast(`Mode ${mode.toUpperCase()} Aktif`, '✅');
+        document.getElementById("userInput").focus();
     }
 
-    window.onload = () => { setMode('belajar'); document.getElementById("userInput").focus(); };
+    window.onload = () => { setMode('belajar'); };
 
-    function displayMessage(role, text) {
+    // --- DISPLAY CHAT MESSAGES ---
+    function displayMessage(role, text, animate = true) {
         const chatArea = document.getElementById('chat-area');
         const row = document.createElement('div');
         row.className = role === 'user' ? 'user-row' : 'erai-row';
         let cleanText = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
         let htmlContent = marked.parse(cleanText);
-        row.innerHTML = `<div class="bubble ${role}-bubble"><small style="opacity:0.6; font-weight:bold">${role === 'user' ? 'Kamu' : 'ERAI'}</small><br><div class="tex2jax_process">${htmlContent}</div></div>`;
+        
+        row.innerHTML = `<div class="bubble ${role}-bubble">${role === 'user' ? '<small style="opacity:0.6; font-weight:bold">Kamu</small><br>' : ''}<div class="tex2jax_process">${htmlContent}</div></div>`;
+        
+        // Tambahkan typing indicator untuk ERAI jika itu balasan dari AI
+        if (role === 'erai' && text === '') {
+            row.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+            row.classList.add('erai-row');
+        }
+
         chatArea.appendChild(row);
         if (window.MathJax) MathJax.typesetPromise([row]);
-        chatArea.scrollTop = chatArea.scrollHeight;
+        if (animate) chatArea.scrollTop = chatArea.scrollHeight;
     }
 
+    // --- FILE UPLOAD ---
     function handleFile(input) {
-        if (input.files && input.files[0]) {
-            const fName = input.files[0].name;
-            showWugToast(`File ${fName} terdeteksi!`);
-            displayMessage("erai", `**[WUG SECURE]** Berhasil mendeteksi file: **${fName}**.\n\n*Modul Vision sedang dalam tahap kalibrasi oleh WUG System.*`);
+        if (isSending) {
+            showWugToast("Tunggu ERAI selesai merespons dulu ya, Kak!", '⏳');
             input.value = '';
+            return;
+        }
+
+        if (input.files && input.files[0]) {
+            const fileName = input.files[0].name;
+            showWugToast(`File ${fileName} terdeteksi!`);
+            displayMessage("user", `[FILE] ${fileName}`); // Tampilkan di chat sebagai pesan user
+
+            // --- Mulai proses upload ke backend (placeholder) ---
+            showLoadingOverlay("ERAI sedang menganalisis gambar...");
+            isSending = true;
+
+            setTimeout(() => { // Simulasi loading, nanti diganti dengan fetch API
+                hideLoadingOverlay();
+                displayMessage("erai", `**[WUG SECURE]** Berhasil menerima file: **${fileName}**.\n\n*Modul Vision sedang dalam tahap kalibrasi oleh WUG System.*`);
+                showWugToast("Analisis gambar selesai!", '✨');
+                isSending = false;
+            }, 3000); // 3 detik simulasi
+            
+            input.value = ''; // Reset input file
         }
     }
 
+    // --- SEND MESSAGE ---
     async function handleSend() {
+        if (isSending) {
+            showWugToast("Tunggu ERAI selesai merespons dulu ya, Kak!", '⏳');
+            return;
+        }
+
         const inputField = document.getElementById('userInput');
         const msg = inputField.value.trim();
         if (!msg) return;
 
         displayMessage("user", msg);
         inputField.value = '';
+        inputField.focus();
+
+        isSending = true;
+        let loadingMessage = "ERAI sedang berpikir keras...";
+        if (currentMode === 'pencarian') loadingMessage = "ERAI sedang mencari data terbaru di internet...";
+        else if (currentMode === 'latihan') loadingMessage = "ERAI sedang menyiapkan soal terbaik untukmu...";
+
+        showLoadingOverlay(loadingMessage);
 
         try {
             const res = await fetch('/chat', {
@@ -220,15 +370,23 @@
                 body: JSON.stringify({ message: msg, mode: currentMode, history: allSessions[currentMode] })
             });
             const data = await res.json();
+            
+            hideLoadingOverlay();
             displayMessage("erai", data.response);
+            showWugToast("Respons diterima!", '💬');
             allSessions[currentMode].push({"role": "user", "content": msg}, {"role": "assistant", "content": data.response});
         } catch (e) {
-            showWugToast("Gangguan Transmisi!");
+            hideLoadingOverlay();
+            showWugToast("Gangguan Transmisi!", '❌');
             displayMessage("erai", "**[ERROR]** Sistem WUG mengalami kendala transmisi data.");
+        } finally {
+            isSending = false;
         }
     }
 
-    document.getElementById("userInput").addEventListener("keydown", (e) => { if (e.key === "Enter") handleSend(); });
+    document.getElementById("userInput").addEventListener("keydown", (e) => { 
+        if (e.key === "Enter") handleSend(); 
+    });
 </script>
 </body>
 </html>
