@@ -153,19 +153,25 @@
         const row = document.createElement('div');
         row.className = role === 'user' ? 'user-row' : 'erai-row';
         
-        let htmlContent = marked.parse(text);
+        // Membersihkan format teks agar MathJax lebih stabil
+        let cleanText = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
+        let htmlContent = marked.parse(cleanText);
         
         row.innerHTML = `
             <div class="bubble ${role}-bubble">
                 <small style="opacity:0.6">${role === 'user' ? 'Kamu' : 'ERAI'}</small><br>
-                <div>${htmlContent}</div>
+                <div class="tex2jax_process">${htmlContent}</div>
             </div>`;
         
         chatArea.appendChild(row);
-        if (window.MathJax) { MathJax.typesetPromise([row]); }
+
+        // Paksa render ulang untuk simbol kimia \ce dan matematika
+        if (window.MathJax) {
+            MathJax.typesetPromise([row]).catch((err) => console.log(err));
+        }
         chatArea.scrollTop = chatArea.scrollHeight;
     }
-
+    
     async function handleSend() {
         const inputField = document.getElementById('userInput');
         const msg = inputField.value.trim();
