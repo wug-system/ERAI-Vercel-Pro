@@ -92,6 +92,34 @@
 </head>
 <body>
 
+<div class="mode-selector">
+    <button onclick="setMode('belajar')" id="btn-belajar" class="active">Mode Belajar</button>
+    <button onclick="setMode('latihan')" id="btn-latihan">Mode Latihan</button>
+</div>
+
+<style>
+.mode-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+.mode-selector button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.mode-selector button.active {
+    background: rgba(255, 255, 255, 0.5);
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+</style>
+    
 <div class="app-container">
     <header>🤖 ERAI | WUG Secure System</header>
     <div id="chat-area" class="tex2jax_process"></div>
