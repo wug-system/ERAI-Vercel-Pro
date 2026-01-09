@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERAI - WUG Secure System (Enhanced + SFX)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -186,6 +186,22 @@
         }
         #loading-overlay.active { opacity: 1; visibility: visible; }
         .spinner { border: 4px solid rgba(108, 92, 231, 0.3); border-top: 4px solid #6c5ce7; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+
+        /* --- MOBILE OPTIMIZATION (ADDITION) --- */
+        @media (max-width: 600px) {
+            .app-container { width: 100%; height: 100vh; border-radius: 0; border: none; }
+            header { padding: 10px 15px; }
+            .title-brand { font-size: 1rem; }
+            .mode-selector button { font-size: 0.65rem; padding: 8px 4px; border-radius: 10px; }
+            #chat-area { padding: 15px 10px; gap: 15px; }
+            .bubble { max-width: 90%; padding: 12px 15px; font-size: 0.88rem; }
+            .input-box { padding: 10px; gap: 8px; padding-bottom: 20px; }
+            .upload-btn { width: 40px; height: 40px; font-size: 1rem; }
+            .send-btn { padding: 0 15px; height: 40px; font-size: 0.85rem; }
+            input[type="text"] { padding: 10px 15px; font-size: 0.9rem; }
+            #toast-container { right: 10px; left: 10px; top: 10px; }
+            .wug-toast { min-width: auto; width: 100%; box-sizing: border-box; }
+        }
     </style>
 </head>
 <body>
@@ -232,9 +248,7 @@
         receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
         toast: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
         mode: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
-        // ALARM KEAMANAN (Sesuai Permintaan)
         error: new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3'),
-        // SFX SALIN PENDEK (DIUBAH)
         copy: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3')
     };
 
