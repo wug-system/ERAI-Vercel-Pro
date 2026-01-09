@@ -132,13 +132,12 @@
             border-bottom-left-radius: 4px;
         }
 
-        /* Tombol Salin Khusus Pencarian */
         .copy-btn {
             position: absolute; bottom: 5px; right: 10px;
             background: rgba(108, 92, 231, 0.2); border: none;
             border-radius: 8px; padding: 3px 8px; font-size: 0.6rem;
             cursor: pointer; font-weight: bold; color: #6c5ce7;
-            transition: 0.2s; display: none; /* Default sembunyi */
+            transition: 0.2s; display: none;
         }
         .copy-btn:hover { background: #6c5ce7; color: white; }
         body.pencarian-active .copy-btn { display: block; }
@@ -233,10 +232,10 @@
         receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
         toast: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
         mode: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
-        // ALARM KEAMANAN
+        // ALARM KEAMANAN (Sesuai Permintaan)
         error: new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3'),
-        // SFX KHUSUS SALIN
-        copy: new Audio('https://assets.mixkit.co/active_storage/sfx/2540/2540-preview.mp3')
+        // SFX SALIN PENDEK (DIUBAH)
+        copy: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3')
     };
 
     function playSfx(name) {
@@ -245,7 +244,6 @@
             sfx[name].volume = (name === 'error') ? 0.6 : 0.4;
             sfx[name].play().catch(() => {});
             
-            // Visual Trigger for Alarm
             if (name === 'error') {
                 const container = document.getElementById('main-container');
                 container.classList.add('security-alert');
@@ -298,8 +296,8 @@
         navigator.clipboard.writeText(text).then(() => {
             const original = btn.innerText;
             btn.innerText = "Selesai!";
-            showWugToast("Berhasil disalin!", "📋", 2500, 'copy');
-            setTimeout(() => { btn.innerText = original; }, 2000);
+            showWugToast("Berhasil disalin!", "📋", 2000, 'copy');
+            setTimeout(() => { btn.innerText = original; }, 1500);
         });
     }
 
