@@ -28,15 +28,21 @@ def chat():
 
         search_info = ""
         
-        # Logika Pencarian
-        keywords = ["anime", "berita", "terbaru", "kabar", "2026"]
-        if tavily_client and any(word in user_input.lower() for word in keywords):
+        # Logika Pencarian yang lebih kuat
+        # Kita perlu menghapus filter kata kunci agar dia bisa mencari APAPUN yang Admin tanya
+        if tavily_client:
             try:
-                search_res = tavily_client.search(query=user_input, max_results=3)
-                search_info = f"\n\nInfo Terkini: {search_res.get('results', [])}"
-            except:
-                search_info = "\n\n(Fitur pencarian sedang limit/gangguan)"
+                # Gunakan search_depth="advanced" agar hasilnya lebih mendalam
+                search_res = tavily_client.search(query=user_input, search_depth="advanced", max_results=5)
+                
+                # Menggabungkan konten hasil pencarian menjadi satu teks utuh
+                context_list = [res.get('content', '') for res in search_res.get('results', [])]
+                search_info = " ".join(context_list)
+                
+            except Exception as e:
+                search_info = f"Gagal akses internet: {str(e)}"
 
+        
         system_prompt = (
         f"Nama kamu ERAI. Kamu Tutor Sebaya WUG untuk {user_name}. "
         f"STATUS: INTERNET AKTIF. TAHUN: 2026. DATA TERBARU: {search_info}. "
