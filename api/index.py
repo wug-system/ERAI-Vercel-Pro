@@ -22,43 +22,25 @@ def chat():
     try:
         data = request.json
         user_input = data.get("message", "")
-        user_name = "Kakak"
         user_mode = data.get("mode", "belajar")
-        history = data.get("history", [])
+        history = data.get("history", []) # Ini sudah terfilter dari frontend
 
-        now = datetime.now()
-        current_date = now.strftime("%d %B %Y") 
-
+        # --- LOGIKA MODE PENCARIAN (STRICT SEARCH) ---
         search_info = ""
-        # --- LOGIKA SMART SEARCH (VERSI HEMAT KUOTA) ---
-        search_info = ""
+        if user_mode == "pencarian":
+            # Di mode ini, AI WAJIB cari internet dulu
+            if tavily_client:
+                search_res = tavily_client.search(query=user_input, search_depth="advanced")
+                search_info = " ".join([r.get('content') for r in search_res.get('results', [])])
+            
+            mode_instruction = r"MODE PENCARIAN AKTIF: Gunakan DATA INTERNET untuk menjawab sedetail mungkin."
         
-        # 1. Daftar kata kunci yang WAJIB cari internet (berita/real-time)
-        real_time_keywords = [
-            "berita", "terbaru", "hari ini", "kabar", "update", 
-            "banjir", "skor", "cuaca", "harga", "stok", "kejadian"
-        ]
-        
-        # 2. Daftar kata kunci pendidikan (PASTI hemat kuota, gak usah search)
-        edu_keywords = ["hitung", "rumus", "jelaskan materi", "reaksi", "apa itu", "soal"]
+        elif user_mode == "latihan":
+            mode_instruction = r"MODE LATIHAN: Buat kuis 4 pilihan. DILARANG kasih jawaban langsung."
+        else:
+            mode_instruction = r"MODE BELAJAR: Jelaskan materi step-by-step dengan rapi."
 
-        # Cek apakah ada permintaan berita/kejadian terkini
-        should_search = any(word in user_input.lower() for word in real_time_keywords)
-        # Pastikan bukan soal pendidikan yang murni teori
-        is_pure_edu = any(word in user_input.lower() for word in edu_keywords)
-        
-        if tavily_client and should_search and not is_pure_edu:
-            try:
-                # Tambahkan lokasi "Aceh" atau konteks agar hasil lebih akurat
-                search_res = tavily_client.search(
-                    query=user_input, 
-                    search_depth="advanced", 
-                    max_results=3 
-                )
-                context_list = [f"SUMBER: {res.get('url')} - INFO: {res.get('content')}" for res in search_res.get('results', [])]
-                search_info = " ".join(context_list)
-            except Exception as e:
-                search_info = f"Internet sibuk, gunakan data internal. (Error: {str(e)})"
+        # ... (Sisa logika prompt & Groq sama seperti sebelumnya) ...
 
         # --- REVISI LOGIKA BEHAVIOR (KETAT) ---
         if user_mode == "latihan":
