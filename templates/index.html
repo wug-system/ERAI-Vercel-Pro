@@ -61,10 +61,10 @@
             position: relative;
         }
 
-        /* --- WUG SECURE ANTI-SS UI --- */
+        /* --- WUG SECURE ANTI-SS UI (REVISED) --- */
         body.blur-mode .app-container {
-            filter: blur(20px);
-            transition: filter 0.3s ease;
+            filter: blur(25px);
+            transition: filter 0.1s ease-out; /* Blur dipercepat (0.1s) */
         }
 
         #wug-watermark {
@@ -73,6 +73,7 @@
             font-size: 2.5rem; color: rgba(0,0,0,0.03);
             pointer-events: none; white-space: nowrap; z-index: 9999;
             user-select: none; font-weight: 900;
+            text-transform: uppercase;
         }
 
         /* WUG SECURE: Non-selectable text except for input */
@@ -232,7 +233,7 @@
 <body>
 
 <div id="toast-container"></div>
-<div id="wug-watermark">ADMIN 082359161055 - WUG SECURE</div>
+<div id="wug-watermark">WUG SECURITY SYSTEM</div>
 <div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div><div class="shape shape-4"></div>
 
 <div class="app-container" id="main-container">
@@ -244,7 +245,7 @@
     <header>
         <div class="header-top">
             <div class="title-brand">🤖 ERAI | WUG SECURE</div>
-            <div style="font-size: 0.7rem; opacity: 0.6;">Admin: 082359161055</div>
+            <div style="font-size: 0.7rem; opacity: 0.6;">System: WUG Secure Standard</div>
         </div>
         <div class="mode-selector">
             <button onclick="setMode('belajar')" id="btn-belajar">Mode Belajar</button>
@@ -290,7 +291,7 @@
         }
     }
 
-    /* ANTI-SS SECURITY LAYER */
+    /* ANTI-SS SECURITY LAYER (REVISED: FASTER BLUR) */
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             document.body.classList.add('blur-mode');
@@ -383,7 +384,7 @@
         if (allSessions[mode].length === 0) {
             let initialMsg = "";
             if (mode === 'belajar') initialMsg = `Halo **nanas**! Aku **ERAI** di **Mode Belajar**. Siap jelaskan materi apa saja!`;
-            else if (mode === 'latihan') initialMsg = `Selamat datang di **Mode Latihan**, **Admin**! WUG Secure Aktif: Dilarang menyalin jawaban!`;
+            else if (mode === 'latihan') initialMsg = `Selamat datang di **Mode Latihan**. WUG Secure Aktif: Dilarang menyalin jawaban!`;
             else if (mode === 'pencarian') initialMsg = `Mode Pencarian Bebas Aktif. Anda bisa menyalin pesan di sini.`;
             displayMessage("erai", `**[SYSTEM]** ${initialMsg}`, false);
         } else {
