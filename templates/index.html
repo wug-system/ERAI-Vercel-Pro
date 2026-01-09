@@ -51,6 +51,12 @@
             position: relative;
         }
 
+        /* WUG SECURE: Non-selectable text except for input */
+        body:not(.pencarian-active) {
+            user-select: none; -webkit-user-select: none;
+        }
+        input { user-select: auto !important; -webkit-user-select: auto !important; }
+
         .shape {
             position: absolute; background: rgba(255, 255, 255, 0.1); border-radius: 50%;
             filter: blur(50px); animation: fadeInOut 20s infinite ease-in-out;
@@ -148,13 +154,6 @@
         .wug-toast.show { transform: translateX(0); }
         .toast-icon { background: #6c5ce7; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
 
-        .typing-indicator {
-            display: flex; gap: 5px; padding: 15px 20px; border-radius: 20px;
-            background: rgba(108, 92, 231, 0.15); border: 1px solid rgba(108, 92, 231, 0.2);
-            max-width: fit-content; margin-left: 10px; animation: bounceIn 0.5s ease-out;
-        }
-        .typing-indicator span { width: 10px; height: 10px; background-color: #6c5ce7; border-radius: 50%; animation: loadingDots 1.4s infinite ease-in-out; }
-
         #loading-overlay {
             position: absolute; inset: 0;
             background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);
@@ -199,6 +198,39 @@
 </div>
 
 <script>
+    let currentMode = "belajar";
+    let isSending = false;
+
+    // --- WUG SECURITY SMART SYSTEM ---
+    document.addEventListener('keydown', function(e) {
+        // Keamanan hanya aktif di mode Belajar & Latihan
+        if (currentMode === 'pencarian') return true;
+
+        // Blokir F12, Inspect, Source, Copy, Print
+        const blockedKeys = ["F12", "u", "U", "p", "P", "c", "C"];
+        const isControlCombination = e.ctrlKey && blockedKeys.includes(e.key);
+        const isInspectCombination = e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key);
+
+        if (e.key === "F12" || isControlCombination || isInspectCombination) {
+            // Kecualikan Paste (Ctrl+V) agar user bisa input soal
+            if (e.ctrlKey && (e.key === "v" || e.key === "V")) {
+                return true; 
+            }
+            e.preventDefault();
+            playSfx('error');
+            showWugToast("WUG Secure: Tindakan dibatasi!", "🛡️");
+            return false;
+        }
+    });
+
+    document.addEventListener('contextmenu', function(e) {
+        if (currentMode !== 'pencarian') {
+            e.preventDefault();
+            playSfx('error');
+            showWugToast("WUG Secure: Klik kanan dilarang!", "🚫");
+        }
+    });
+
     // --- AUDIO ENGINE ---
     const sfx = {
         click: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
@@ -218,8 +250,6 @@
     }
 
     let allSessions = { "belajar": [], "latihan": [], "pencarian": [] };
-    let currentMode = "belajar";
-    let isSending = false;
 
     function showWugToast(msg, icon = '🚀', duration = 3500) {
         playSfx('toast');
@@ -246,11 +276,19 @@
 
     function setMode(mode) {
         if (isSending) {
-            showWugToast("Tunggu ERAI selesai merespons dulu ya, Kak!", '⏳');
+            showWugToast("Sistem sedang sibuk...", '⏳');
             return;
         }
         playSfx('mode');
         currentMode = mode;
+
+        // Toggle CSS class for selection security
+        if (mode === 'pencarian') {
+            document.body.classList.add('pencarian-active');
+        } else {
+            document.body.classList.remove('pencarian-active');
+        }
+
         document.querySelectorAll('.mode-selector button').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`btn-${mode}`).classList.add('active');
         document.getElementById('uploadBtn').style.display = (mode === 'latihan') ? 'none' : 'flex';
@@ -260,9 +298,9 @@
         
         if (allSessions[mode].length === 0) {
             let initialMsg = "";
-            if (mode === 'belajar') initialMsg = `Halo **Kakak**! Aku **ERAI** di **Mode Belajar**. Siap jelaskan materi apa saja!`;
-            else if (mode === 'latihan') initialMsg = `Selamat datang di **Mode Latihan**, **Kakak**! Siapkan dirimu untuk kuis interaktif!`;
-            else if (mode === 'pencarian') initialMsg = `Masuk **Mode Pencarian**, **Kakak**! Tanyakan berita atau info real-time!`;
+            if (mode === 'belajar') initialMsg = `Halo **nanas**! Aku **ERAI** di **Mode Belajar**. Siap jelaskan materi apa saja!`;
+            else if (mode === 'latihan') initialMsg = `Selamat datang di **Mode Latihan**, **Admin**! WUG Secure Aktif: Dilarang menyalin jawaban!`;
+            else if (mode === 'pencarian') initialMsg = `Mode Pencarian Bebas Aktif. Silakan cari informasi apa pun.`;
             displayMessage("erai", `**[SYSTEM]** ${initialMsg}`, false);
         } else {
             allSessions[mode].forEach(msg => displayMessage(msg.role === "user" ? "user" : "erai", msg.content, false));
@@ -300,7 +338,7 @@
 
             setTimeout(() => {
                 hideLoadingOverlay();
-                displayMessage("erai", `**[WUG SECURE]** Berhasil menerima file: **${fileName}**.\n\n*Modul Vision sedang dalam tahap kalibrasi.*`);
+                displayMessage("erai", `**[WUG SECURE]** Berhasil menerima file: **${fileName}**.\n\n*Modul Vision siap.*`);
                 showWugToast("Analisis selesai!", '✨');
                 isSending = false;
             }, 3000);
@@ -318,8 +356,7 @@
         inputField.value = '';
         isSending = true;
 
-        let loadingMessage = "ERAI sedang berpikir...";
-        showLoadingOverlay(loadingMessage);
+        showLoadingOverlay("ERAI sedang memproses...");
 
         try {
             const res = await fetch('/chat', {
