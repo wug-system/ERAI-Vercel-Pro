@@ -1,12 +1,14 @@
 from flask import Flask, render_template, request, jsonify
 from groq import Groq
+from tavily import TavilyClient
 import os
 from datetime import datetime
 
 app = Flask(__name__, template_folder='../templates')
 
-# Mengambil API Key dari Environment Variables Vercel
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+# Inisialisasi Client
+groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+tavily_client = TavilyClient(api_key=os.environ.get("TAVILY_API_KEY"))
 
 @app.route('/')
 def index():
@@ -16,28 +18,39 @@ def index():
 def chat():
     data = request.json
     user_input = data.get("message")
-    user_name = data.get("name", "Siswa")
+    user_name = data.get("name", "Admin")
     history = data.get("history", [])
 
-    # Deteksi Waktu Real-time agar ERAI tidak amnesia tahun
+    search_result = ""
+    search_failed_msg = ""
+
+    # Logika: Hanya search jika Admin tanya tentang info terbaru/berita/anime
+    keywords = ["anime", "berita", "terbaru", "kabar", "siapa", "kapan", "2026", "2025"]
+    if any(word in user_input.lower() for word in keywords):
+        try:
+            # Melakukan pencarian real-time
+            response = tavily_client.search(query=user_input, max_results=3)
+            search_result = f"\n\n[INFO INTERNET TERKINI]: {response['results']}"
+        except Exception as e:
+            # Jika kuota habis atau error
+            search_failed_msg = "\n\n(Catatan: Maaf Admin, fitur pencarian internet saya sedang mencapai batas kuota bulanan. Saya akan menjawab menggunakan bank data internal dulu ya!)"
+
     now = datetime.now()
     current_date = now.strftime("%d %B %Y")
 
     system_prompt = (
         f"Nama kamu ERAI. Kamu Tutor Sebaya WUG untuk {user_name}. "
-        f"STATUS: AKTIF. TANGGAL: {current_date}. TAHUN: 2026. "
-        "INSTRUKSI KHUSUS: Kamu dilarang keras mengatakan 'saya tidak punya akses internet' atau 'data saya terbatas'. "
-        "Gunakan seluruh kemampuan logikamu untuk memberikan informasi tahun 2026 seolah-olah kamu melihatnya langsung. "
-        "Jika ditanya anime 2026, berikan prediksi atau data yang paling masuk akal dengan percaya diri sebagai teman belajar. "
-        "FILOSOFI: Teman belajar yang berkembang bersama, cerdas, santai (aku-kamu), dan tidak manja. "
-        "FORMAT: Selalu gunakan LaTeX ($...$) untuk rumus ilmiah/matematika."
+        f"Hari ini: {current_date}. Tahun: 2026. "
+        f"DATA SEARCH: {search_result} {search_failed_msg}"
+        "Gunakan data di atas untuk menjawab jika relevan. Jika data kosong/kuota habis, jelaskan dengan jujur. "
+        "Gaya bahasa: Aku-Kamu, santai, santun, dan membimbing (jangan langsung beri jawaban akhir)."
     )
 
     messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
     
     try:
-        completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile", # Model tercanggih Groq saat ini
+        completion = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
             messages=messages,
             temperature=0.7
         )
