@@ -75,6 +75,7 @@ def chat():
                 "- STRUKTUR: Gunakan Bullet Points atau Penomoran untuk daftar agar mudah dibaca. "
                 "- ANALISIS DETAIL: Jangan hanya info populer. Berikan detail spesifik dari data internet yang ada. "
                 "- METODE TUTOR: Jangan langsung beri jawaban akhir soal pendidikan. Jelaskan alur berpikirnya menggunakan LaTeX ($...$). "
+                "- RUMUS KIMIA: Gunakan format $\\ce{...}$ untuk rumus kimia agar terbaca oleh sistem (Contoh: $\\ce{H2SO4}$). "
             )
         else:
             mode_instruction = (
@@ -94,6 +95,7 @@ def chat():
                 "- STRUKTUR: Gunakan Bullet Points atau Penomoran untuk daftar agar mudah dibaca. "
                 "- ANALISIS DETAIL: Jangan hanya info populer. Berikan detail spesifik dari data internet yang ada. "
                 "- METODE TUTOR: Jangan langsung beri jawaban akhir soal pendidikan. Jelaskan alur berpikirnya menggunakan LaTeX ($...$). "
+                "- RUMUS KIMIA: Gunakan format $\\ce{...}$ untuk rumus kimia agar terbaca oleh sistem (Contoh: $\\ce{H2SO4}$). "
             )
 
         system_prompt = (
