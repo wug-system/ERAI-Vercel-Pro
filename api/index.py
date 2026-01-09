@@ -95,6 +95,7 @@ ATURAN FORMATTING WAJIB:
 - Semua rumus matematika WAJIB diapit $...$.
 - Semua rumus kimia WAJIB diapit \ce{{...}}.
 - Gunakan bahasa teman sebaya yang suportif dan cerdas.
+- Jika DATA INTERNET tersedia, kamu HARUS merangkumnya menjadi berita yang jelas untuk {user_name}. Jangan bilang "saya tidak tahu".
 """
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
