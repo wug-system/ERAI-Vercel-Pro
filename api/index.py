@@ -30,15 +30,35 @@ def chat():
         current_date = now.strftime("%d %B %Y") 
 
         search_info = ""
-        # --- LOGIKA SMART SEARCH ---
-        need_search_keywords = ["berita", "terbaru", "hari ini", "2025", "2026", "update"]
-        should_search = any(word in user_input.lower() for word in need_search_keywords)
+        # --- LOGIKA SMART SEARCH (VERSI HEMAT KUOTA) ---
+        search_info = ""
         
-        if tavily_client and should_search:
+        # 1. Daftar kata kunci yang WAJIB cari internet (berita/real-time)
+        real_time_keywords = [
+            "berita", "terbaru", "hari ini", "kabar", "update", 
+            "banjir", "skor", "cuaca", "harga", "stok", "kejadian"
+        ]
+        
+        # 2. Daftar kata kunci pendidikan (PASTI hemat kuota, gak usah search)
+        edu_keywords = ["hitung", "rumus", "jelaskan materi", "reaksi", "apa itu", "soal"]
+
+        # Cek apakah ada permintaan berita/kejadian terkini
+        should_search = any(word in user_input.lower() for word in real_time_keywords)
+        # Pastikan bukan soal pendidikan yang murni teori
+        is_pure_edu = any(word in user_input.lower() for word in edu_keywords)
+        
+        if tavily_client and should_search and not is_pure_edu:
             try:
-                search_res = tavily_client.search(query=user_input, search_depth="advanced", max_results=3)
-                search_info = " ".join([f"Info: {r.get('content')}" for r in search_res.get('results', [])])
-            except: search_info = ""
+                # Tambahkan lokasi "Aceh" atau konteks agar hasil lebih akurat
+                search_res = tavily_client.search(
+                    query=user_input, 
+                    search_depth="advanced", 
+                    max_results=3 
+                )
+                context_list = [f"SUMBER: {res.get('url')} - INFO: {res.get('content')}" for res in search_res.get('results', [])]
+                search_info = " ".join(context_list)
+            except Exception as e:
+                search_info = f"Internet sibuk, gunakan data internal. (Error: {str(e)})"
 
         # --- REVISI LOGIKA BEHAVIOR (KETAT) ---
         if user_mode == "latihan":
