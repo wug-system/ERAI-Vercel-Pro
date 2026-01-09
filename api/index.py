@@ -50,6 +50,7 @@ WAJIB: AKTIFKAN AUTO-QUIZ MODE.
 4. Berikan petunjuk (clue) singkat saja.
 5. Gunakan format \ce{...} untuk kimia dan $...$ untuk matematika.
 6. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
+7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
 """
         else:
             mode_instruction = r"""
@@ -59,6 +60,7 @@ WAJIB: MODE BELAJAR AKTIF.
 3. Selesaikan soal secara step-by-step menggunakan LaTeX ($...$).
 4. Gunakan format \ce{...} untuk setiap simbol kimia (Contoh: \ce{H2O}).
 5. Gunakan Bullet Points untuk poin-poin penting.
+6. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
 """
 
         system_prompt = rf"""
