@@ -22,79 +22,71 @@ def chat():
     try:
         data = request.json
         user_input = data.get("message", "")
-        # Nama paten sesuai request Admin
-        user_name = "Kakak"  
+        user_name = "Kakak"
         user_mode = data.get("mode", "belajar")
         history = data.get("history", [])
 
-        # Ambil waktu sekarang untuk system prompt
         now = datetime.now()
         current_date = now.strftime("%d %B %Y") 
 
         search_info = ""
-        
         # --- LOGIKA SMART SEARCH ---
-        need_search_keywords = [
-            "berita", "terbaru", "hari ini", "skor", "harga", 
-            "2025", "2026", "rilis", "update", "kabar", "hot", "trending"
-        ]
-        
+        need_search_keywords = ["berita", "terbaru", "hari ini", "2025", "2026", "update"]
         should_search = any(word in user_input.lower() for word in need_search_keywords)
         
         if tavily_client and should_search:
             try:
-                search_res = tavily_client.search(
-                    query=user_input, 
-                    search_depth="advanced", 
-                    max_results=5 
-                )
-                context_list = [f"Info: {res.get('content')}" for res in search_res.get('results', [])]
-                search_info = " ".join(context_list)
-            except Exception:
-                search_info = "Pencarian internet sedang limit."
-        
-        # --- LOGIKA BEHAVIOR MODE (RAW STRING) ---
+                search_res = tavily_client.search(query=user_input, search_depth="advanced", max_results=3)
+                search_info = " ".join([f"Info: {r.get('content')}" for r in search_res.get('results', [])])
+            except: search_info = ""
+
+        # --- REVISI LOGIKA BEHAVIOR (KETAT) ---
         if user_mode == "latihan":
             mode_instruction = r"""
-SISTEM LATIHAN AKTIF (AUTO-QUIZ MODE):
-- JANGAN berikan jawaban langsung jika Kakak memberikan soal.
-- Ubah soal jadi kuis interaktif dengan 4 pilihan jawaban (A, B, C, D).
-- Pastikan salah satu pilihan adalah jawaban yang benar.
-- Gunakan format \ce{...} untuk setiap rumus kimia (Contoh: \ce{NaCl}).
-- Jika Kakak menjawab benar, beri selamat dan jelaskan penyelesaian lengkapnya menggunakan LaTeX ($...$).
+WAJIB: AKTIFKAN AUTO-QUIZ MODE.
+1. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
+2. Ubah soal tersebut menjadi kuis interaktif dengan 4 pilihan (A, B, C, D).
+3. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
+4. Berikan petunjuk (clue) singkat saja.
+5. Gunakan format \ce{...} untuk kimia dan $...$ untuk matematika.
+6. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
 """
         else:
             mode_instruction = r"""
-SISTEM BELAJAR AKTIF:
-- Berikan penjelasan mendalam, rumus lengkap, dan konsep dasar.
-- Selesaikan soal secara step-by-step menggunakan LaTeX ($...$).
-- Gunakan format \ce{...} untuk kimia agar tidak error.
+WAJIB: MODE BELAJAR AKTIF.
+1. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
+2. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
+3. Selesaikan soal secara step-by-step menggunakan LaTeX ($...$).
+4. Gunakan format \ce{...} untuk setiap simbol kimia (Contoh: \ce{H2O}).
+5. Gunakan Bullet Points untuk poin-poin penting.
 """
 
-        system_prompt = (
-            f"Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}. "
-            f"Panggil user dengan sebutan '{user_name}'. "
-            f"Hari ini: {current_date}. \n"
-            f"{mode_instruction} \n"
-            f"DATA INTERNET: {search_info if search_info else 'Tidak perlu search'}. \n"
-            "\nATURAN SISTEM: "
-            "1. FORMAT: **Bold** untuk poin penting, *Italic* untuk penekanan. "
-            "2. GAYA: Teman sebaya yang santai (aku-kamu), cerdas, dan sangat suportif. "
-            "3. METODE TUTOR: Gunakan LaTeX ($...$) untuk matematika dan \\ce{...} untuk kimia."
-        )
+        system_prompt = rf"""
+Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
+{mode_instruction}
+Hari ini: {current_date}.
+DATA INTERNET: {search_info if search_info else 'Gunakan internal knowledge'}.
+
+ATURAN FORMATTING WAJIB:
+- Gunakan --- untuk membuat garis pemisah antar sub-bab agar rapi.
+- Gunakan **Bold** untuk judul langkah atau poin penting.
+- Semua rumus matematika WAJIB diapit $...$.
+- Semua rumus kimia WAJIB diapit \ce{{...}}.
+- Gunakan bahasa teman sebaya yang suportif dan cerdas.
+"""
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
         
         completion = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=messages,
-            temperature=0.6 
+            temperature=0.4 # Suhu lebih rendah agar lebih patuh pada format
         )
         
         return jsonify({"response": completion.choices[0].message.content})
     
     except Exception as e:
-        return jsonify({"response": f"ERAI sedang kendala teknis: {str(e)}"}), 200
+        return jsonify({"response": f"Waduh Kak, ada kendala: {str(e)}"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
