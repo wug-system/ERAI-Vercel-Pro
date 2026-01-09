@@ -42,6 +42,15 @@
             90% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(-10px); }
         }
+        /* Visual Alarm Effect */
+        @keyframes alarmFlash {
+            0% { box-shadow: inset 0 0 0px red; }
+            50% { box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.3); }
+            100% { box-shadow: inset 0 0 0px red; }
+        }
+        .security-alert {
+            animation: alarmFlash 0.5s ease-in-out 3;
+        }
 
         body {
             margin: 0; padding: 0; font-family: 'Inter', sans-serif;
@@ -185,7 +194,7 @@
 <div id="toast-container"></div>
 <div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div><div class="shape shape-4"></div>
 
-<div class="app-container">
+<div class="app-container" id="main-container">
     <div id="loading-overlay">
         <div class="spinner"></div>
         <p id="loading-text">ERAI sedang memproses data...</p>
@@ -217,18 +226,42 @@
     let currentMode = "belajar";
     let isSending = false;
 
+    // --- AUDIO ENGINE ---
+    const sfx = {
+        click: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
+        send: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
+        receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
+        toast: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
+        mode: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+        // ALARM KEAMANAN
+        error: new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3'),
+        // SFX KHUSUS SALIN
+        copy: new Audio('https://assets.mixkit.co/active_storage/sfx/2540/2540-preview.mp3')
+    };
+
+    function playSfx(name) {
+        if(sfx[name]) {
+            sfx[name].currentTime = 0;
+            sfx[name].volume = (name === 'error') ? 0.6 : 0.4;
+            sfx[name].play().catch(() => {});
+            
+            // Visual Trigger for Alarm
+            if (name === 'error') {
+                const container = document.getElementById('main-container');
+                container.classList.add('security-alert');
+                setTimeout(() => container.classList.remove('security-alert'), 1500);
+            }
+        }
+    }
+
     // --- WUG SECURITY SMART SYSTEM ---
     document.addEventListener('keydown', function(e) {
         if (currentMode === 'pencarian') return true;
-
         const blockedKeys = ["F12", "u", "U", "p", "P", "c", "C"];
         const isControlCombination = e.ctrlKey && blockedKeys.includes(e.key);
         const isInspectCombination = e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key);
-
         if (e.key === "F12" || isControlCombination || isInspectCombination) {
-            if (e.ctrlKey && (e.key === "v" || e.key === "V")) {
-                return true; 
-            }
+            if (e.ctrlKey && (e.key === "v" || e.key === "V")) return true;
             e.preventDefault();
             playSfx('error');
             showWugToast("WUG Secure: Tindakan dibatasi!", "🛡️");
@@ -244,28 +277,10 @@
         }
     });
 
-    // --- AUDIO ENGINE ---
-    const sfx = {
-        click: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
-        send: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
-        receive: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
-        toast: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
-        error: new Audio('https://assets.mixkit.co/active_storage/sfx/2511/2511-preview.mp3'),
-        mode: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3')
-    };
-
-    function playSfx(name) {
-        if(sfx[name]) {
-            sfx[name].currentTime = 0;
-            sfx[name].volume = 0.4;
-            sfx[name].play().catch(() => {});
-        }
-    }
-
     let allSessions = { "belajar": [], "latihan": [], "pencarian": [] };
 
-    function showWugToast(msg, icon = '🚀', duration = 3500) {
-        playSfx('toast');
+    function showWugToast(msg, icon = '🚀', duration = 3500, type = 'normal') {
+        if (type === 'copy') playSfx('copy'); else playSfx('toast');
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = 'wug-toast';
@@ -283,7 +298,7 @@
         navigator.clipboard.writeText(text).then(() => {
             const original = btn.innerText;
             btn.innerText = "Selesai!";
-            showWugToast("Berhasil disalin!", "📋");
+            showWugToast("Berhasil disalin!", "📋", 2500, 'copy');
             setTimeout(() => { btn.innerText = original; }, 2000);
         });
     }
@@ -304,23 +319,17 @@
         }
         playSfx('mode');
         currentMode = mode;
-
         if (mode === 'pencarian') {
             document.body.classList.add('pencarian-active');
         } else {
             document.body.classList.remove('pencarian-active');
         }
-
         document.querySelectorAll('.mode-selector button').forEach(btn => btn.classList.remove('active'));
-        // Perbaikan id selektor mode pencarian
         const targetBtn = mode === 'pencarian' ? document.getElementById('id-btn-pencarian') : document.getElementById(`btn-${mode}`);
         if(targetBtn) targetBtn.classList.add('active');
-        
         document.getElementById('uploadBtn').style.display = (mode === 'latihan') ? 'none' : 'flex';
-
         const chatArea = document.getElementById('chat-area');
         chatArea.innerHTML = "";
-        
         if (allSessions[mode].length === 0) {
             let initialMsg = "";
             if (mode === 'belajar') initialMsg = `Halo **nanas**! Aku **ERAI** di **Mode Belajar**. Siap jelaskan materi apa saja!`;
@@ -341,20 +350,15 @@
         const chatArea = document.getElementById('chat-area');
         const row = document.createElement('div');
         row.className = role === 'user' ? 'user-row' : 'erai-row';
-        
         let cleanText = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
         let htmlContent = marked.parse(cleanText);
-        
-        // Escape quotes untuk fungsi copy
         const escapedText = text.replace(/`/g, "\\`").replace(/"/g, "&quot;");
-        
         row.innerHTML = `
             <div class="bubble ${role}-bubble">
                 ${role === 'user' ? '<small style="opacity:0.6; font-weight:bold">Kamu</small><br>' : ''}
                 <div class="tex2jax_process">${htmlContent}</div>
                 ${role === 'erai' ? `<button class="copy-btn" onclick="copyChatText(this, \`${escapedText}\`)">Salin</button>` : ''}
             </div>`;
-        
         chatArea.appendChild(row);
         if (window.MathJax) MathJax.typesetPromise([row]);
         chatArea.scrollTop = chatArea.scrollHeight;
@@ -369,7 +373,6 @@
             displayMessage("user", `[FILE] ${fileName}`);
             showLoadingOverlay("ERAI sedang menganalisis gambar...");
             isSending = true;
-
             setTimeout(() => {
                 hideLoadingOverlay();
                 displayMessage("erai", `**[WUG SECURE]** Berhasil menerima file: **${fileName}**.\n\n*Modul Vision siap.*`);
@@ -385,13 +388,10 @@
         const inputField = document.getElementById('userInput');
         const msg = inputField.value.trim();
         if (!msg) return;
-
         displayMessage("user", msg);
         inputField.value = '';
         isSending = true;
-
         showLoadingOverlay("ERAI sedang memproses...");
-
         try {
             const res = await fetch('/chat', {
                 method: 'POST',
