@@ -160,16 +160,26 @@
         const row = document.createElement('div');
         row.className = `msg-row ${role}`;
         
-        // Fix: Render Markdown & LaTeX Matematika
-        let formattedText = text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$').replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+        // Membersihkan format agar MathJax & Marked tidak bentrok
+        let formattedText = text
+            .replace(/\\\[/g, '$$$$') // Ganti blok matematika
+            .replace(/\\\]/g, '$$$$')
+            .replace(/\\\(/g, '$')     // Ganti inline matematika
+            .replace(/\\\)/g, '$');
+        
         let htmlContent = marked.parse(formattedText);
         
-        row.innerHTML = `<div class="bubble"><strong>${role === 'user' ? 'Kamu' : 'ERAI'}</strong><br>${htmlContent}</div>`;
+        row.innerHTML = `
+            <div class="bubble">
+                <small style="opacity:0.6">${role === 'user' ? 'Kamu' : 'ERAI'}</small><br>
+                <div class="content">${htmlContent}</div>
+            </div>`;
+        
         chatArea.appendChild(row);
         
-        // Pemicu Render Matematika Otomatis
+        // Trigger MathJax untuk render Matematika & Kimia
         if (window.MathJax) {
-            MathJax.typesetPromise([row]);
+            MathJax.typesetPromise([row]).catch((err) => console.log(err));
         }
         chatArea.scrollTop = chatArea.scrollHeight;
     }
