@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERAI - WUG Tutor Pro</title>
+    <title>ERAI - WUG Secure System</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
@@ -48,24 +48,23 @@
         }
 
         header {
-            padding: 20px;
+            padding: 15px 20px;
             background: rgba(255, 255, 255, 0.3);
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; flex-direction: column; gap: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        .title-brand { font-weight: 800; color: #444; font-size: 1.2rem; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        .title-brand { font-weight: 800; color: #444; font-size: 1.1rem; }
 
-        .mode-selector { display: flex; gap: 8px; }
-        
+        .mode-selector { display: flex; gap: 5px; justify-content: center; }
         .mode-selector button {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            padding: 6px 15px; border-radius: 20px;
-            color: #444; cursor: pointer; font-size: 0.85rem;
-            transition: 0.3s; font-weight: 600;
+            padding: 8px 12px; border-radius: 15px;
+            color: #444; cursor: pointer; font-size: 0.75rem;
+            transition: 0.3s; font-weight: 700; flex: 1;
         }
-
         .mode-selector button.active {
             background: #6c5ce7; color: white;
             box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
@@ -73,81 +72,98 @@
 
         #chat-area { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
 
-        .bubble {
-            max-width: 80%; padding: 15px 20px; border-radius: 20px;
-            font-size: 0.95rem; line-height: 1.6; position: relative;
-        }
-
+        .bubble { max-width: 85%; padding: 15px 20px; border-radius: 20px; font-size: 0.95rem; line-height: 1.6; }
         .user-row { display: flex; justify-content: flex-end; }
-        .user-bubble { background: white; border-bottom-right-radius: 4px; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); }
-
+        .user-bubble { background: white; border-bottom-right-radius: 4px; }
         .erai-row { display: flex; justify-content: flex-start; }
-        .erai-bubble { 
-            background: rgba(108, 92, 231, 0.15); 
-            border: 1px solid rgba(108, 92, 231, 0.2);
-            border-bottom-left-radius: 4px;
-        }
+        .erai-bubble { background: rgba(108, 92, 231, 0.15); border: 1px solid rgba(108, 92, 231, 0.2); border-bottom-left-radius: 4px; }
 
         .input-box {
-            padding: 20px; display: flex; gap: 12px;
+            padding: 15px; display: flex; gap: 10px; align-items: center;
             background: rgba(255, 255, 255, 0.3);
             border-top: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        input {
-            flex: 1; padding: 14px 25px; border-radius: 30px;
+        .upload-btn {
+            background: #fff; color: #6c5ce7; border: 2px solid #6c5ce7;
+            width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
+            font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            transition: 0.3s;
+        }
+
+        input[type="text"] {
+            flex: 1; padding: 12px 20px; border-radius: 25px;
             border: 1px solid rgba(255, 255, 255, 0.8); outline: none;
-            background: rgba(255, 255, 255, 0.6); font-size: 1rem;
+            background: rgba(255, 255, 255, 0.6); font-size: 0.95rem;
         }
 
         .send-btn {
             background: #6c5ce7; color: white; border: none;
-            padding: 0 30px; border-radius: 30px; cursor: pointer;
+            padding: 12px 25px; border-radius: 25px; cursor: pointer;
             font-weight: 700; transition: 0.3s;
         }
-        .send-btn:hover { background: #5849c4; transform: scale(1.05); }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <header>
-        <div class="title-brand">🤖 ERAI | WUG</div>
+        <div class="header-top">
+            <div class="title-brand">🤖 ERAI | WUG SECURE</div>
+            <div style="font-size: 0.7rem; opacity: 0.6;">Admin: 082359161055</div>
+        </div>
         <div class="mode-selector">
             <button onclick="setMode('belajar')" id="btn-belajar" class="active">Mode Belajar</button>
             <button onclick="setMode('latihan')" id="btn-latihan">Mode Latihan</button>
+            <button onclick="setMode('pencarian')" id="btn-pencarian">Mode Pencarian</button>
         </div>
     </header>
 
     <div id="chat-area"></div>
 
     <div class="input-box">
-        <input type="text" id="userInput" placeholder="Tanya soal atau mulai latihan..." autocomplete="off">
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)">
+        <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">📸</button>
+        
+        <input type="text" id="userInput" placeholder="Tulis pesan..." autocomplete="off">
         <button class="send-btn" onclick="handleSend()">Kirim</button>
     </div>
 </div>
 
 <script>
-    let chatHistory = [];
-    let nameUser = "Kakak"; // Nama dipatenkan
+    // Objek Riwayat Terpisah agar tidak tercampur
+    let allSessions = {
+        "belajar": [],
+        "latihan": [],
+        "pencarian": []
+    };
     let currentMode = "belajar";
 
     function setMode(mode) {
         currentMode = mode;
-        document.getElementById('btn-belajar').className = mode === 'belajar' ? 'active' : '';
-        document.getElementById('btn-latihan').className = mode === 'latihan' ? 'active' : '';
-        displayMessage("erai", `**Mode ${mode.toUpperCase()}** diaktifkan! Mau bahas apa kita sekarang, **Kakak**?`);
+        
+        // Update UI Tombol
+        document.querySelectorAll('.mode-selector button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`btn-${mode}`).classList.add('active');
+        
+        // Logika Tombol Upload: Sembunyikan di Mode Latihan
+        document.getElementById('uploadBtn').style.display = (mode === 'latihan') ? 'none' : 'flex';
+
+        // Render ulang Chat Area sesuai riwayat mode tersebut
+        const chatArea = document.getElementById('chat-area');
+        chatArea.innerHTML = "";
+        
+        if (allSessions[mode].length === 0) {
+            displayMessage("erai", `**Mode ${mode.toUpperCase()}** aktif. Apa yang bisa ERAI bantu?`);
+        } else {
+            allSessions[mode].forEach(msg => displayMessage(msg.role === "user" ? "user" : "erai", msg.content));
+        }
     }
 
     window.onload = () => {
-        // Hapus prompt nama, langsung panggil Kakak
-        displayMessage("erai", `Halo **Kakak**! Aku **ERAI**. Sekarang kita di **Mode Belajar**. Coba tanya rumus kimia atau matematika deh!`);
+        setMode('belajar');
         document.getElementById("userInput").focus();
     };
-
-    document.getElementById("userInput").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") handleSend();
-    });
 
     function displayMessage(role, text) {
         const chatArea = document.getElementById('chat-area');
@@ -159,18 +175,23 @@
         
         row.innerHTML = `
             <div class="bubble ${role}-bubble">
-                <small style="opacity:0.6">${role === 'user' ? 'Kamu' : 'ERAI'}</small><br>
+                <small style="opacity:0.6; font-weight:bold">${role === 'user' ? 'Kamu' : 'ERAI'}</small><br>
                 <div class="tex2jax_process">${htmlContent}</div>
             </div>`;
         
         chatArea.appendChild(row);
-
-        if (window.MathJax) {
-            MathJax.typesetPromise([row]).catch((err) => console.log(err));
-        }
+        if (window.MathJax) MathJax.typesetPromise([row]);
         chatArea.scrollTop = chatArea.scrollHeight;
     }
-    
+
+    // Fungsi handle upload (Placeholder untuk integrasi Vision ke depannya)
+    function handleFile(input) {
+        if (input.files && input.files[0]) {
+            alert("Foto " + input.files[0].name + " terpilih! (Fitur analisis gambar sedang dalam kalibrasi WUG System)");
+            // Disini Admin bisa menambahkan logika FormData untuk kirim ke API Vision
+        }
+    }
+
     async function handleSend() {
         const inputField = document.getElementById('userInput');
         const msg = inputField.value.trim();
@@ -178,7 +199,7 @@
 
         displayMessage("user", msg);
         inputField.value = '';
-        inputField.focus(); // Auto-focus balik ke input biar enak ngetiknya
+        inputField.focus();
 
         try {
             const res = await fetch('/chat', {
@@ -186,18 +207,27 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     message: msg, 
-                    name: nameUser, 
                     mode: currentMode,
-                    history: chatHistory
+                    history: allSessions[currentMode] // Kirim riwayat spesifik mode
                 })
             });
             const data = await res.json();
+            
             displayMessage("erai", data.response);
-            chatHistory.push({"role": "user", "content": msg}, {"role": "assistant", "content": data.response});
+            
+            // Simpan ke riwayat masing-masing
+            allSessions[currentMode].push(
+                {"role": "user", "content": msg}, 
+                {"role": "assistant", "content": data.response}
+            );
         } catch (e) { 
-            displayMessage("erai", "Waduh, ada gangguan koneksi nih, Kak."); 
+            displayMessage("erai", "Sistem WUG mengalami kendala transmisi."); 
         }
     }
+
+    document.getElementById("userInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleSend();
+    });
 </script>
 </body>
 </html>
