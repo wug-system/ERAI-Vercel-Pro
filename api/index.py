@@ -25,44 +25,51 @@ def chat():
         user_name = data.get("name", "Admin")
         history = data.get("history", [])
 
-        # Definisi Waktu Akurat
         now = datetime.now()
         current_date = now.strftime("%d %B %Y") 
 
         search_info = ""
         
-        # Logika Pencarian Tavily - Diperdalam untuk Detail Kecil
-        if tavily_client:
+        # --- LOGIKA SMART SEARCH (PENYELAMAT KUOTA) ---
+        # Daftar kata kunci yang butuh data internet real-time
+        need_search_keywords = [
+            "berita", "terbaru", "hari ini", "skor", "harga", 
+            "2025", "2026", "rilis", "update", "kabar", "hot", "trending"
+        ]
+        
+        # Hanya jalankan Tavily jika user tanya info terkini/spesifik
+        should_search = any(word in user_input.lower() for word in need_search_keywords)
+        
+        if tavily_client and should_search:
             try:
-                # max_results dinaikkan ke 8 agar mencakup info spesifik/niche
                 search_res = tavily_client.search(
                     query=user_input, 
                     search_depth="advanced", 
-                    max_results=8
+                    max_results=5 
                 )
-                # Mengambil konten dan judul untuk akurasi lebih baik
-                context_list = [f"Judul: {res.get('title')}\nIsi: {res.get('content')}" for res in search_res.get('results', [])]
-                search_info = "\n\n".join(context_list)
-            except Exception as e:
-                search_info = f"Pencarian terbatas: {str(e)}"
+                context_list = [f"Info: {res.get('content')}" for res in search_res.get('results', [])]
+                search_info = " ".join(context_list)
+            except Exception:
+                search_info = "Pencarian internet sedang istirahat (limit)."
+        # ----------------------------------------------
 
-        # System Prompt yang Dipertajam
         system_prompt = (
-            f"Nama kamu ERAI, Tutor Sebaya standar WUG untuk {user_name}. "
-            f"Konteks Waktu: {current_date}, Tahun 2026. "
-            f"REFERENSI INTERNET TERBARU: {search_info}. "
-            "\nATURAN FORMATTING & KOMUNIKASI: "
-            "1. HIGHLIGHT POIN PENTING: Gunakan **Bold** untuk istilah kunci, angka penting, atau inti jawaban. "
-            "2. PENEKANAN: Gunakan *Italic* untuk istilah asing atau penekanan nada bicara. "
-            "3. STRUKTUR: Gunakan Bullet Points atau Penomoran untuk daftar agar mudah dibaca. "
-            "4. ANALISIS DETAIL: Jangan hanya info populer. Berikan detail spesifik dari data internet yang ada. "
-            "5. METODE TUTOR: Jangan langsung beri jawaban akhir soal pendidikan. Jelaskan alur berpikirnya menggunakan LaTeX ($...$). "
-            "6. GAYA BAHASA: Teman sebaya yang cerdas, santai (aku-kamu), dan sangat suportif."
+            f"Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}. "
+            f"Hari ini: {current_date}. "
+            f"DATA INTERNET: {search_info if search_info else 'Tidak perlu search (pakai logika internal)'}. "
+            "\nATURAN SISTEM: "
+            "1. Jika DATA INTERNET tersedia, gunakan untuk menjawab info terkini secara akurat. "
+            "2. Jika DATA INTERNET kosong, gunakan kemampuan logika internalmu (Sangat kuat untuk pelajaran & umum). "
+            "3. FORMAT: Gunakan **Bold** untuk poin penting dan LaTeX ($...$) untuk rumus. "
+            "4. GAYA: Teman sebaya yang santai (aku-kamu), cerdas, dan suportif."
+            "5. PENEKANAN: Gunakan *Italic* untuk istilah asing atau penekanan nada bicara. "
+            "6. STRUKTUR: Gunakan Bullet Points atau Penomoran untuk daftar agar mudah dibaca. "
+            "7. ANALISIS DETAIL: Jangan hanya info populer. Berikan detail spesifik dari data internet yang ada. "
+            "8. METODE TUTOR: Jangan langsung beri jawaban akhir soal pendidikan. Jelaskan alur berpikirnya menggunakan LaTeX ($...$). "
         )
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
         
-        # Temperature 0.6 untuk keseimbangan antara kreativitas dan akurasi
         completion = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=messages,
@@ -72,4 +79,4 @@ def chat():
         return jsonify({"response": completion.choices[0].message.content})
     
     except Exception as e:
-        return jsonify({"response": f"Waduh Admin, ada kendala teknis: {str(e)}"}), 200
+        return jsonify({"response": f"Kendala teknis: {str(e)}"}), 200
