@@ -292,6 +292,30 @@
         }
     }
 
+function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            showWugToast("Gagal masuk mode aman", "⚠️");
+        });
+    }
+}
+
+// Paksa user masuk fullscreen saat mulai chat
+document.addEventListener('click', function() {
+    if (currentMode !== 'pencarian' && !document.fullscreenElement) {
+        toggleFullScreen();
+    }
+}, { once: false });
+
+document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && currentMode !== 'pencarian') {
+        document.body.classList.add('blur-mode');
+        showWugToast("Kembali ke Fullscreen untuk akses!", "🛡️");
+    } else {
+        document.body.classList.remove('blur-mode');
+    }
+});
+    
     /* ANTI-SS SECURITY LAYER (FASTER BLUR) */
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
@@ -301,6 +325,21 @@
         }
     });
 
+// Deteksi jika layar sedang dibagikan/direkam
+async function secureScreen() {
+    try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        // Jika user mencoba share screen, kita matikan stream-nya dan beri peringatan
+        stream.getTracks().forEach(track => track.stop());
+        showWugToast("Screen Recording Dilarang!", "🚫", 5000, 'error');
+    } catch (err) {
+        // User menolak izin recording (ini yang kita inginkan)
+    }
+}
+// Jalankan saat aplikasi dibuka
+window.addEventListener('load', secureScreen);
+    
+    
     window.addEventListener('blur', () => { document.body.classList.add('blur-mode'); });
     window.addEventListener('focus', () => { document.body.classList.remove('blur-mode'); });
 
