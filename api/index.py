@@ -20,106 +20,95 @@ def index():
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
+        # --- FIX 1: Definisikan variabel yang dipanggil di prompt ---
+        user_name = "nanas" 
+        current_date = datetime.now().strftime("%d %B %Y")
+        
         data = request.json
         user_input = data.get("message", "")
         user_mode = data.get("mode", "belajar")
-        history = data.get("history", []) # Ini sudah terfilter dari frontend
+        history = data.get("history", [])
 
-        # --- LOGIKA MODE PENCARIAN (STRICT SEARCH) ---
+        # --- LOGIKA MODE PENCARIAN ---
         search_info = ""
         if user_mode == "pencarian":
-            # Di mode ini, AI WAJIB cari internet dulu
             if tavily_client:
-                search_res = tavily_client.search(query=user_input, search_depth="advanced")
-                search_info = " ".join([r.get('content') for r in search_res.get('results', [])])
+                try:
+                    search_res = tavily_client.search(query=user_input, search_depth="advanced")
+                    search_info = " ".join([r.get('content') for r in search_res.get('results', [])])
+                except:
+                    search_info = "Gagal mengambil data internet."
             
-            mode_instruction = r"MODE PENCARIAN AKTIF: Gunakan DATA INTERNET untuk menjawab sedetail mungkin."
+            mode_instruction = "MODE PENCARIAN AKTIF: Gunakan DATA INTERNET untuk menjawab sedetail mungkin."
         
         elif user_mode == "latihan":
-            mode_instruction = r"MODE LATIHAN: Buat kuis 4 pilihan. DILARANG kasih jawaban langsung."
-        else:
-            mode_instruction = r"MODE BELAJAR: Jelaskan materi step-by-step dengan rapi."
-
-        # ... (Sisa logika prompt & Groq sama seperti sebelumnya) ...
-
-        # --- REVISI LOGIKA BEHAVIOR (KETAT) ---
-        if user_mode == "latihan":
             mode_instruction = r"""
 WAJIB: AKTIFKAN AUTO-QUIZ MODE.
-1. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
-2. Ubah soal tersebut menjadi kuis interaktif dengan 4 pilihan (A, B, C, D).
-3. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
-4. Berikan petunjuk (clue) singkat saja.
-5. Gunakan format \ce{...} untuk kimia dan $...$ untuk matematika.
-6. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
-7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
-8. Jika Kakak kasih soal/materi, kamu WAJIB buat kuis 4 pilihan (A, B, C, D).
-9. Salah satu pilihan HARUS jawaban yang benar.
-10. Berikan tantangan, bukan jawaban.
-11. Gunakan \ce{...} dan $...$.
-12. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D.
+1. Jika Kakak memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
+2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
+3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
+4. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D.
+5. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
+6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
+7. Berikan petunjuk (clue) singkat saja.
+8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
 """
         else:
             mode_instruction = r"""
 WAJIB: MODE BELAJAR AKTIF.
-1. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
-2. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
-3. Selesaikan soal secara step-by-step menggunakan LaTeX ($...$).
-4. Gunakan format \ce{...} untuk setiap simbol kimia (Contoh: \ce{H2O}).
-5. Gunakan Bullet Points untuk poin-poin penting.
-6. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
+1. Berikan penjelasan terstruktur menggunakan "---" antar bagian.
+2. Selesaikan soal step-by-step menggunakan LaTeX ($...$).
+3. Gunakan \ce{...} untuk simbol kimia.
+4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
+5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
+6. Gunakan Bullet Points untuk poin-poin penting.
+7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
 """
 
-        system_prompt = rf"""
+        system_prompt = f"""
 Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
 {mode_instruction}
 Hari ini: {current_date}.
 DATA INTERNET: {search_info if search_info else 'Gunakan internal knowledge'}.
 
-ATURAN FORMATTING WAJIB:
-- Gunakan --- untuk membuat garis pemisah antar sub-bab agar rapi.
-- Gunakan **Bold** untuk judul langkah atau poin penting.
-- Semua rumus matematika WAJIB diapit $...$.
-- Semua rumus kimia WAJIB diapit \ce{{...}}.
-- Gunakan bahasa teman sebaya yang suportif dan cerdas.
-- Jika DATA INTERNET tersedia, kamu HARUS merangkumnya menjadi berita yang jelas untuk {user_name}. Jangan bilang "saya tidak tahu".
+ATURAN FORMATTING:
+- Gunakan --- untuk garis pemisah.
+- Rumus matematika diapit $...$.
+- Rumus kimia diapit \\ce{{...}}.
+- Gunakan bahasa teman sebaya yang suportif.
 """
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
         
+        # --- FIX 2: Gunakan model yang lebih stabil untuk akun gratis ---
+        # Llama-3.3-70b sering overload di jam sibuk, 8b-instant jauh lebih lancar
         completion = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant", 
             messages=messages,
-            temperature=0.4 # Suhu lebih rendah agar lebih patuh pada format
+            temperature=0.4
         )
-
- return jsonify({"response": completion.choices[0].message.content})
+        
+        # --- FIX 3: Perbaikan Indentasi Return ---
+        return jsonify({"response": completion.choices[0].message.content})
    
     except Exception as e:
         error_msg = str(e)
-        # Menyamarkan error Rate Limit (429) Groq
+        # Jika error karena API Key kosong
+        if "api_key" in error_msg.lower():
+            return jsonify({"response": "**[SYSTEM ERROR]** API Key belum terpasang di Vercel, Kak."}), 200
+            
+        # Menyamarkan error Rate Limit (429)
         if "429" in error_msg or "rate_limit" in error_msg.lower():
             return jsonify({
                 "response": (
                     "**[WUG SECURE SYSTEM - NOTIFICATION]**\n\n"
-                    "Mohon maaf, Kak. Kuota akses harian untuk sistem AI ERAI telah mencapai batas maksimum (TPD Limit). "
-                    "Hal ini demi menjaga kestabilan server WUG.\n\n"
-                    "Silakan akses kembali dalam **30-60 menit** atau coba lagi besok pagi. "
-                    "Terima kasih atas pengertiannya, Kak! 🚀"
+                    "Mohon maaf, Kak / Kakak. Kuota harian model ini sedang penuh. "
+                    "Reset otomatis terjadi setiap jam 00:00 UTC. Coba lagi sebentar lagi ya! 🚀"
                 )
             }), 200
         
-        # Menyamarkan error teknis lainnya (Error 500/API Down)
-        return jsonify({
-            "response": (
-                "**[SYSTEM ERROR]**\n\n"
-                "Terjadi gangguan pada transmisi data ERAI. Sistem sedang melakukan kalibrasi ulang. "
-                "Coba kirim pesan lagi dalam beberapa saat ya, Kak."
-            )
-        }), 200
-    
-        
-       
+        # Error lainnya (Debug)
+        return jsonify({"response": f"**[SYSTEM ERROR]** Terjadi gangguan: {error_msg}"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
