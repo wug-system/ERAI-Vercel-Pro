@@ -20,7 +20,7 @@ def index():
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
-        # Identitas & Waktu (Dipastikan 2026)
+        # Identitas & Waktu
         user_name = "Admin / 082359161055" 
         current_date = datetime.now().strftime("%d %B %Y")
         
@@ -29,40 +29,43 @@ def chat():
         user_mode = data.get("mode", "belajar")
         history = data.get("history", [])
 
-        # --- LOGIKA MODE PENCARIAN (FIXED: TAHUN 2026) ---
+        # --- LOGIKA MODE PENCARIAN ---
         search_info = ""
         if user_mode == "pencarian":
             if tavily_client:
                 try:
-                    # Inject tahun 2026 ke query pencarian agar akurat
                     search_res = tavily_client.search(query=f"{user_input} tahun 2026", search_depth="advanced")
                     search_info = " ".join([r.get('content') for r in search_res.get('results', [])])
                 except:
                     search_info = "Gagal mengambil data internet."
-            mode_instruction = f"MODE PENCARIAN AKTIF: Gunakan DATA INTERNET. Wajib fokus pada kalender/info tahun 2026."
+            mode_instruction = "MODE PENCARIAN AKTIF: Gunakan DATA INTERNET. Wajib fokus pada kalender/info tahun 2026."
         
+        # --- LOGIKA MODE LATIHAN (KUIS 1-8) ---
         elif user_mode == "latihan":
-            mode_instruction = 
-            "WAJIB: AKTIFKAN AUTO-QUIZ MODE. Berikan 4 pilihan A, B, C, D. Jangan beri jawaban langsung."
-            "1. Jika Kakak memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG."
-            "2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D)."
-            "3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika."
-            "4. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D."
-            "5. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG."
-            "6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR."
-            "7. Berikan petunjuk (clue) singkat saja."
-            "8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi."
+            mode_instruction = r"""
+WAJIB: AKTIFKAN AUTO-QUIZ MODE. Berikan 4 pilihan A, B, C, D. Jangan beri jawaban langsung.
+1. Jika Kakak memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
+2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
+3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
+4. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D.
+5. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
+6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
+7. Berikan petunjuk (clue) singkat saja.
+8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
+"""
         
+        # --- LOGIKA MODE BELAJAR (STEP-BY-STEP 1-7) ---
         else:
-            mode_instruction =
-            "WAJIB: MODE BELAJAR AKTIF. Berikan penjelasan step-by-step yang rapi dengan LaTeX."
-            "1. Berikan penjelasan terstruktur menggunakan "---" antar bagian."
-            "2. Selesaikan soal step-by-step menggunakan LaTeX ($...$)."
-            "3. Gunakan \ce{...} untuk simbol kimia."
-            "4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam."
-            "5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk."
-            "6. Gunakan Bullet Points untuk poin-poin penting."
-            "7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat."
+            mode_instruction = r"""
+WAJIB: MODE BELAJAR AKTIF. Berikan penjelasan step-by-step yang rapi dengan LaTeX.
+1. Berikan penjelasan terstruktur menggunakan "---" antar bagian.
+2. Selesaikan soal step-by-step menggunakan LaTeX ($...$).
+3. Gunakan \ce{...} untuk simbol kimia.
+4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
+5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
+6. Gunakan Bullet Points untuk poin-poin penting.
+7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
+"""
 
         system_prompt = f"""
 Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
@@ -79,7 +82,7 @@ ATURAN FORMATTING:
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
         
-        # Menggunakan model stabil (Non-Streaming untuk Copy-Paste lancar)
+        # Eksekusi Model
         completion = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,
