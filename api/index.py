@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify
 from groq import Groq
 from tavily import TavilyClient
 import os
@@ -21,7 +21,7 @@ def index():
 def chat():
     try:
         # --- FIX 1: Definisikan variabel yang dipanggil di prompt ---
-        user_name = "Kakak / Kak" 
+        user_name = "nanas" 
         current_date = datetime.now().strftime("%d %B %Y")
         
         data = request.json
@@ -34,37 +34,36 @@ def chat():
         if user_mode == "pencarian":
             if tavily_client:
                 try:
-                    search_res = tavily_client.search(query=user_input, search_depth="advance")
+                    search_res = tavily_client.search(query=user_input, search_depth="basic")
                     search_info = " ".join([r.get('content') for r in search_res.get('results', [])])
                 except:
                     search_info = "Gagal mengambil data internet."
             
             mode_instruction = "MODE PENCARIAN AKTIF: Gunakan DATA INTERNET untuk menjawab sedetail mungkin."
         
-        
         elif user_mode == "latihan":
             mode_instruction = r"""
-            WAJIB: AKTIFKAN AUTO-QUIZ MODE.
-            1. Jika Kakak memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
-            2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
-            3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
-            4. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D.
-            5. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
-            6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
-            7. Berikan petunjuk (clue) singkat saja.
-            8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
-            """
+WAJIB: AKTIFKAN AUTO-QUIZ MODE.
+1. Jika Kakak memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
+2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
+3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
+4. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D.
+5. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
+6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
+7. Berikan petunjuk (clue) singkat saja.
+8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
+"""
         else:
             mode_instruction = r"""
-            WAJIB: MODE BELAJAR AKTIF.
-            1. Berikan penjelasan terstruktur menggunakan "---" antar bagian.
-            2. Selesaikan soal step-by-step menggunakan LaTeX ($...$).
-            3. Gunakan \ce{...} untuk simbol kimia.
-            4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
-            5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
-            6. Gunakan Bullet Points untuk poin-poin penting.
-            7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
-            """
+WAJIB: MODE BELAJAR AKTIF.
+1. Berikan penjelasan terstruktur menggunakan "---" antar bagian.
+2. Selesaikan soal step-by-step menggunakan LaTeX ($...$).
+3. Gunakan \ce{...} untuk simbol kimia.
+4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
+5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
+6. Gunakan Bullet Points untuk poin-poin penting.
+7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
+"""
 
         system_prompt = f"""
 Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
@@ -79,31 +78,19 @@ ATURAN FORMATTING:
 - Gunakan bahasa teman sebaya yang suportif.
 """
 
-# --- POTONGAN YANG DIEDIT (HANYA BAGIAN GENERATE) ---
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
-
-        def generate():
-            try:
-                # Tambahkan stream=True di sini
-                completion = groq_client.chat.completions.create(
-                    model="llama-3.1-8b-instant",
-                    messages=messages,
-                    temperature=0.4,
-                    stream=True 
-                )
-                
-                for chunk in completion:
-                    if chunk.choices[0].delta.content:
-                        # Kirim data kata demi kata
-                        yield chunk.choices[0].delta.content
-            except Exception as e:
-                yield f"**[SYSTEM ERROR]** Terjadi gangguan: {str(e)}"
         
-        # Return Response SEJAJAR dengan def generate
-        return Response(generate(), mimetype='text/plain')
-        # --- AKHIR POTONGAN ---
+        # --- FIX 2: Gunakan model yang lebih stabil untuk akun gratis ---
+        # Llama-3.3-70b sering overload di jam sibuk, 8b-instant jauh lebih lancar
+        completion = groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant", 
+            messages=messages,
+            temperature=0.4
+        )
         
-       
+        # --- FIX 3: Perbaikan Indentasi Return ---
+        return jsonify({"response": completion.choices[0].message.content})
+   
     except Exception as e:
         error_msg = str(e)
         # Jika error karena API Key kosong
@@ -119,7 +106,6 @@ ATURAN FORMATTING:
                     "Reset otomatis terjadi setiap jam 00:00 UTC. Coba lagi sebentar lagi ya! 🚀"
                 )
             }), 200
-
         
         # Error lainnya (Debug)
         return jsonify({"response": f"**[SYSTEM ERROR]** Terjadi gangguan: {error_msg}"}), 200
