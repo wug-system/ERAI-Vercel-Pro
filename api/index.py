@@ -56,13 +56,13 @@ def chat():
         else:
             mode_instruction =
             "WAJIB: MODE BELAJAR AKTIF. Berikan penjelasan step-by-step yang rapi dengan LaTeX."
-            "1. Berikan penjelasan terstruktur menggunakan "---" antar bagian.
-            "2. Selesaikan soal step-by-step menggunakan LaTeX ($...$).
-            "3. Gunakan \ce{...} untuk simbol kimia.
-            "4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
-            "5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
-            "6. Gunakan Bullet Points untuk poin-poin penting.
-            "7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
+            "1. Berikan penjelasan terstruktur menggunakan "---" antar bagian."
+            "2. Selesaikan soal step-by-step menggunakan LaTeX ($...$)."
+            "3. Gunakan \ce{...} untuk simbol kimia."
+            "4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam."
+            "5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk."
+            "6. Gunakan Bullet Points untuk poin-poin penting."
+            "7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat."
 
         system_prompt = f"""
 Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
