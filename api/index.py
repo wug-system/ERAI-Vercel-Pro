@@ -34,7 +34,7 @@ def chat():
         if user_mode == "pencarian":
             if tavily_client:
                 try:
-                    search_res = tavily_client.search(query=user_input, search_depth="advanced")
+                    search_res = tavily_client.search(query=user_input, search_depth="basic")
                     search_info = " ".join([r.get('content') for r in search_res.get('results', [])])
                 except:
                     search_info = "Gagal mengambil data internet."
