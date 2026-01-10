@@ -1,4 +1,4 @@
-from flask import Response
+from flask import Flask, render_template, request, jsonify, Response
 from groq import Groq
 from tavily import TavilyClient
 import os
@@ -88,6 +88,24 @@ ATURAN FORMATTING:
             messages=messages,
             temperature=0.4
         )
+       
+   
+    except Exception as e:
+        error_msg = str(e)
+        # Jika error karena API Key kosong
+        if "api_key" in error_msg.lower():
+            return jsonify({"response": "**[SYSTEM ERROR]** API Key belum terpasang di Vercel, Kak."}), 200
+            
+        # Menyamarkan error Rate Limit (429)
+        if "429" in error_msg or "rate_limit" in error_msg.lower():
+            return jsonify({
+                "response": (
+                    "**[WUG SECURE SYSTEM - NOTIFICATION]**\n\n"
+                    "Mohon maaf, Kak / Kakak. Kuota harian model ini sedang penuh. "
+                    "Reset otomatis terjadi setiap jam 00:00 UTC. Coba lagi sebentar lagi ya! 🚀"
+                )
+            }), 200
+
 
 
 def generate():
@@ -110,24 +128,6 @@ def generate():
     return Response(generate(), mimetype='text/plain')
         
         
-        # --- FIX 3: Perbaikan Indentasi Return ---
-        return jsonify({"response": completion.choices[0].message.content})
-   
-    except Exception as e:
-        error_msg = str(e)
-        # Jika error karena API Key kosong
-        if "api_key" in error_msg.lower():
-            return jsonify({"response": "**[SYSTEM ERROR]** API Key belum terpasang di Vercel, Kak."}), 200
-            
-        # Menyamarkan error Rate Limit (429)
-        if "429" in error_msg or "rate_limit" in error_msg.lower():
-            return jsonify({
-                "response": (
-                    "**[WUG SECURE SYSTEM - NOTIFICATION]**\n\n"
-                    "Mohon maaf, Kak / Kakak. Kuota harian model ini sedang penuh. "
-                    "Reset otomatis terjadi setiap jam 00:00 UTC. Coba lagi sebentar lagi ya! 🚀"
-                )
-            }), 200
         
         # Error lainnya (Debug)
         return jsonify({"response": f"**[SYSTEM ERROR]** Terjadi gangguan: {error_msg}"}), 200
