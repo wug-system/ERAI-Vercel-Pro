@@ -79,42 +79,31 @@ ATURAN FORMATTING:
 - Gunakan bahasa teman sebaya yang suportif.
 """
 
+# --- POTONGAN YANG DIEDIT (HANYA BAGIAN GENERATE) ---
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
+
+        def generate():
+            try:
+                # Tambahkan stream=True di sini
+                completion = groq_client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=messages,
+                    temperature=0.4,
+                    stream=True 
+                )
+                
+                for chunk in completion:
+                    if chunk.choices[0].delta.content:
+                        # Kirim data kata demi kata
+                        yield chunk.choices[0].delta.content
+            except Exception as e:
+                yield f"**[SYSTEM ERROR]** Terjadi gangguan: {str(e)}"
         
-        # --- FIX 2: Gunakan model yang lebih stabil untuk akun gratis ---
-        # Llama-3.3-70b sering overload di jam sibuk, 8b-instant jauh lebih lancar
-            model="llama-3.1-8b-instant", 
-            messages=messages,
-            temperature=0.4
-        )
-
-
-
-
-def generate():
-        try:
-            # Tambahkan stream=True di sini
-            completion = groq_client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=messages,
-                temperature=0.4,
-                stream=True 
-            )
-            
-            for chunk in completion:
-                if chunk.choices[0].delta.content:
-                    # Kirim data kata demi kata
-                    yield chunk.choices[0].delta.content
-        except Exception as e:
-            yield f"**[SYSTEM ERROR]** Terjadi gangguan: {str(e)}"
-
-    return Response(generate(), mimetype='text/plain')
+        # Return Response SEJAJAR dengan def generate
+        return Response(generate(), mimetype='text/plain')
+        # --- AKHIR POTONGAN ---
         
        
-
-    
-       
-   
     except Exception as e:
         error_msg = str(e)
         # Jika error karena API Key kosong
