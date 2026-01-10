@@ -21,7 +21,7 @@ def index():
 def chat():
     try:
         # --- FIX 1: Definisikan variabel yang dipanggil di prompt ---
-        user_name = "nanas" 
+        user_name = "Kakak / Kak" 
         current_date = datetime.now().strftime("%d %B %Y")
         
         data = request.json
@@ -67,7 +67,7 @@ def chat():
             """
 
         system_prompt = f"""
-Nama kamu ERAI, Tutor Sebaya WUG untuk {Kak / Kakak}.
+Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
 {mode_instruction}
 Hari ini: {current_date}.
 DATA INTERNET: {search_info if search_info else 'Gunakan internal knowledge'}.
@@ -83,28 +83,11 @@ ATURAN FORMATTING:
         
         # --- FIX 2: Gunakan model yang lebih stabil untuk akun gratis ---
         # Llama-3.3-70b sering overload di jam sibuk, 8b-instant jauh lebih lancar
-        completion = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant", 
             messages=messages,
             temperature=0.4
         )
-       
-   
-    except Exception as e:
-        error_msg = str(e)
-        # Jika error karena API Key kosong
-        if "api_key" in error_msg.lower():
-            return jsonify({"response": "**[SYSTEM ERROR]** API Key belum terpasang di Vercel, Kak."}), 200
-            
-        # Menyamarkan error Rate Limit (429)
-        if "429" in error_msg or "rate_limit" in error_msg.lower():
-            return jsonify({
-                "response": (
-                    "**[WUG SECURE SYSTEM - NOTIFICATION]**\n\n"
-                    "Mohon maaf, Kak / Kakak. Kuota harian model ini sedang penuh. "
-                    "Reset otomatis terjadi setiap jam 00:00 UTC. Coba lagi sebentar lagi ya! 🚀"
-                )
-            }), 200
+
 
 
 
@@ -127,7 +110,27 @@ def generate():
 
     return Response(generate(), mimetype='text/plain')
         
-        
+       
+
+    
+       
+   
+    except Exception as e:
+        error_msg = str(e)
+        # Jika error karena API Key kosong
+        if "api_key" in error_msg.lower():
+            return jsonify({"response": "**[SYSTEM ERROR]** API Key belum terpasang di Vercel, Kak."}), 200
+            
+        # Menyamarkan error Rate Limit (429)
+        if "429" in error_msg or "rate_limit" in error_msg.lower():
+            return jsonify({
+                "response": (
+                    "**[WUG SECURE SYSTEM - NOTIFICATION]**\n\n"
+                    "Mohon maaf, Kak / Kakak. Kuota harian model ini sedang penuh. "
+                    "Reset otomatis terjadi setiap jam 00:00 UTC. Coba lagi sebentar lagi ya! 🚀"
+                )
+            }), 200
+
         
         # Error lainnya (Debug)
         return jsonify({"response": f"**[SYSTEM ERROR]** Terjadi gangguan: {error_msg}"}), 200
