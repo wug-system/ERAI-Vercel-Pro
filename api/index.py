@@ -92,31 +92,23 @@ ATURAN FORMATTING WAJIB:
             messages=messages,
             temperature=0.4 # Suhu lebih rendah agar lebih patuh pada format
         )
+
+# GANTI BAGIAN INI UNTUK TESTING
+try:
+    completion = groq_client.chat.completions.create(
+        model="llama-3.1-8b-instant", # Pakai yang ringan dulu
+        messages=messages,
+        temperature=0.5
+    )
+    return jsonify({"response": completion.choices[0].message.content})
+
+except Exception as e:
+    # SEMENTARA: Biar kita tahu error aslinya apa, jangan disamarkan dulu
+    return jsonify({"response": f"DEBUG ERROR: {str(e)}"}), 200
+
+    
         
-        return jsonify({"response": completion.choices[0].message.content})
-   
-    except Exception as e:
-        error_msg = str(e)
-        # Menyamarkan error Rate Limit (429) Groq
-        if "429" in error_msg or "rate_limit" in error_msg.lower():
-            return jsonify({
-                "response": (
-                    "**[WUG SECURE SYSTEM - NOTIFICATION]**\n\n"
-                    "Mohon maaf, Kak. Kuota akses harian untuk sistem AI ERAI telah mencapai batas maksimum (TPD Limit). "
-                    "Hal ini demi menjaga kestabilan server WUG.\n\n"
-                    "Silakan akses kembali dalam **30-60 menit** atau coba lagi besok pagi. "
-                    "Terima kasih atas pengertiannya, Kak! 🚀"
-                )
-            }), 200
-        
-        # Menyamarkan error teknis lainnya (Error 500/API Down)
-        return jsonify({
-            "response": (
-                "**[SYSTEM ERROR]**\n\n"
-                "Terjadi gangguan pada transmisi data ERAI. Sistem sedang melakukan kalibrasi ulang. "
-                "Coba kirim pesan lagi dalam beberapa saat ya, Kak."
-            )
-        }), 200
+       
 
 if __name__ == '__main__':
     app.run(debug=True)
