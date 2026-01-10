@@ -474,23 +474,17 @@ window.addEventListener('load', secureScreen);
         }
     }
 
-   // --- BAGIAN VARIABEL GLOBAL (WAJIB ADA) ---
-let currentMode = "belajar"; // Default mode
-let chatHistory = []; // Untuk menyimpan memori chat
+let chatHistory = [];
+let currentMode = "belajar"; // Pastikan ada tombol yang bisa ganti mode ini
 
-// Fungsi untuk kirim pesan
 async function handleSend() {
     const inputField = document.getElementById('user-input');
     const message = inputField.value.trim();
-    
     if (!message) return;
 
-    // 1. Tampilkan pesan user di layar
+    // Tampilkan pesan user
     appendMessage('user', message);
     inputField.value = '';
-
-    // 2. Tampilkan status loading
-    const loadingId = appendMessage('bot', 'ERAI sedang mengetik...');
 
     try {
         const response = await fetch('/chat', {
@@ -504,42 +498,21 @@ async function handleSend() {
         });
 
         const data = await response.json();
-        
-        // 3. Hapus loading dan tampilkan jawaban
-        const loadingElement = document.getElementById(loadingId);
-        if (loadingElement) loadingElement.remove();
-
         appendMessage('bot', data.response);
 
-        // 4. Update History (Agar ERAI ingat chat sebelumnya)
+        // Update Memori
         chatHistory.push({ role: "user", content: message });
         chatHistory.push({ role: "assistant", content: data.response });
 
     } catch (error) {
-        console.error("Error:", error);
-        appendMessage('bot', "**[SYSTEM ERROR]** Gagal terhubung ke server WUG.");
+        appendMessage('bot', "**[SYSTEM ERROR]** Koneksi terputus.");
     }
 }
 
-// --- FUNGSI ENTER (Agar bisa kirim pakai keyboard) ---
+// Supaya Enter bisa kirim pesan
 document.getElementById('user-input').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        handleSend();
-    }
+    if (e.key === 'Enter') handleSend();
 });
-
-// Fungsi pembantu (Pastikan Kakak punya fungsi appendMessage)
-function appendMessage(role, text) {
-    const container = document.getElementById('chat-container');
-    const msgId = 'msg-' + Date.now();
-    const div = document.createElement('div');
-    div.id = msgId;
-    div.className = role === 'user' ? 'user-msg' : 'bot-msg';
-    div.innerHTML = text; // Jika pakai Markdown/LaTeX, proses di sini
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-    return msgId;
-}
 
     document.getElementById("userInput").addEventListener("keydown", (e) => { if (e.key === "Enter") handleSend(); });
 </script>
