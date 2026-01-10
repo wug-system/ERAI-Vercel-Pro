@@ -474,68 +474,42 @@ window.addEventListener('load', secureScreen);
         }
     }
 
-    async function handleSend() {
-    if (isSending) return;
-    const inputField = document.getElementById('userInput');
-    const msg = inputField.value.trim();
-    if (!msg) return;
+   async function handleSend() {
+    const inputField = document.getElementById('user-input');
+    const message = inputField.value.trim();
+    if (!message) return;
 
-    displayMessage("user", msg);
+    // Tampilkan pesan user
+    appendMessage('user', message);
     inputField.value = '';
-    isSending = true;
-    
-    // Tampilkan bubble kosong untuk ERAI yang nanti akan diisi teks streaming
-    const chatArea = document.getElementById('chat-area');
-    const row = document.createElement('div');
-    row.className = 'erai-row';
-    row.innerHTML = `
-        <div class="bubble erai-bubble">
-            <div class="tex2jax_process" id="current-streaming-text">...</div>
-        </div>`;
-    chatArea.appendChild(row);
-    const streamingDiv = document.getElementById('current-streaming-text');
+
+    // Tampilkan loading sederhana jika perlu
+    const loadingId = appendMessage('bot', 'ERAI sedang berpikir...');
 
     try {
         const response = await fetch('/chat', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ message: msg, mode: currentMode, history: allSessions[currentMode] })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: message,
+                mode: currentMode, // Pastikan variabel ini ada di JS Kakak
+                history: chatHistory // Pastikan variabel ini ada di JS Kakak
+            })
         });
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullResponse = "";
-        streamingDiv.innerText = ""; // Hapus teks "..."
-
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            
-            const chunk = decoder.decode(value, { stream: true });
-            fullResponse += chunk;
-            
-            // Render Markdown secara real-time (opsional, atau render di akhir)
-            streamingDiv.innerHTML = marked.parse(fullResponse);
-            
-            // Scroll otomatis ke bawah
-            chatArea.scrollTop = chatArea.scrollHeight;
-        }
-
-        // Simpan ke history setelah selesai
-        allSessions[currentMode].push({"role": "user", "content": msg}, {"role": "assistant", "content": fullResponse});
+        const data = await response.json();
         
-        // Re-render MathJax untuk rumus matematika
-        if (window.MathJax) MathJax.typesetPromise([streamingDiv]);
-        
-        // ID direset agar chat berikutnya nggak numpuk di div yang sama
-        streamingDiv.removeAttribute('id');
-        playSfx('receive');
+        // Hapus teks loading dan ganti dengan jawaban asli
+        removeMessage(loadingId); 
+        appendMessage('bot', data.response);
 
-    } catch (e) {
-        playSfx('error');
-        showWugToast("Koneksi Terputus!", '❌');
-    } finally {
-        isSending = false;
+        // Update history untuk memori chat
+        chatHistory.push({ role: "user", content: message });
+        chatHistory.push({ role: "assistant", content: data.response });
+
+    } catch (error) {
+        removeMessage(loadingId);
+        appendMessage('bot', "**[SYSTEM ERROR]** Gagal terhubung ke server.");
     }
 }
 
