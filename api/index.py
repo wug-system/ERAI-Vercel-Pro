@@ -44,30 +44,30 @@ def chat():
         
         elif user_mode == "latihan":
             mode_instruction = r"""
-WAJIB: AKTIFKAN AUTO-QUIZ MODE.
-1. Jika Kakak memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
-2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
-3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
-4. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D.
-5. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
-6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
-7. Berikan petunjuk (clue) singkat saja.
-8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
-"""
+            WAJIB: AKTIFKAN AUTO-QUIZ MODE.
+            1. Jika Kakak memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
+            2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
+            3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
+            4. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D.
+            5. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
+            6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
+            7. Berikan petunjuk (clue) singkat saja.
+            8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
+            """
         else:
             mode_instruction = r"""
-WAJIB: MODE BELAJAR AKTIF.
-1. Berikan penjelasan terstruktur menggunakan "---" antar bagian.
-2. Selesaikan soal step-by-step menggunakan LaTeX ($...$).
-3. Gunakan \ce{...} untuk simbol kimia.
-4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
-5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
-6. Gunakan Bullet Points untuk poin-poin penting.
-7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
-"""
+            WAJIB: MODE BELAJAR AKTIF.
+            1. Berikan penjelasan terstruktur menggunakan "---" antar bagian.
+            2. Selesaikan soal step-by-step menggunakan LaTeX ($...$).
+            3. Gunakan \ce{...} untuk simbol kimia.
+            4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
+            5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
+            6. Gunakan Bullet Points untuk poin-poin penting.
+            7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
+            """
 
         system_prompt = f"""
-Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
+Nama kamu ERAI, Tutor Sebaya WUG untuk {Kak / Kakak}.
 {mode_instruction}
 Hari ini: {current_date}.
 DATA INTERNET: {search_info if search_info else 'Gunakan internal knowledge'}.
