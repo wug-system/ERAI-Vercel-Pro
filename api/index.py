@@ -1,30 +1,4 @@
-from flask import Response # Tambahkan import Response di paling atas
-
-@app.route('/chat', methods=['POST'])
-def chat():
-    # ... (Semua logika search_info dan prompt tetap SAMA seperti sebelumnya) ...
-    
-    def generate():
-        try:
-            # Tambahkan stream=True di sini
-            completion = groq_client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=messages,
-                temperature=0.4,
-                stream=True 
-            )
-            
-            for chunk in completion:
-                if chunk.choices[0].delta.content:
-                    # Kirim data kata demi kata
-                    yield chunk.choices[0].delta.content
-        except Exception as e:
-            yield f"**[SYSTEM ERROR]** Terjadi gangguan: {str(e)}"
-
-    return Response(generate(), mimetype='text/plain')
-
-
-from flask import Flask, render_template, request, jsonify
+from flask import Response
 from groq import Groq
 from tavily import TavilyClient
 import os
@@ -66,6 +40,26 @@ def chat():
                     search_info = "Gagal mengambil data internet."
             
             mode_instruction = "MODE PENCARIAN AKTIF: Gunakan DATA INTERNET untuk menjawab sedetail mungkin."
+
+def generate():
+        try:
+            # Tambahkan stream=True di sini
+            completion = groq_client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=messages,
+                temperature=0.4,
+                stream=True 
+            )
+            
+            for chunk in completion:
+                if chunk.choices[0].delta.content:
+                    # Kirim data kata demi kata
+                    yield chunk.choices[0].delta.content
+        except Exception as e:
+            yield f"**[SYSTEM ERROR]** Terjadi gangguan: {str(e)}"
+
+    return Response(generate(), mimetype='text/plain')
+        
         
         elif user_mode == "latihan":
             mode_instruction = r"""
