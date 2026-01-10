@@ -6,7 +6,7 @@ from datetime import datetime
 
 app = Flask(__name__, template_folder='../templates')
 
-# Proteksi API Key
+# --- WUG SECURE SYSTEM - API PROTECTION ---
 GROQ_KEY = os.environ.get("GROQ_API_KEY")
 TAVILY_KEY = os.environ.get("TAVILY_API_KEY")
 
@@ -42,8 +42,7 @@ def chat():
         
         # --- LOGIKA MODE LATIHAN (KUIS 1-8) ---
         elif user_mode == "latihan":
-            mode_instruction = r"""
-WAJIB: AKTIFKAN AUTO-QUIZ MODE. Berikan 4 pilihan A, B, C, D. Jangan beri jawaban langsung.
+            mode_instruction = r"""WAJIB: AKTIFKAN AUTO-QUIZ MODE.
 1. Jika Kakak memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
 2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
 3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
@@ -51,38 +50,27 @@ WAJIB: AKTIFKAN AUTO-QUIZ MODE. Berikan 4 pilihan A, B, C, D. Jangan beri jawaba
 5. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
 6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
 7. Berikan petunjuk (clue) singkat saja.
-8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
-"""
+8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi."""
         
         # --- LOGIKA MODE BELAJAR (STEP-BY-STEP 1-7) ---
         else:
-            mode_instruction = r"""
-WAJIB: MODE BELAJAR AKTIF. Berikan penjelasan step-by-step yang rapi dengan LaTeX.
+            mode_instruction = r"""WAJIB: MODE BELAJAR AKTIF.
 1. Berikan penjelasan terstruktur menggunakan "---" antar bagian.
 2. Selesaikan soal step-by-step menggunakan LaTeX ($...$).
 3. Gunakan \ce{...} untuk simbol kimia.
 4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
 5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
 6. Gunakan Bullet Points untuk poin-poin penting.
-7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
-"""
+7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat."""
 
-        system_prompt = f"""
-Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
+        system_prompt = f"""Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
 {mode_instruction}
 PENTING: Hari ini adalah {current_date}. Semua jawaban harus berbasis tahun 2026.
 DATA INTERNET: {search_info if search_info else 'Gunakan internal knowledge 2026'}.
-
-ATURAN FORMATTING:
-- Gunakan --- untuk garis pemisah.
-- Rumus matematika diapit $...$.
-- Rumus kimia diapit \\ce{{...}}.
-- Gunakan bahasa teman sebaya yang suportif.
-"""
+ATURAN FORMATTING: Gunakan --- untuk garis pemisah, $...$ untuk matematika, dan bahasa suportif."""
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
         
-        # Eksekusi Model
         completion = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,
@@ -94,9 +82,7 @@ ATURAN FORMATTING:
     except Exception as e:
         error_msg = str(e)
         if "429" in error_msg or "rate_limit" in error_msg.lower():
-            return jsonify({
-                "response": "**[WUG SECURE SYSTEM - NOTIFICATION]**\n\nKuota harian model penuh. Coba lagi nanti ya! 🚀"
-            }), 200
+            return jsonify({"response": "**[WUG SECURE SYSTEM - NOTIFICATION]**\n\nMohon maaf, Admin. Kuota harian model penuh. Reset pada 00:00 UTC. 🚀"}), 200
         return jsonify({"response": f"**[SYSTEM ERROR]** Terjadi gangguan: {error_msg}"}), 200
 
 if __name__ == '__main__':
