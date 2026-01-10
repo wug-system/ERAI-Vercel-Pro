@@ -40,25 +40,6 @@ def chat():
                     search_info = "Gagal mengambil data internet."
             
             mode_instruction = "MODE PENCARIAN AKTIF: Gunakan DATA INTERNET untuk menjawab sedetail mungkin."
-
-def generate():
-        try:
-            # Tambahkan stream=True di sini
-            completion = groq_client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=messages,
-                temperature=0.4,
-                stream=True 
-            )
-            
-            for chunk in completion:
-                if chunk.choices[0].delta.content:
-                    # Kirim data kata demi kata
-                    yield chunk.choices[0].delta.content
-        except Exception as e:
-            yield f"**[SYSTEM ERROR]** Terjadi gangguan: {str(e)}"
-
-    return Response(generate(), mimetype='text/plain')
         
         
         elif user_mode == "latihan":
@@ -107,6 +88,27 @@ ATURAN FORMATTING:
             messages=messages,
             temperature=0.4
         )
+
+
+def generate():
+        try:
+            # Tambahkan stream=True di sini
+            completion = groq_client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=messages,
+                temperature=0.4,
+                stream=True 
+            )
+            
+            for chunk in completion:
+                if chunk.choices[0].delta.content:
+                    # Kirim data kata demi kata
+                    yield chunk.choices[0].delta.content
+        except Exception as e:
+            yield f"**[SYSTEM ERROR]** Terjadi gangguan: {str(e)}"
+
+    return Response(generate(), mimetype='text/plain')
+        
         
         # --- FIX 3: Perbaikan Indentasi Return ---
         return jsonify({"response": completion.choices[0].message.content})
