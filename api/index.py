@@ -20,7 +20,7 @@ def index():
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
-        user_name = "Admin / 082359161055" 
+        user_name = "Kakak / Kak" 
         current_date = datetime.now().strftime("%d %B %Y")
         data = request.json
         user_input = data.get("message", "")
