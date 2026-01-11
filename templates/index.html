@@ -9,7 +9,7 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <style>
-        :root { --wug-purple: #6c5ce7; --wug-gradient: linear-gradient(-45deg, #a8edea, #fed6e3, #d291ff, #84fab0); }
+        :root { --wug-purple: #6c5ce7; }
         
         @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -18,36 +18,37 @@
         
         body { 
             margin: 0; padding: 0; font-family: 'Inter', sans-serif; 
-            background: var(--wug-gradient); background-size: 400% 400%; animation: gradientMove 15s ease infinite;
-            height: 100vh; height: 100dvh; display: flex; justify-content: center; overflow: hidden;
+            background: linear-gradient(-45deg, #a8edea, #fed6e3, #d291ff, #84fab0);
+            background-size: 400% 400%; animation: gradientMove 15s ease infinite;
+            height: 100vh; height: 100dvh; overflow: hidden;
+            display: flex; justify-content: center;
         }
 
-        /* Security Blur */
-        body.blur-mode .app-container { filter: blur(25px); transition: filter 0.2s ease; }
+        body.blur-mode .app-container { filter: blur(20px); }
 
-        /* Container: Lebar di desktop, Full di mobile */
+        /* UI GANTENG - GLASSMORPHISM */
         .app-container {
-            width: 95%; max-width: 850px; height: 90vh; height: 90dvh; align-self: center;
+            width: 95%; max-width: 850px; height: 95vh; height: 95dvh;
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 24px;
-            display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; align-self: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); position: relative; overflow: hidden;
         }
 
-        header { padding: 15px 20px; background: rgba(255, 255, 255, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
+        header { padding: 15px 20px; background: rgba(255, 255, 255, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.2); flex-shrink: 0; }
         .mode-selector { display: flex; gap: 8px; margin-top: 10px; }
         .mode-selector button {
-            flex: 1; padding: 10px; border: 1px solid rgba(255,255,255,0.5); border-radius: 12px;
+            flex: 1; padding: 10px; border: 1px solid rgba(255,255,255,0.4); border-radius: 12px;
             background: rgba(255,255,255,0.2); cursor: pointer; font-size: 0.75rem; font-weight: 700; transition: 0.3s;
         }
         .mode-selector button.active { background: var(--wug-purple); color: white; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3); }
 
         #chat-area { 
-            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; 
-            scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.1) transparent;
+            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;
+            padding-bottom: 100px; /* Ruang agar chat tidak tertutup input */
         }
 
-        /* Bubbles & Formatting */
+        /* Bubbles */
         .bubble { 
             max-width: 85%; padding: 14px 18px; border-radius: 20px; font-size: 0.95rem; line-height: 1.6; 
             white-space: pre-wrap; word-wrap: break-word; overflow-wrap: anywhere;
@@ -58,21 +59,23 @@
         .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 4px; color: #333; }
         .bot-bubble { align-self: flex-start; background: rgba(108, 92, 231, 0.1); border: 1px solid rgba(108, 92, 231, 0.2); border-bottom-left-radius: 4px; }
 
-        /* Multi-line Input Box */
+        /* INPUT AREA - DITAHAN DI ATAS KEYBOARD */
         .input-box { 
-            padding: 15px 20px; background: rgba(255, 255, 255, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.3);
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            padding: 15px 20px; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
             display: flex; gap: 10px; align-items: flex-end;
         }
 
         .input-wrapper {
-            flex: 1; background: rgba(255, 255, 255, 0.6); border-radius: 18px; padding: 8px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.8); display: flex; align-items: flex-end;
+            flex: 1; background: white; border-radius: 18px; padding: 8px 15px;
+            border: 1px solid rgba(108, 92, 231, 0.3); display: flex;
         }
 
         #userInput {
             width: 100%; border: none; background: transparent; outline: none;
-            font-size: 1rem; font-family: inherit; resize: none; max-height: 150px;
-            padding: 5px 0; line-height: 1.4;
+            font-size: 1rem; font-family: inherit; resize: none; max-height: 120px;
+            padding: 5px 0; line-height: 1.4; color: #333;
         }
 
         .send-btn {
@@ -81,18 +84,18 @@
             flex-shrink: 0; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
         }
 
-        /* ERAI Sedang Berpikir Overlay */
+        /* LOADING OVERLAY GANTENG */
         #loading-overlay {
             position: absolute; inset: 0; background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
+            backdrop-filter: blur(15px); display: none; flex-direction: column; 
+            justify-content: center; align-items: center; z-index: 999;
         }
         #loading-overlay.active { display: flex; }
         .spinner { border: 4px solid rgba(108, 92, 231, 0.1); border-top: 4px solid var(--wug-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        .loading-text { margin-top: 15px; font-weight: 700; color: var(--wug-purple); font-size: 0.9rem; letter-spacing: 1px; }
+        .loading-text { margin-top: 15px; font-weight: 800; color: var(--wug-purple); font-size: 0.85rem; letter-spacing: 2px; }
 
         @media (max-width: 600px) {
-            .app-container { width: 100%; height: 100vh; height: 100dvh; border-radius: 0; border: none; }
+            .app-container { width: 100%; height: 100%; border-radius: 0; border: none; }
             .input-box { padding-bottom: max(15px, env(safe-area-inset-bottom)); }
         }
     </style>
@@ -108,7 +111,7 @@
     <header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <b style="color: #444; font-size: 1.1rem;">🤖 ERAI | WUG SECURE</b>
-            <div style="font-size: 0.6rem; background: rgba(108, 92, 231, 0.2); padding: 4px 8px; border-radius: 10px; color: var(--wug-purple);">v2.6 PROTECTED</div>
+            <div style="font-size: 0.6rem; background: rgba(108, 92, 231, 0.2); padding: 4px 8px; border-radius: 10px; color: var(--wug-purple);">ADMIN MODE</div>
         </div>
         <div class="mode-selector">
             <button onclick="setMode('belajar', this)" class="active">Mode Belajar</button>
@@ -119,7 +122,7 @@
 
     <div id="chat-area"></div>
 
-    <div class="input-box">
+    <div class="input-box" id="dynamicInput">
         <div class="input-wrapper">
             <textarea id="userInput" placeholder="Tulis pesan..." rows="1" oninput="autoHeight(this)"></textarea>
         </div>
@@ -135,13 +138,28 @@
         send: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3')
     };
 
-    // --- INPUT LOGIC ---
+    // --- LOGIKA KEYBOARD MOBILE (NAIK KE ATAS) ---
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+            const container = document.getElementById('mainContainer');
+            const inputArea = document.getElementById('dynamicInput');
+            const viewHeight = window.visualViewport.height;
+            
+            // Atur tinggi container agar tepat setinggi viewport yang tersisa
+            container.style.height = `${viewHeight}px`;
+            
+            // Scroll ke pesan paling bawah agar tidak tertutup keyboard
+            const area = document.getElementById('chat-area');
+            area.scrollTop = area.scrollHeight;
+        });
+    }
+
     function autoHeight(elem) {
         elem.style.height = "auto";
         elem.style.height = (elem.scrollHeight) + "px";
     }
 
-    // Handle Enter vs Shift+Enter
+    // --- SHIFT + ENTER ---
     document.getElementById('userInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -149,7 +167,7 @@
         }
     });
 
-    // --- UI & SECURITY LOGIC ---
+    // --- SECURITY & UI ---
     function enableSecurity() {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(() => {});
@@ -171,7 +189,6 @@
         const bubble = document.createElement('div');
         bubble.className = `bubble ${role === 'user' ? 'user-bubble' : 'bot-bubble'}`;
         
-        // Render dengan marked & mathjax
         bubble.innerHTML = marked.parse(text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$'));
         area.appendChild(bubble);
         
@@ -187,10 +204,9 @@
 
         addMessage('user', msg);
         input.value = '';
-        input.style.height = "auto"; // Reset height
+        input.style.height = "auto";
         sfx.send.play().catch(() => {});
 
-        // Tampilkan Overlay Loading
         const loader = document.getElementById('loading-overlay');
         loader.classList.add('active');
 
@@ -209,12 +225,12 @@
             chatHistory.push({ role: "assistant", content: data.response });
         } catch (e) {
             loader.classList.remove('active');
-            addMessage('bot', "**[WUG SECURE]** Koneksi terputus. Coba lagi, Admin.");
+            addMessage('bot', "**[WUG SECURE]** Koneksi terputus.");
         }
     }
 
     window.onload = () => {
-        addMessage('bot', "Selamat datang kembali, **Admin**. Sistem ERAI v2.6 dalam perlindungan WUG Secure siap digunakan.");
+        addMessage('bot', "Selamat datang kembali, **Admin**. Sistem v2.6 dalam perlindungan WUG Secure.");
     };
 </script>
 </body>
