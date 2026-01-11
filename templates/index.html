@@ -131,7 +131,93 @@
     <div class="input-box">
         <label class="action-btn">📷<input type="file" id="fileInput" hidden onchange="handleFileUpload()"></label>
         <div class="input-wrapper">
-            <textarea id="userInput" placeholder="Tanyakan sesuatu..." rows="1" oninput="autoHeight(this)" onkeydown="checkEnter(event)"></textarea>
+            <textarea id="userInput" placeholder="Tanyakan sesuatu..." rows="1" oninput="autoHeight(this)" onkeydown="checkKey(event)"></textarea>
+
+<script>
+    // --- LOGIKA INPUT PATEN v4.0 ---
+    function checkKey(e) {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (e.key === 'Enter') {
+            if (isMobile) {
+                // Di Mobile: Enter selalu buat baris baru, kirim harus pencet tombol roket
+                return; 
+            } else {
+                // Di Desktop:
+                if (e.shiftKey) {
+                    // Shift + Enter = Baris Baru (Biarkan default browser)
+                    return;
+                } else {
+                    // Enter saja = Kirim Pesan
+                    e.preventDefault();
+                    handleSend();
+                }
+            }
+        }
+    }
+
+    // --- REVISI KEAMANAN KEYBOARD (ANTI-SHIFT) ---
+    window.addEventListener('keydown', e => {
+        if (currentMode === 'pencarian') return;
+
+        // Blokir Shift + S (Screenshot), Shift + C (Copy), Shift + Panah (Seleksi)
+        const isShiftAction = e.shiftKey && (
+            e.key.toLowerCase() === 's' || 
+            e.key.toLowerCase() === 'c' || 
+            e.key.includes('Arrow')
+        );
+
+        // Blokir Ctrl/Meta Shortcut
+        const isControlAction = (e.ctrlKey || e.metaKey) && !['v', 'V'].includes(e.key);
+
+        if (isShiftAction || isControlAction || e.key === 'F12') {
+            e.preventDefault();
+            triggerAlertTimed("Aksi Keyboard Dilarang!");
+        }
+    });
+
+    async function handleSend() {
+        const input = document.getElementById('userInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        // Tampilkan pesan user
+        histories[currentMode].push({ role: "user", content: msg });
+        renderHistory();
+        
+        // Reset Input
+        input.value = '';
+        input.style.height = "auto";
+        sfx.send.play();
+
+        // Animasi Berpikir
+        const thinking = document.getElementById('thinking');
+        thinking.style.display = 'block';
+        scrollChat();
+
+        try {
+            // Simulasi koneksi backend
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: msg, mode: currentMode })
+            });
+            const data = await response.json();
+            addBotMessage(data.response);
+        } catch (err) {
+            // Timeout simulasi agar animasi terlihat
+            setTimeout(() => {
+                addBotMessage("Sistem pusat belum terhubung. Pastikan Backend aktif ya, Admin.");
+                thinking.style.display = 'none';
+            }, 1500);
+        }
+    }
+
+    function autoHeight(elem) {
+        elem.style.height = "auto";
+        elem.style.height = (elem.scrollHeight) + "px";
+    }
+</script>
         </div>
         <button class="action-btn send-btn" onclick="handleSend()">🚀</button>
     </div>
