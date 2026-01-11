@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ERAI - WUG Secure Ultimate v2.6</title>
+    <title>ERAI - WUG Secure Ultimate</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -20,22 +20,21 @@
             margin: 0; padding: 0; font-family: 'Inter', sans-serif; 
             background: var(--wug-gradient); background-size: 400% 400%; animation: gradientMove 15s ease infinite;
             height: 100vh; height: 100dvh; display: flex; justify-content: center; overflow: hidden;
-            position: fixed; width: 100%; /* Mencegah scroll body liar di mobile */
         }
 
         /* Security Blur */
         body.blur-mode .app-container { filter: blur(25px); transition: filter 0.2s ease; }
 
-        /* Container Premium */
+        /* Container: Lebar di desktop, Full di mobile */
         .app-container {
-            width: 95%; max-width: 850px; height: 95vh; height: 95dvh; align-self: center;
+            width: 95%; max-width: 850px; height: 90vh; height: 90dvh; align-self: center;
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 24px;
             display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            position: relative; overflow: hidden; transition: height 0.3s ease;
+            position: relative; overflow: hidden;
         }
 
-        header { padding: 15px 20px; background: rgba(255, 255, 255, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.3); flex-shrink: 0; }
+        header { padding: 15px 20px; background: rgba(255, 255, 255, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.3); }
         .mode-selector { display: flex; gap: 8px; margin-top: 10px; }
         .mode-selector button {
             flex: 1; padding: 10px; border: 1px solid rgba(255,255,255,0.5); border-radius: 12px;
@@ -48,7 +47,7 @@
             scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.1) transparent;
         }
 
-        /* Bubbles */
+        /* Bubbles & Formatting */
         .bubble { 
             max-width: 85%; padding: 14px 18px; border-radius: 20px; font-size: 0.95rem; line-height: 1.6; 
             white-space: pre-wrap; word-wrap: break-word; overflow-wrap: anywhere;
@@ -61,20 +60,19 @@
 
         /* Multi-line Input Box */
         .input-box { 
-            padding: 15px 20px; background: rgba(255, 255, 255, 0.5); border-top: 1px solid rgba(255, 255, 255, 0.3);
-            display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0;
-            z-index: 10;
+            padding: 15px 20px; background: rgba(255, 255, 255, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex; gap: 10px; align-items: flex-end;
         }
 
         .input-wrapper {
-            flex: 1; background: rgba(255, 255, 255, 0.8); border-radius: 18px; padding: 8px 15px;
-            border: 1px solid rgba(255, 255, 255, 1); display: flex; align-items: flex-end;
+            flex: 1; background: rgba(255, 255, 255, 0.6); border-radius: 18px; padding: 8px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.8); display: flex; align-items: flex-end;
         }
 
         #userInput {
             width: 100%; border: none; background: transparent; outline: none;
-            font-size: 1rem; font-family: inherit; resize: none; max-height: 120px;
-            padding: 5px 0; line-height: 1.4; color: #333;
+            font-size: 1rem; font-family: inherit; resize: none; max-height: 150px;
+            padding: 5px 0; line-height: 1.4;
         }
 
         .send-btn {
@@ -83,7 +81,7 @@
             flex-shrink: 0; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
         }
 
-        /* Loading Overlay */
+        /* ERAI Sedang Berpikir Overlay */
         #loading-overlay {
             position: absolute; inset: 0; background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -94,9 +92,8 @@
         .loading-text { margin-top: 15px; font-weight: 700; color: var(--wug-purple); font-size: 0.9rem; letter-spacing: 1px; }
 
         @media (max-width: 600px) {
-            .app-container { width: 100%; height: 100%; border-radius: 0; border: none; align-self: flex-end; }
+            .app-container { width: 100%; height: 100vh; height: 100dvh; border-radius: 0; border: none; }
             .input-box { padding-bottom: max(15px, env(safe-area-inset-bottom)); }
-            .bubble { max-width: 90%; }
         }
     </style>
 </head>
@@ -122,7 +119,7 @@
 
     <div id="chat-area"></div>
 
-    <div class="input-box" id="bottomInput">
+    <div class="input-box">
         <div class="input-wrapper">
             <textarea id="userInput" placeholder="Tulis pesan..." rows="1" oninput="autoHeight(this)"></textarea>
         </div>
@@ -138,29 +135,13 @@
         send: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3')
     };
 
-    // --- FIX VIEWPORT MOBILE (INPUT VISIBILITY) ---
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', () => {
-            const viewHeight = window.visualViewport.height;
-            const container = document.getElementById('mainContainer');
-            // Menyesuaikan tinggi kontainer agar selalu di atas keyboard
-            container.style.height = `${viewHeight}px`;
-            window.scrollTo(0, 0);
-            scrollChat();
-        });
-    }
-
+    // --- INPUT LOGIC ---
     function autoHeight(elem) {
         elem.style.height = "auto";
         elem.style.height = (elem.scrollHeight) + "px";
     }
 
-    function scrollChat() {
-        const area = document.getElementById('chat-area');
-        area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
-    }
-
-    // --- INPUT LOGIC (SHIFT+ENTER) ---
+    // Handle Enter vs Shift+Enter
     document.getElementById('userInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -168,7 +149,7 @@
         }
     });
 
-    // --- SECURITY & UI ---
+    // --- UI & SECURITY LOGIC ---
     function enableSecurity() {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(() => {});
@@ -190,11 +171,12 @@
         const bubble = document.createElement('div');
         bubble.className = `bubble ${role === 'user' ? 'user-bubble' : 'bot-bubble'}`;
         
+        // Render dengan marked & mathjax
         bubble.innerHTML = marked.parse(text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$'));
         area.appendChild(bubble);
         
         if (window.MathJax) MathJax.typesetPromise([bubble]);
-        scrollChat();
+        area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
         if (role === 'bot') sfx.pop.play().catch(() => {});
     }
 
@@ -205,9 +187,10 @@
 
         addMessage('user', msg);
         input.value = '';
-        input.style.height = "auto";
+        input.style.height = "auto"; // Reset height
         sfx.send.play().catch(() => {});
 
+        // Tampilkan Overlay Loading
         const loader = document.getElementById('loading-overlay');
         loader.classList.add('active');
 
