@@ -42,14 +42,14 @@ def chat():
         if user_mode == "latihan":
             mode_instruction = r"""
 WAJIB: AKTIFKAN AUTO-QUIZ MODE.
-1. Jika Admin memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
+1. Jika Kakak memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
 2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
 3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
-4. HANYA berikan jawaban jika Admin sudah memilih opsi A/B/C/D.
-5. Jika Admin memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
+4. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D.
+5. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
 6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
 7. Berikan petunjuk (clue) singkat saja.
-8. Tunggu Admin menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
+8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
 """
         elif user_mode == "pencarian":
             mode_instruction = f"""
@@ -82,8 +82,7 @@ ATURAN FORMATTING:
 - Gunakan --- untuk garis pemisah.
 - Rumus matematika diapit $...$.
 - Rumus kimia diapit \\ce{{...}}.
-- Gunakan bahasa teman sebaya yang suportif (TAPI TETAP PANGGIL 'Admin').
-- DILARANG menggunakan kata 'Kakak' atau 'Kak'.
+- Gunakan bahasa teman sebaya yang suportif (TAPI TETAP PANGGIL 'Kakak').
 """
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
@@ -98,7 +97,7 @@ ATURAN FORMATTING:
     except Exception as e:
         error_msg = str(e).lower()
         if any(code in error_msg for code in ["429", "413", "rate_limit"]):
-            return jsonify({"response": "**[WUG SECURE - NOTIFIKASI]**\n\nKuota harian atau memori token habis. Silakan coba lagi nanti, Admin. 🚀"}), 200
+            return jsonify({"response": "**[WUG SECURE - NOTIFIKASI]**\n\nKuota harian atau memori token habis. Silakan coba lagi nanti, Kakak. 🚀"}), 200
         return jsonify({"response": f"**[SYSTEM ERROR]** {str(e)}"}), 200
 
 if __name__ == '__main__':
