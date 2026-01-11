@@ -25,6 +25,31 @@
             background-size: 400% 400%; animation: gradMove 15s ease infinite; z-index: -1;
         }
 
+/* --- THINKING ANIMATION (ERAI BERPIKIR) --- */
+.typing-indicator {
+    display: none; /* Sembunyi secara default */
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 10px 18px;
+    border-radius: 20px;
+    margin-left: 25px;
+    margin-bottom: 15px;
+    width: fit-content;
+}
+.typing-indicator span {
+    height: 8px; width: 8px; background: #6c5ce7; 
+    display: inline-block; border-radius: 50%; 
+    margin: 0 2px; opacity: 0.4;
+    animation: blink 1s infinite alternate;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink { 
+    from { opacity: 0.4; transform: scale(1); } 
+    to { opacity: 1; transform: scale(1.2); } 
+}
+        
         /* --- SECURITY UI --- */
         #mainContainer.blur-active { filter: blur(60px) brightness(0.3); pointer-events: none; }
         
@@ -128,6 +153,10 @@
 
     <div id="chat-area"></div>
 
+<div id="thinking" class="typing-indicator">
+    <span></span><span></span><span></span>
+</div>
+    
     <div class="input-box">
         <label class="action-btn">📷<input type="file" id="fileInput" hidden onchange="handleFileUpload()"></label>
         <div class="input-wrapper">
@@ -281,13 +310,25 @@
         }
     });
 
-    function triggerAlertManual(msg) {
-        document.getElementById('alert-msg').innerText = msg;
-        document.getElementById('mainContainer').classList.add('blur-active');
-        document.getElementById('secure-alert').style.display = 'block';
-        sfx.alert.play();
-        setTimeout(() => { if(document.fullscreenElement) recoveryFullscreen(); }, 3000);
-    }
+    // FUNGSI ALERT KEAMANAN DENGAN DURASI (3 DETIK)
+function triggerAlertTimed(msg) {
+    const container = document.getElementById('mainContainer');
+    const alertBox = document.getElementById('secure-alert');
+    
+    document.getElementById('alert-msg').innerText = msg;
+    container.classList.add('blur-active');
+    alertBox.style.display = 'block';
+    sfx.alert.play();
+
+    // Otomatis tutup setelah 3 detik
+    setTimeout(() => {
+        // Hanya tutup jika sedang di Fullscreen atau Mode Pencarian
+        if (document.fullscreenElement || currentMode === 'pencarian') {
+            container.classList.remove('blur-active');
+            alertBox.style.display = 'none';
+        }
+    }, 3000); 
+}
 
     // --- CHAT LOGIC ---
     function setMode(mode) {
