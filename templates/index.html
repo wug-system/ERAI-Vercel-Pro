@@ -206,41 +206,63 @@
     });
 
     async function handleSend() {
-        const input = document.getElementById('userInput');
-        const msg = input.value.trim();
-        if (!msg) return;
+    const input = document.getElementById('userInput');
+    const msg = input.value.trim();
+    if (!msg) return;
 
-        // Tampilkan pesan user
-        histories[currentMode].push({ role: "user", content: msg });
-        renderHistory();
+    // --- LOGIKA TAMBAHAN: AUTO-ACTIVATE QUIZ MODE ---
+    let finalMessage = msg;
+    if (currentMode === 'latihan') {
+        const quizTrigger = ['buat', 'kasih', 'uji', 'soal', 'kuis', 'test', 'tanya'];
+        const isAskingQuiz = quizTrigger.some(word => msg.toLowerCase().includes(word));
         
-        // Reset Input
-        input.value = '';
-        input.style.height = "auto";
-        sfx.send.play();
-
-        // Animasi Berpikir
-        const thinking = document.getElementById('thinking');
-        thinking.style.display = 'block';
-        scrollChat();
-
-        try {
-            // Simulasi koneksi backend
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: msg, mode: currentMode })
-            });
-            const data = await response.json();
-            addBotMessage(data.response);
-        } catch (err) {
-            // Timeout simulasi agar animasi terlihat
-            setTimeout(() => {
-                addBotMessage("Sistem pusat belum terhubung. Pastikan Backend aktif ya, Admin.");
-                thinking.style.display = 'none';
-            }, 1500);
+        // Jika terdeteksi minta soal, kita beri flag/tanda di pesan agar backend paham
+        if (isAskingQuiz) {
+            console.log("WUG System: Menjalankan Logika Auto-Quiz...");
+            // Opsional: Kakak bisa memanipulasi pesan atau membiarkan backend yang mendeteksi
         }
     }
+    // -----------------------------------------------
+
+    // Tampilkan pesan user
+    histories[currentMode].push({ role: "user", content: msg });
+    renderHistory();
+    
+    // Reset Input
+    input.value = '';
+    input.style.height = "auto";
+    sfx.send.play();
+
+    // Animasi Berpikir
+    const thinking = document.getElementById('thinking');
+    thinking.style.display = 'block';
+    scrollChat();
+
+    try {
+        // Koneksi backend sesungguhnya
+        const response = await fetch('/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                message: msg, 
+                mode: currentMode,
+                trigger_quiz: (currentMode === 'latihan') // Kirim sinyal kuis ke backend
+            })
+        });
+        const data = await response.json();
+        
+        // SEMBUNYIKAN ANIMASI SAAT JAWABAN TIBA
+        thinking.style.display = 'none'; 
+        addBotMessage(data.response);
+        
+    } catch (err) {
+        // Timeout simulasi agar animasi terlihat
+        setTimeout(() => {
+            addBotMessage("Sistem pusat belum terhubung. Pastikan Backend aktif ya, Admin.");
+            thinking.style.display = 'none';
+        }, 1500);
+    }
+}
 
     function autoHeight(elem) {
         elem.style.height = "auto";
