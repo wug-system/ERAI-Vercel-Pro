@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ERAI - WUG Secure Ultimate v3.0</title>
+    <title>ERAI - WUG Secure Exam Mode</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -16,85 +16,97 @@
         
         body { 
             margin: 0; padding: 0; font-family: 'Inter', sans-serif; 
-            background: linear-gradient(-45deg, #a8edea, #fed6e3, #d291ff, #84fab0);
-            background-size: 400% 400%; animation: gradMove 15s ease infinite;
+            background: #000; /* Hitam untuk fokus saat blur */
             height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center;
-            transition: filter 0.5s ease;
         }
 
-        /* ANIMASI KEAMANAN */
-        body.secure-blur { filter: blur(35px) grayscale(1); pointer-events: none; }
-        @keyframes blink-red { 0% { background: rgba(255,0,0,0.1); } 50% { background: rgba(255,0,0,0.4); } 100% { background: rgba(255,0,0,0.1); } }
-        .alert-active { animation: blink-red 0.5s infinite; border: 5px solid var(--danger) !important; }
+        #bg-canvas {
+            position: fixed; inset: 0;
+            background: linear-gradient(-45deg, #a8edea, #fed6e3, #d291ff, #84fab0);
+            background-size: 400% 400%; animation: gradMove 15s ease infinite;
+            z-index: -1;
+        }
+
+        /* SECURITY SYSTEM */
+        #mainContainer.blur-active { filter: blur(50px) brightness(0.5); pointer-events: none; }
+        
+        #secure-alert {
+            position: fixed; top: 10%; left: 50%; transform: translateX(-50%);
+            background: white; padding: 25px; border-radius: 24px; text-align: center;
+            z-index: 99999; display: none; 
+            box-shadow: 0 20px 60px rgba(255, 0, 0, 0.6); 
+            border: 4px solid var(--danger);
+            width: 90%; max-width: 500px;
+        }
+
+        #overlay-start {
+            position: fixed; inset: 0; background: rgba(108, 92, 231, 0.9);
+            z-index: 100000; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; backdrop-filter: blur(10px);
+        }
 
         @keyframes gradMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .app-container {
             width: 95%; max-width: 850px; height: 92vh; 
-            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(25px);
             display: flex; flex-direction: column; position: relative;
             border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); transition: all 0.5s ease;
         }
 
         header { padding: 15px 20px; background: rgba(255, 255, 255, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.2); flex-shrink: 0; }
         .mode-selector { display: flex; gap: 8px; margin-top: 10px; }
         .mode-selector button {
             flex: 1; padding: 10px; border: 1px solid rgba(255,255,255,0.4); border-radius: 10px;
-            background: rgba(255,255,255,0.2); cursor: pointer; font-size: 0.75rem; font-weight: 700; font-family: 'Plus Jakarta Sans'; transition: 0.2s;
+            background: rgba(255,255,255,0.2); cursor: pointer; font-size: 0.75rem; font-weight: 700; font-family: 'Plus Jakarta Sans';
         }
-        .mode-selector button.active { background: var(--wug-purple); color: white; transform: scale(1.02); }
+        .mode-selector button.active { background: var(--wug-purple); color: white; }
 
         #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
 
-        /* BUBBLE CHAT */
         .bubble { 
             max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 0.95rem; line-height: 1.6; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03); position: relative; animation: fadeIn 0.4s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); position: relative; animation: fadeIn 0.3s ease forwards;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 4px; user-select: auto; }
-        .bot-bubble { align-self: flex-start; background: rgba(255, 255, 255, 0.6); border-bottom-left-radius: 4px; }
-
-        .copy-btn {
-            background: var(--wug-purple); color: white; border: none; padding: 4px 8px; border-radius: 6px;
-            font-size: 10px; cursor: pointer; position: absolute; top: -10px; right: 10px; opacity: 0.8;
-        }
+        .bot-bubble { align-self: flex-start; background: rgba(255, 255, 255, 0.7); border-bottom-left-radius: 4px; }
 
         .input-box { 
-            padding: 15px 20px; background: rgba(255, 255, 255, 0.5); border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 20px; background: rgba(255, 255, 255, 0.6); border-top: 1px solid rgba(255, 255, 255, 0.2);
             display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0;
         }
         .input-wrapper { flex: 1; background: white; border-radius: 15px; padding: 10px 15px; border: 1px solid rgba(108, 92, 231, 0.2); display: flex; align-items: center; gap: 8px; }
         #userInput { width: 100%; border: none; background: transparent; outline: none; font-size: 1rem; font-family: 'Inter'; font-weight: 500; resize: none; max-height: 120px; user-select: auto; }
 
-        .action-btn { background: #f1f2f6; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .action-btn { background: #f1f2f6; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
         .send-btn { background: var(--wug-purple); color: white; width: 44px; height: 44px; border-radius: 12px; }
 
-        /* SECURITY ALERT UI - REVISI POSISI KE ATAS */
-        #secure-alert {
-            position: fixed; top: 10%; left: 50%; transform: translateX(-50%);
-            background: white; padding: 20px 40px; border-radius: 20px; text-align: center;
-            z-index: 10001; display: none; box-shadow: 0 10px 50px rgba(255,0,0,0.3); border: 2px solid var(--danger);
-            width: 90%; max-width: 500px;
-        }
-
         @media (max-width: 768px) {
-            .app-container { width: 100% !important; max-width: 100% !important; border-radius: 0; }
+            .app-container { width: 100% !important; max-width: 100% !important; height: 100% !important; border-radius: 0; border: none; }
         }
     </style>
 </head>
 <body>
 
+<div id="bg-canvas"></div>
+
+<div id="overlay-start">
+    <h1 style="font-family: 'Plus Jakarta Sans';">WUG SECURE SYSTEM</h1>
+    <p>Halo Kakak, klik tombol di bawah untuk masuk ke Mode Aman.</p>
+    <button onclick="initSecureMode()" style="padding: 15px 40px; border-radius: 50px; border: none; background: white; color: var(--wug-purple); font-weight: 800; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">AKTIFKAN MODE AMAN 🚀</button>
+</div>
+
 <div id="secure-alert">
-    <h2 style="color: var(--danger); margin: 0; font-family: 'Plus Jakarta Sans';">⚠️ SECURITY BREACH</h2>
-    <p style="font-weight: bold; margin: 10px 0 5px 0;">Aksi Terlarang Terdeteksi!</p>
-    <p style="font-size: 12px; color: #666; margin: 0;">Sistem mengunci akses demi keamanan Kakak.</p>
+    <h2 style="color: var(--danger); margin: 0; font-family: 'Plus Jakarta Sans';">⚠️ SECURITY VIOLATION</h2>
+    <p id="alert-msg" style="font-weight: bold; margin: 10px 0 5px 0;">Aksi Terlarang Terdeteksi!</p>
+    <p style="font-size: 13px; color: #444; margin: 0;">Sistem mengunci ERAI. Gunakan mode Fullscreen untuk melanjutkan belajar.</p>
 </div>
 
 <div class="app-container" id="mainContainer">
     <header>
-        <b style="color: #444; font-family: 'Plus Jakarta Sans';">🤖 ERAI | WUG SECURE v3.0</b>
+        <b style="color: #444; font-family: 'Plus Jakarta Sans';">🤖 ERAI | EXAM MODE v3.5</b>
         <div class="mode-selector">
             <button id="btn-belajar" onclick="setMode('belajar')" class="active">Belajar</button>
             <button id="btn-latihan" onclick="setMode('latihan')">Latihan</button>
@@ -105,9 +117,7 @@
     <div id="chat-area"></div>
 
     <div class="input-box">
-        <label class="action-btn">
-            📷 <input type="file" id="fileInput" hidden accept="image/*,.pdf,.txt" onchange="handleFileUpload()">
-        </label>
+        <label class="action-btn">📷<input type="file" id="fileInput" hidden onchange="handleFileUpload()"></label>
         <div class="input-wrapper">
             <textarea id="userInput" placeholder="Tulis pesan..." rows="1" oninput="autoHeight(this)"></textarea>
         </div>
@@ -118,78 +128,79 @@
 <script>
     let currentMode = "belajar";
     let histories = {
-        belajar: [{ role: "assistant", content: "Halo **Kakak**! ERAI siap menemani Kakak belajar hari ini." }],
-        latihan: [{ role: "assistant", content: "Mode Latihan aktif, **Kakak**. Mau kuis topik apa?" }],
-        pencarian: [{ role: "assistant", content: "**Kakak**, data apa yang ingin dicari?" }]
+        belajar: [{ role: "assistant", content: "Halo **Kakak**! Mode Belajar Aman aktif. Fokus ya Kak!" }],
+        latihan: [{ role: "assistant", content: "Mode Latihan/Ujian aktif. Kejujuran adalah kunci, Kak!" }],
+        pencarian: [{ role: "assistant", content: "**Kakak**, silakan cari referensi apapun di sini." }]
     };
 
     const sfx = {
         pop: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
         send: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
-        alert: new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3'),
-        copy: new Audio('https://assets.mixkit.co/active_storage/sfx/2349/2349-preview.mp3')
+        alert: new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3')
     };
 
-    // --- SISTEM KEAMANAN WUG SECURE ---
-    function triggerAlert() {
-        if (currentMode === 'pencarian') return;
-        sfx.alert.play();
-        const container = document.getElementById('mainContainer');
-        const alertBox = document.getElementById('secure-alert');
-        container.classList.add('alert-active');
-        alertBox.style.display = 'block';
-        document.body.classList.add('secure-blur');
-        
-        setTimeout(() => {
-            container.classList.remove('alert-active');
-            alertBox.style.display = 'none';
-            document.body.classList.remove('secure-blur');
-        }, 3000);
+    // --- LOGIKA FULLSCREEN EXAM ---
+    function initSecureMode() {
+        document.getElementById('overlay-start').style.display = 'none';
+        enterFullscreen();
+        sfx.pop.play();
     }
 
-    window.addEventListener('contextmenu', e => { if(currentMode !== 'pencarian') { e.preventDefault(); triggerAlert(); } });
+    function enterFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+    }
 
-    window.addEventListener('keydown', e => {
-        const forbidden = (e.ctrlKey || e.metaKey) && !['v', 'V'].includes(e.key);
-        if ((forbidden || e.key === 'PrintScreen' || (e.ctrlKey && e.shiftKey && e.key === 'I')) && currentMode !== 'pencarian') {
-            e.preventDefault();
-            triggerAlert();
+    // Cek jika user keluar dari Fullscreen saat mode Belajar/Latihan
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && (currentMode === 'belajar' || currentMode === 'latihan')) {
+            triggerAlert("Anda keluar dari Mode Fullscreen! Segera kembali ke Fullscreen.");
         }
     });
 
-    // --- LOGIKA UTAMA ---
-    function adjustHeight() {
-        const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        const container = document.getElementById('mainContainer');
-        if (window.innerWidth <= 768) {
-            container.style.height = vh + 'px';
-        } else {
-            container.style.height = '92vh';
-        }
-        scrollChat();
+    function triggerAlert(customMsg) {
+        if (currentMode === 'pencarian') return;
+        sfx.alert.play();
+        document.getElementById('alert-msg').innerText = customMsg || "Aksi Terlarang Terdeteksi!";
+        document.getElementById('mainContainer').classList.add('blur-active');
+        document.getElementById('secure-alert').style.display = 'block';
+        
+        setTimeout(() => {
+            document.getElementById('mainContainer').classList.remove('blur-active');
+            document.getElementById('secure-alert').style.display = 'none';
+            if (currentMode !== 'pencarian') enterFullscreen();
+        }, 4000);
     }
-    window.visualViewport?.addEventListener('resize', adjustHeight);
 
+    // --- SECURITY EVENTS ---
+    window.addEventListener('contextmenu', e => { if(currentMode !== 'pencarian') { e.preventDefault(); triggerAlert("Dilarang Klik Kanan/Tahan Layar!"); } });
+    window.addEventListener('keydown', e => {
+        const isPaste = (e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V');
+        const isForbidden = (e.ctrlKey || e.metaKey) && !isPaste;
+        if ((isForbidden || e.key === 'PrintScreen' || (e.ctrlKey && e.shiftKey && e.key === 'I')) && currentMode !== 'pencarian') {
+            e.preventDefault();
+            triggerAlert("Kombinasi Keyboard Dilarang!");
+        }
+    });
+
+    function setMode(mode) {
+        currentMode = mode;
+        if (mode !== 'pencarian') enterFullscreen();
+        sfx.pop.play();
+        document.querySelectorAll('.mode-selector button').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-${mode}`).classList.add('active');
+        renderHistory();
+    }
+
+    // --- CORE CHAT LOGIC ---
     function renderHistory() {
         const area = document.getElementById('chat-area');
         area.innerHTML = ''; 
-        histories[currentMode].forEach((msg, idx) => {
+        histories[currentMode].forEach(msg => {
             const div = document.createElement('div');
             div.className = `bubble ${msg.role === 'user' ? 'user-bubble' : 'bot-bubble'}`;
             div.innerHTML = marked.parse(msg.content);
-            
-            if (currentMode === 'pencarian' && msg.role === 'assistant') {
-                const btn = document.createElement('button');
-                btn.className = 'copy-btn';
-                btn.innerText = 'Salin';
-                btn.onclick = () => {
-                    navigator.clipboard.writeText(msg.content);
-                    sfx.copy.play();
-                    btn.innerText = 'Tersalin!';
-                    setTimeout(() => btn.innerText = 'Salin', 2000);
-                };
-                div.appendChild(btn);
-            }
             area.appendChild(div);
         });
         if (window.MathJax) MathJax.typesetPromise();
@@ -198,52 +209,17 @@
 
     async function handleSend() {
         const input = document.getElementById('userInput');
-        const msg = input.value.trim();
-        if (!msg) return;
-
-        histories[currentMode].push({ role: "user", content: msg });
+        if (!input.value.trim()) return;
+        histories[currentMode].push({ role: "user", content: input.value });
         renderHistory();
-        input.value = ''; input.style.height = "auto";
         sfx.send.play();
-
-        try {
-            const res = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg, mode: currentMode, history: histories[currentMode] })
-            });
-            const data = await res.json();
-            histories[currentMode].push({ role: "assistant", content: data.response });
-            renderHistory();
-            sfx.pop.play();
-        } catch (e) { console.error(e); }
-    }
-
-    function handleFileUpload() {
-        const file = document.getElementById('fileInput').files[0];
-        if (file) {
-            sfx.copy.play();
-            histories[currentMode].push({ role: "user", content: `[Menganalisis file: ${file.name}...]` });
-            renderHistory();
-            setTimeout(() => {
-                histories[currentMode].push({ role: "assistant", content: `Kakak, ERAI sudah melihat file **${file.name}**. Silakan berikan pertanyaan terkait file tersebut!` });
-                renderHistory();
-                sfx.pop.play();
-            }, 1500);
-        }
-    }
-
-    function setMode(mode) {
-        currentMode = mode;
-        sfx.pop.play();
-        document.querySelectorAll('.mode-selector button').forEach(b => b.classList.remove('active'));
-        document.getElementById(`btn-${mode}`).classList.add('active');
-        renderHistory();
+        input.value = '';
+        // Simulasi fetch (hubungkan ke app.py Kakak)
     }
 
     function autoHeight(elem) { elem.style.height = "auto"; elem.style.height = (elem.scrollHeight) + "px"; }
     function scrollChat() { const a = document.getElementById('chat-area'); a.scrollTop = a.scrollHeight; }
-    window.onload = () => { renderHistory(); adjustHeight(); };
+    window.onload = () => { renderHistory(); };
 </script>
 </body>
 </html>
