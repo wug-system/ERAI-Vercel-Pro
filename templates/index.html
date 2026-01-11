@@ -23,7 +23,7 @@
         }
 
         /* ANIMASI KEAMANAN */
-        body.secure-blur { filter: blur(30px) grayscale(1); pointer-events: none; }
+        body.secure-blur { filter: blur(35px) grayscale(1); pointer-events: none; }
         @keyframes blink-red { 0% { background: rgba(255,0,0,0.1); } 50% { background: rgba(255,0,0,0.4); } 100% { background: rgba(255,0,0,0.1); } }
         .alert-active { animation: blink-red 0.5s infinite; border: 5px solid var(--danger) !important; }
 
@@ -56,7 +56,6 @@
         .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 4px; user-select: auto; }
         .bot-bubble { align-self: flex-start; background: rgba(255, 255, 255, 0.6); border-bottom-left-radius: 4px; }
 
-        /* TOMBOL SALIN */
         .copy-btn {
             background: var(--wug-purple); color: white; border: none; padding: 4px 8px; border-radius: 6px;
             font-size: 10px; cursor: pointer; position: absolute; top: -10px; right: 10px; opacity: 0.8;
@@ -72,11 +71,12 @@
         .action-btn { background: #f1f2f6; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 18px; }
         .send-btn { background: var(--wug-purple); color: white; width: 44px; height: 44px; border-radius: 12px; }
 
-        /* SECURITY ALERT UI */
+        /* SECURITY ALERT UI - REVISI POSISI KE ATAS */
         #secure-alert {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: white; padding: 30px; border-radius: 20px; text-align: center;
-            z-index: 10000; display: none; box-shadow: 0 0 100px rgba(255,0,0,0.5); border: 2px solid var(--danger);
+            position: fixed; top: 10%; left: 50%; transform: translateX(-50%);
+            background: white; padding: 20px 40px; border-radius: 20px; text-align: center;
+            z-index: 10001; display: none; box-shadow: 0 10px 50px rgba(255,0,0,0.3); border: 2px solid var(--danger);
+            width: 90%; max-width: 500px;
         }
 
         @media (max-width: 768px) {
@@ -87,9 +87,9 @@
 <body>
 
 <div id="secure-alert">
-    <h1 style="color: var(--danger); margin: 0;">⚠️ SECURITY BREACH</h1>
-    <p style="font-weight: bold;">Aksi Terlarang Terdeteksi! (WUG SECURE)</p>
-    <p style="font-size: 12px; color: #666;">Sistem telah mengunci akses sementara demi keamanan Kakak.</p>
+    <h2 style="color: var(--danger); margin: 0; font-family: 'Plus Jakarta Sans';">⚠️ SECURITY BREACH</h2>
+    <p style="font-weight: bold; margin: 10px 0 5px 0;">Aksi Terlarang Terdeteksi!</p>
+    <p style="font-size: 12px; color: #666; margin: 0;">Sistem mengunci akses demi keamanan Kakak.</p>
 </div>
 
 <div class="app-container" id="mainContainer">
@@ -132,7 +132,7 @@
 
     // --- SISTEM KEAMANAN WUG SECURE ---
     function triggerAlert() {
-        if (currentMode === 'pencarian') return; // Mode pencarian bebas
+        if (currentMode === 'pencarian') return;
         sfx.alert.play();
         const container = document.getElementById('mainContainer');
         const alertBox = document.getElementById('secure-alert');
@@ -147,12 +147,10 @@
         }, 3000);
     }
 
-    // Anti Right Click & Long Press
     window.addEventListener('contextmenu', e => { if(currentMode !== 'pencarian') { e.preventDefault(); triggerAlert(); } });
 
-    // Anti Screenshot / Keyboard Combinations
     window.addEventListener('keydown', e => {
-        const forbidden = (e.ctrlKey || e.metaKey) && !['v', 'V'].includes(e.key); // Kecuali Paste
+        const forbidden = (e.ctrlKey || e.metaKey) && !['v', 'V'].includes(e.key);
         if ((forbidden || e.key === 'PrintScreen' || (e.ctrlKey && e.shiftKey && e.key === 'I')) && currentMode !== 'pencarian') {
             e.preventDefault();
             triggerAlert();
@@ -162,7 +160,12 @@
     // --- LOGIKA UTAMA ---
     function adjustHeight() {
         const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        document.getElementById('mainContainer').style.height = (window.innerWidth <= 768 ? vh : 92) + (window.innerWidth <= 768 ? 'px' : 'vh');
+        const container = document.getElementById('mainContainer');
+        if (window.innerWidth <= 768) {
+            container.style.height = vh + 'px';
+        } else {
+            container.style.height = '92vh';
+        }
         scrollChat();
     }
     window.visualViewport?.addEventListener('resize', adjustHeight);
@@ -175,7 +178,6 @@
             div.className = `bubble ${msg.role === 'user' ? 'user-bubble' : 'bot-bubble'}`;
             div.innerHTML = marked.parse(msg.content);
             
-            // Fitur Salin di Mode Pencarian
             if (currentMode === 'pencarian' && msg.role === 'assistant') {
                 const btn = document.createElement('button');
                 btn.className = 'copy-btn';
@@ -184,6 +186,7 @@
                     navigator.clipboard.writeText(msg.content);
                     sfx.copy.play();
                     btn.innerText = 'Tersalin!';
+                    setTimeout(() => btn.innerText = 'Salin', 2000);
                 };
                 div.appendChild(btn);
             }
@@ -222,10 +225,10 @@
             sfx.copy.play();
             histories[currentMode].push({ role: "user", content: `[Menganalisis file: ${file.name}...]` });
             renderHistory();
-            // Logika pembacaan file bisa dikembangkan dengan OCR/PDF library
             setTimeout(() => {
                 histories[currentMode].push({ role: "assistant", content: `Kakak, ERAI sudah melihat file **${file.name}**. Silakan berikan pertanyaan terkait file tersebut!` });
                 renderHistory();
+                sfx.pop.play();
             }, 1500);
         }
     }
