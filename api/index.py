@@ -6,7 +6,7 @@ from datetime import datetime
 
 app = Flask(__name__, template_folder='../templates')
 
-# API PROTECTION
+# --- WUG SECURE SYSTEM - API PROTECTION ---
 GROQ_KEY = os.environ.get("GROQ_API_KEY")
 TAVILY_KEY = os.environ.get("TAVILY_API_KEY")
 
@@ -26,46 +26,23 @@ def chat():
         data = request.json
         user_input = data.get("message", "")
         user_mode = data.get("mode", "belajar")
-        history = data.get("history", [])
+        # Batasi history agar tidak Request Too Large (413/TPM Limit)
+        history = data.get("history", [])[-6:] 
 
-        # LOGIKA MODE PENCARIAN
         search_info = ""
         if user_mode == "pencarian":
             if tavily_client:
                 try:
-                    search_res = tavily_client.search(query=f"{user_input} tahun 2026", search_depth="advanced")
+                    search_res = tavily_client.search(query=f"{user_input} {current_date}", search_depth="advanced")
                     search_info = " ".join([r.get('content') for r in search_res.get('results', [])])
-                except: search_info = "Gagal mengambil data internet."
-            mode_instruction = "MODE PENCARIAN AKTIF: Fokus pada info tahun 2026."
-        
-        # LOGIKA MODE LATIHAN (1-8)
+                except: search_info = "Gagal akses internet."
+            mode_instruction = "MODE PENCARIAN AKTIF: Gunakan data internet terbaru 2026."
         elif user_mode == "latihan":
-            mode_instruction = r"""WAJIB: AKTIFKAN AUTO-QUIZ MODE.
-1. Jika Kakak memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
-2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
-3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
-4. HANYA berikan jawaban jika Kakak sudah memilih opsi A/B/C/D.
-5. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
-6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
-7. Berikan petunjuk (clue) singkat saja.
-8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi."""
-        
-        # LOGIKA MODE BELAJAR (1-7)
+            mode_instruction = "WAJIB: KUIS MODE. Berikan soal pilihan ganda (A-D). Jangan beri jawaban dulu."
         else:
-            mode_instruction = r"""WAJIB: MODE BELAJAR AKTIF.
-1. Berikan penjelasan terstruktur menggunakan "---" antar bagian.
-2. Selesaikan soal step-by-step menggunakan LaTeX ($...$).
-3. Gunakan \ce{...} untuk simbol kimia.
-4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
-5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
-6. Gunakan Bullet Points untuk poin-poin penting.
-7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat."""
+            mode_instruction = "WAJIB: MODE BELAJAR. Penjelasan step-by-step dengan LaTeX $...$ dan garis pemisah ---."
 
-        system_prompt = f"""Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
-{mode_instruction}
-Hari ini: {current_date}. Semua jawaban harus berbasis tahun 2026.
-DATA INTERNET: {search_info if search_info else 'Internal knowledge 2026'}.
-ATURAN FORMATTING: Gunakan ---, $...$ untuk math, dan \\ce{{...}} untuk kimia."""
+        system_prompt = f"Nama: ERAI. User: {user_name}. Hari ini: {current_date}. {mode_instruction}"
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
         
@@ -78,6 +55,10 @@ ATURAN FORMATTING: Gunakan ---, $...$ untuk math, dan \\ce{{...}} untuk kimia.""
         return jsonify({"response": completion.choices[0].message.content})
 
     except Exception as e:
+        error_msg = str(e).lower()
+        # FIX: Pesan pengganti kuota habis sesuai permintaan
+        if "429" in error_msg or "rate_limit" in error_msg or "413" in error_msg:
+            return jsonify({"response": "**[WUG SECURE SYSTEM - NOTIFICATION]**\n\nMohon maaf, Admin. Kuota harian model (TPM/RPM) telah mencapai batas maksimal. 🚀\n\nSistem akan reset secara otomatis dalam beberapa jam. Silakan istirahat dulu, Admin!"}), 200
         return jsonify({"response": f"**[SYSTEM ERROR]** Terjadi gangguan: {str(e)}"}), 200
 
 if __name__ == '__main__':
