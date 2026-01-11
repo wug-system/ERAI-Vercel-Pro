@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ERAI - WUG Secure Exam Mode</title>
+    <title>ERAI - WUG Secure Ultimate</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -16,33 +16,34 @@
         
         body { 
             margin: 0; padding: 0; font-family: 'Inter', sans-serif; 
-            background: #000; /* Hitam untuk fokus saat blur */
-            height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center;
+            background: #000; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center;
         }
 
         #bg-canvas {
             position: fixed; inset: 0;
             background: linear-gradient(-45deg, #a8edea, #fed6e3, #d291ff, #84fab0);
-            background-size: 400% 400%; animation: gradMove 15s ease infinite;
-            z-index: -1;
+            background-size: 400% 400%; animation: gradMove 15s ease infinite; z-index: -1;
         }
 
         /* SECURITY SYSTEM */
-        #mainContainer.blur-active { filter: blur(50px) brightness(0.5); pointer-events: none; }
+        #mainContainer.blur-active { filter: blur(50px) brightness(0.4); pointer-events: none; }
         
+        /* ALERT UI - KLIK UNTUK RECOVERY */
         #secure-alert {
-            position: fixed; top: 10%; left: 50%; transform: translateX(-50%);
-            background: white; padding: 25px; border-radius: 24px; text-align: center;
-            z-index: 99999; display: none; 
-            box-shadow: 0 20px 60px rgba(255, 0, 0, 0.6); 
+            position: fixed; top: 15%; left: 50%; transform: translateX(-50%);
+            background: white; padding: 30px; border-radius: 24px; text-align: center;
+            z-index: 99999; display: none; cursor: pointer;
+            box-shadow: 0 20px 80px rgba(255, 0, 0, 0.6); 
             border: 4px solid var(--danger);
             width: 90%; max-width: 500px;
+            animation: pulse-danger 1.5s infinite;
         }
+        @keyframes pulse-danger { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.02); } 100% { transform: translateX(-50%) scale(1); } }
 
         #overlay-start {
-            position: fixed; inset: 0; background: rgba(108, 92, 231, 0.9);
+            position: fixed; inset: 0; background: rgba(108, 92, 231, 0.95);
             z-index: 100000; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: white; text-align: center; backdrop-filter: blur(10px);
+            color: white; text-align: center; backdrop-filter: blur(15px);
         }
 
         @keyframes gradMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
@@ -69,7 +70,6 @@
             max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 0.95rem; line-height: 1.6; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.03); position: relative; animation: fadeIn 0.3s ease forwards;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 4px; user-select: auto; }
         .bot-bubble { align-self: flex-start; background: rgba(255, 255, 255, 0.7); border-bottom-left-radius: 4px; }
 
@@ -77,14 +77,14 @@
             padding: 15px 20px; background: rgba(255, 255, 255, 0.6); border-top: 1px solid rgba(255, 255, 255, 0.2);
             display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0;
         }
-        .input-wrapper { flex: 1; background: white; border-radius: 15px; padding: 10px 15px; border: 1px solid rgba(108, 92, 231, 0.2); display: flex; align-items: center; gap: 8px; }
+        .input-wrapper { flex: 1; background: white; border-radius: 15px; padding: 10px 15px; border: 1px solid rgba(108, 92, 231, 0.2); }
         #userInput { width: 100%; border: none; background: transparent; outline: none; font-size: 1rem; font-family: 'Inter'; font-weight: 500; resize: none; max-height: 120px; user-select: auto; }
 
-        .action-btn { background: #f1f2f6; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .action-btn { background: #f1f2f6; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .send-btn { background: var(--wug-purple); color: white; width: 44px; height: 44px; border-radius: 12px; }
 
         @media (max-width: 768px) {
-            .app-container { width: 100% !important; max-width: 100% !important; height: 100% !important; border-radius: 0; border: none; }
+            .app-container { width: 100% !important; max-width: 100% !important; height: 100% !important; border-radius: 0; }
         }
     </style>
 </head>
@@ -95,18 +95,19 @@
 <div id="overlay-start">
     <h1 style="font-family: 'Plus Jakarta Sans';">WUG SECURE SYSTEM</h1>
     <p>Halo Kakak, klik tombol di bawah untuk masuk ke Mode Aman.</p>
-    <button onclick="initSecureMode()" style="padding: 15px 40px; border-radius: 50px; border: none; background: white; color: var(--wug-purple); font-weight: 800; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">AKTIFKAN MODE AMAN 🚀</button>
+    <button onclick="initSecureMode()" style="padding: 15px 40px; border-radius: 50px; border: none; background: white; color: var(--wug-purple); font-weight: 800; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">MULAI BELAJAR 🚀</button>
 </div>
 
-<div id="secure-alert">
-    <h2 style="color: var(--danger); margin: 0; font-family: 'Plus Jakarta Sans';">⚠️ SECURITY VIOLATION</h2>
-    <p id="alert-msg" style="font-weight: bold; margin: 10px 0 5px 0;">Aksi Terlarang Terdeteksi!</p>
-    <p style="font-size: 13px; color: #444; margin: 0;">Sistem mengunci ERAI. Gunakan mode Fullscreen untuk melanjutkan belajar.</p>
+<div id="secure-alert" onclick="recoveryFullscreen()">
+    <h2 style="color: var(--danger); margin: 0; font-family: 'Plus Jakarta Sans';">⚠️ KEAMANAN TERDETEKSI</h2>
+    <p id="alert-msg" style="font-weight: bold; margin: 10px 0 15px 0;">Pelanggaran Fullscreen!</p>
+    <div style="background: var(--danger); color: white; padding: 10px; border-radius: 12px; font-weight: 800;">KLIK DI SINI UNTUK KEMBALI</div>
+    <p style="font-size: 11px; color: #666; margin-top: 10px;">Sistem ERAI akan terbuka otomatis setelah Fullscreen aktif.</p>
 </div>
 
 <div class="app-container" id="mainContainer">
     <header>
-        <b style="color: #444; font-family: 'Plus Jakarta Sans';">🤖 ERAI | EXAM MODE v3.5</b>
+        <b style="color: #444; font-family: 'Plus Jakarta Sans';">🤖 ERAI | WUG SECURE</b>
         <div class="mode-selector">
             <button id="btn-belajar" onclick="setMode('belajar')" class="active">Belajar</button>
             <button id="btn-latihan" onclick="setMode('latihan')">Latihan</button>
@@ -128,9 +129,9 @@
 <script>
     let currentMode = "belajar";
     let histories = {
-        belajar: [{ role: "assistant", content: "Halo **Kakak**! Mode Belajar Aman aktif. Fokus ya Kak!" }],
-        latihan: [{ role: "assistant", content: "Mode Latihan/Ujian aktif. Kejujuran adalah kunci, Kak!" }],
-        pencarian: [{ role: "assistant", content: "**Kakak**, silakan cari referensi apapun di sini." }]
+        belajar: [{ role: "assistant", content: "Halo **Kakak**! Mode Belajar Aman aktif." }],
+        latihan: [{ role: "assistant", content: "Mode Ujian aktif. Fullscreen terkunci otomatis." }],
+        pencarian: [{ role: "assistant", content: "**Kakak**, silakan cari referensi apapun." }]
     };
 
     const sfx = {
@@ -139,7 +140,6 @@
         alert: new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3')
     };
 
-    // --- LOGIKA FULLSCREEN EXAM ---
     function initSecureMode() {
         document.getElementById('overlay-start').style.display = 'none';
         enterFullscreen();
@@ -152,37 +152,51 @@
         }
     }
 
-    // Cek jika user keluar dari Fullscreen saat mode Belajar/Latihan
-    document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement && (currentMode === 'belajar' || currentMode === 'latihan')) {
-            triggerAlert("Anda keluar dari Mode Fullscreen! Segera kembali ke Fullscreen.");
-        }
-    });
-
-    function triggerAlert(customMsg) {
-        if (currentMode === 'pencarian') return;
-        sfx.alert.play();
-        document.getElementById('alert-msg').innerText = customMsg || "Aksi Terlarang Terdeteksi!";
-        document.getElementById('mainContainer').classList.add('blur-active');
-        document.getElementById('secure-alert').style.display = 'block';
-        
-        setTimeout(() => {
-            document.getElementById('mainContainer').classList.remove('blur-active');
-            document.getElementById('secure-alert').style.display = 'none';
-            if (currentMode !== 'pencarian') enterFullscreen();
-        }, 4000);
+    // FUNGSI RECOVERY: Klik alert -> Fullscreen -> Blur Hilang
+    function recoveryFullscreen() {
+        enterFullscreen();
+        // Blur baru hilang otomatis via event listener fullscreenchange di bawah
     }
 
-    // --- SECURITY EVENTS ---
-    window.addEventListener('contextmenu', e => { if(currentMode !== 'pencarian') { e.preventDefault(); triggerAlert("Dilarang Klik Kanan/Tahan Layar!"); } });
-    window.addEventListener('keydown', e => {
-        const isPaste = (e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V');
-        const isForbidden = (e.ctrlKey || e.metaKey) && !isPaste;
-        if ((isForbidden || e.key === 'PrintScreen' || (e.ctrlKey && e.shiftKey && e.key === 'I')) && currentMode !== 'pencarian') {
-            e.preventDefault();
-            triggerAlert("Kombinasi Keyboard Dilarang!");
+    document.addEventListener('fullscreenchange', () => {
+        const isFS = !!document.fullscreenElement;
+        const container = document.getElementById('mainContainer');
+        const alertBox = document.getElementById('secure-alert');
+
+        if (!isFS && (currentMode === 'belajar' || currentMode === 'latihan')) {
+            // Pelanggaran: Keluar FS
+            sfx.alert.play();
+            container.classList.add('blur-active');
+            alertBox.style.display = 'block';
+        } else if (isFS) {
+            // Kembali ke FS: Bersihkan semua alert
+            container.classList.remove('blur-active');
+            alertBox.style.display = 'none';
+            sfx.pop.play();
         }
     });
+
+    // Event Keyboard & Mouse tetap dijaga
+    window.addEventListener('contextmenu', e => { 
+        if(currentMode !== 'pencarian') { 
+            e.preventDefault(); 
+            triggerAlertManual("Klik Kanan Dilarang!"); 
+        } 
+    });
+
+    function triggerAlertManual(msg) {
+        document.getElementById('alert-msg').innerText = msg;
+        document.getElementById('mainContainer').classList.add('blur-active');
+        document.getElementById('secure-alert').style.display = 'block';
+        sfx.alert.play();
+        // Hilang otomatis setelah 3 detik untuk manual event
+        setTimeout(() => {
+            if (document.fullscreenElement) {
+                document.getElementById('mainContainer').classList.remove('blur-active');
+                document.getElementById('secure-alert').style.display = 'none';
+            }
+        }, 3000);
+    }
 
     function setMode(mode) {
         currentMode = mode;
@@ -193,7 +207,6 @@
         renderHistory();
     }
 
-    // --- CORE CHAT LOGIC ---
     function renderHistory() {
         const area = document.getElementById('chat-area');
         area.innerHTML = ''; 
@@ -214,7 +227,7 @@
         renderHistory();
         sfx.send.play();
         input.value = '';
-        // Simulasi fetch (hubungkan ke app.py Kakak)
+        // Integrasi dengan app.py tetap sama
     }
 
     function autoHeight(elem) { elem.style.height = "auto"; elem.style.height = (elem.scrollHeight) + "px"; }
