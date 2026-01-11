@@ -33,7 +33,7 @@ def chat():
         is_image = "[USER_IMAGE_DATA:" in user_input
         if is_image:
             extracted_msg = user_input.split("] ")[-1]
-            user_input = f"[ANALISIS FOTO] {extracted_msg}. Instruksi: Analisis materi ini dan respon sesuai mode {user_mode}."
+            user_input = f"[ANALISIS FOTO] {extracted_msg}. Instruksi: Identifikasi semua teks, rumus matematika, dan senyawa kimia. Respon sesuai mode {user_mode}."
 
         # --- BUG FIX: LOGIKA MEMORY KUIS ---
         if 'quiz_active' not in session: session['quiz_active'] = False
@@ -41,14 +41,14 @@ def chat():
 
         is_answering_quiz = len(user_input.strip()) == 1 and user_input.strip().upper() in ['A', 'B', 'C', 'D']
         
-        # Logika Tambahan: Maksa AI tetap di jalur Mode Latihan
+        # --- REVISI MODE LATIHAN: SEKALI JAWAB LANGSUNG FINISH ---
         if user_mode == "latihan":
             if is_answering_quiz and session.get('quiz_active'):
-                # REVISI: Perintah lebih tajam agar clue benar & pilihan dimunculkan lagi
                 soal_ref = session.get('last_soal', '')
-                user_input = f"SAYA MEMILIH {user_input.upper()}. Berdasarkan kuis ini: '{soal_ref}', periksa apakah benar. Jika SALAH: berikan clue yang relevan dan WAJIB tampilkan ulang pilihan A, B, C, D dari soal tersebut agar saya bisa memilih lagi."
+                user_input = f"SAYA MEMILIH {user_input.upper()}. Berdasarkan kuis ini: '{soal_ref}', SEGERA berikan penilaian BENAR atau SALAH, lalu berikan penjelasan lengkapnya menggunakan format LaTeX/Kimia. Jangan memberikan kesempatan menjawab lagi."
+                session['quiz_active'] = False 
             elif not is_answering_quiz:
-                user_input = f"BUATKAN KUIS PILIHAN GANDA (A, B, C, D) dari materi ini. JANGAN DIJELASKAN SEKARANG: {user_input}"
+                user_input = f"BUATKAN KUIS PILIHAN GANDA (A, B, C, D) dari materi ini. Gunakan format LaTeX/Kimia pada soal jika perlu. JANGAN DIJELASKAN SEKARANG: {user_input}"
 
         # --- LOGIKA SEARCH (FITUR PATEN TIDAK BERUBAH) ---
         search_info = ""
@@ -59,32 +59,38 @@ def chat():
             except: 
                 search_info = "Internet akses terbatas."
 
-        # --- LOGIKA INSTRUKSI PER MODE (STRUKTUR ASLI KAKAK) ---
+        # --- LOGIKA INSTRUKSI PER MODE DENGAN FORMAT TEKS ASING ---
+        # Menambahkan aturan deteksi teks asing ke setiap mode
+        format_asing_rule = r"""
+PENTING (IDENTIFIKASI TEKS ASING):
+- MATEMATIKA: Gunakan $...$ untuk simbol/rumus inline (misal: $E=mc^2$) dan $$...$$ untuk rumus blok.
+- KIMIA: Gunakan \ce{...} untuk semua senyawa kimia dan reaksi (misal: \ce{H2SO4}).
+- FISIKA: Gunakan satuan internasional dan format pangkat LaTeX.
+"""
+
         if user_mode == "latihan":
-            mode_instruction = r"""
-WAJIB: AKTIFKAN AUTO-QUIZ MODE.
-1. Jika Kakak memberikan soal/materi, JANGAN BERIKAN JAWABAN LANGSUNG.
-2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
-3. HANYA berikan penilaian/jawaban jika Kakak sudah memilih opsi A/B/C/D.
-4. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
-5. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
-6. Jika Kakak menjawab salah, katakan SALAH secara tegas (jangan beri selamat), beri clue, dan TAMPILKAN LAGI pilihan jawabannya.
+            mode_instruction = f"""
+WAJIB: MODE KUIS SEKALI JAWAB.
+{format_asing_rule}
+1. Jika Kakak memberi materi/soal, buatkan kuis A, B, C, D tanpa penjelasan.
+2. Jika Kakak menjawab A/B/C/D, berikan penilaian (BENAR/SALAH) dan LANGSUNG berikan penjelasan lengkap materi tersebut.
+3. Setelah penjelasan diberikan, kuis dianggap selesai.
 """
         elif user_mode == "pencarian":
             mode_instruction = f"""
 WAJIB: MODE PENCARIAN AKTIF.
+{format_asing_rule}
 1. Gunakan DATA INTERNET terbaru untuk menjawab.
 2. Berikan informasi relevan dan sumber data.
 """
-        else: # Default: Mode Belajar (LOGIKA ASLI KAKAK)
-            mode_instruction = r"""
+        else: # Default: Mode Belajar
+            mode_instruction = f"""
 WAJIB: MODE BELAJAR AKTIF.
+{format_asing_rule}
 1. Berikan penjelasan terstruktur dengan pemisah '---'.
-2. Gunakan LaTeX ($...$) untuk rumus.
-3. Gunakan DATA INTERNET yang tersedia untuk menjawab.
-4. Berikan informasi yang paling relevan dan terbaru.
-5. Sebutkan sumber jika perlu.
-6. Gunakan \ce{...} untuk simbol kimia.
+2. Gunakan DATA INTERNET yang tersedia untuk menjawab.
+3. Berikan informasi yang paling relevan dan terbaru.
+4. Sebutkan sumber jika perlu.
 """
 
         # --- INTEGRASI SYSTEM PROMPT ---
@@ -97,7 +103,6 @@ DATA INTERNET: {search_info if search_info else 'Gunakan internal knowledge'}.
 
 ATURAN FORMATTING:
 - Gunakan --- untuk pemisah.
-- Rumus matematika $...$, kimia \\ce{{...}}.
 - Selalu panggil 'Kakak'.
 """
 
@@ -111,13 +116,10 @@ ATURAN FORMATTING:
 
         response_text = completion.choices[0].message.content
 
-        # --- REVISI UPDATE SESSION ---
-        if user_mode == "latihan" and ("A." in response_text or "A)" in response_text):
+        # UPDATE SESSION: Aktifkan kuis hanya saat soal baru muncul
+        if user_mode == "latihan" and ("A." in response_text or "A)" in response_text) and not is_answering_quiz:
             session['quiz_active'] = True
-            # Hanya update 'last_soal' jika ini soal BARU (bukan saat memberi clue/salah)
-            # Ini supaya AI tidak kehilangan konteks soal asli saat Kakak menjawab salah
-            if "SALAH" not in response_text.upper():
-                session['last_soal'] = response_text 
+            session['last_soal'] = response_text 
 
         return jsonify({
             "response": response_text,
