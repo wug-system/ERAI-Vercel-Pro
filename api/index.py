@@ -29,23 +29,27 @@ def chat():
         user_mode = data.get("mode", "belajar")
         history = data.get("history", [])[-8:] 
 
-        # --- BUG FIX: PENANGANAN GAMBAR (Hanya modifikasi tipis agar tidak crash) ---
+        # --- BUG FIX: PENANGANAN GAMBAR ---
         is_image = "[USER_IMAGE_DATA:" in user_input
         if is_image:
             extracted_msg = user_input.split("] ")[-1]
-            user_input = f"[MODE ANALISIS FOTO] Kakak mengirimkan gambar. Analisis teks/soal di dalamnya dan jawab sesuai mode {user_mode}: {extracted_msg}"
+            user_input = f"[ANALISIS FOTO] {extracted_msg}. Instruksi: Analisis materi ini dan respon sesuai mode {user_mode}."
 
-        # --- BUG FIX: LOGIKA MEMORY KUIS (Hanya penambahan state tanpa ubah fitur) ---
+        # --- BUG FIX: LOGIKA MEMORY KUIS ---
         if 'quiz_active' not in session: session['quiz_active'] = False
         if 'last_soal' not in session: session['last_soal'] = ""
 
         is_answering_quiz = len(user_input.strip()) == 1 and user_input.strip().upper() in ['A', 'B', 'C', 'D']
         
-        # Penanganan khusus jika sedang kuis di mode latihan
-        if user_mode == "latihan" and session.get('quiz_active') and is_answering_quiz:
-            soal_sebelumnya = session.get('last_soal', 'materi latihan')
-            user_input = f"SAYA MEMILIH JAWABAN {user_input.upper()} untuk soal: '{soal_sebelumnya}'. Berikan penilaian BENAR/SALAH dan penjelasan lengkapnya!"
-            session['quiz_active'] = False 
+        # Logika Tambahan: Maksa AI tetap di jalur Mode Latihan
+        if user_mode == "latihan":
+            if is_answering_quiz and session.get('quiz_active'):
+                # Kirim perintah tersembunyi agar AI membandingkan jawaban dengan benar
+                soal_ref = session.get('last_soal', '')
+                user_input = f"SAYA MEMILIH {user_input.upper()}. Periksa apakah benar atau salah berdasarkan soal ini: '{soal_ref}'. Berikan penjelasan jujur."
+            elif not is_answering_quiz:
+                # Maksa AI buat kuis, bukan ngejelasin (Masalah yang Kakak keluhkan)
+                user_input = f"BUATKAN KUIS PILIHAN GANDA (A, B, C, D) dari materi ini. JANGAN DIJELASKAN SEKARANG: {user_input}"
 
         # --- LOGIKA SEARCH (FITUR PATEN TIDAK BERUBAH) ---
         search_info = ""
@@ -56,17 +60,16 @@ def chat():
             except: 
                 search_info = "Internet akses terbatas."
 
-        # --- LOGIKA INSTRUKSI PER MODE (DIKEMBALIKAN KE STRUKTUR ASLI KAKAK) ---
+        # --- LOGIKA INSTRUKSI PER MODE (STRUKTUR ASLI KAKAK) ---
         if user_mode == "latihan":
             mode_instruction = r"""
 WAJIB: AKTIFKAN AUTO-QUIZ MODE.
 1. Jika Kakak memberikan soal/materi, JANGAN BERIKAN JAWABAN LANGSUNG.
 2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
 3. HANYA berikan penilaian/jawaban jika Kakak sudah memilih opsi A/B/C/D.
-4. Jika Kakak memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
-5. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
-6. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
-7. Jika Kakak menjawab salah, berikan clue. Jika benar, berikan selamat dan penjelasan step-by-step.
+4. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
+5. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
+6. Jika Kakak menjawab salah, katakan SALAH secara tegas (jangan beri selamat) dan beri clue.
 """
         elif user_mode == "pencarian":
             mode_instruction = f"""
@@ -85,7 +88,7 @@ WAJIB: MODE BELAJAR AKTIF.
 6. Gunakan \ce{...} untuk simbol kimia.
 """
 
-        # --- INTEGRASI SYSTEM PROMPT (LOGIKA ASLI KAKAK) ---
+        # --- INTEGRASI SYSTEM PROMPT ---
         system_prompt = f"""
 Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}. 
 Sistem Keamanan: WUG Secure Active.
@@ -101,15 +104,16 @@ ATURAN FORMATTING:
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
         
+        # FIX: Temperature diturunkan ke 0.1 agar AI logis & tidak salah menilai Benar/Salah
         completion = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,
-            temperature=0.3 
+            temperature=0.1 
         )
 
         response_text = completion.choices[0].message.content
 
-        # UPDATE SESSION UNTUK KUIS (PENTING)
+        # UPDATE SESSION UNTUK KUIS
         if user_mode == "latihan" and ("A." in response_text or "A)" in response_text):
             session['quiz_active'] = True
             session['last_soal'] = response_text 
@@ -122,7 +126,7 @@ ATURAN FORMATTING:
     except Exception as e:
         error_msg = str(e).lower()
         if any(code in error_msg for code in ["429", "413", "rate_limit"]):
-            return jsonify({"response": "**[WUG SECURE - NOTIFIKASI]**\n\nKuota harian habis atau file terlalu besar. Silakan coba lagi nanti, Kakak. 🚀"}), 200
+            return jsonify({"response": "**[WUG SECURE - NOTIFIKASI]**\n\nKuota habis atau file terlalu besar, Kak. 🚀"}), 200
         return jsonify({"response": f"**[SYSTEM ERROR]** {str(e)}"}), 200
 
 if __name__ == '__main__':
