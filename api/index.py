@@ -52,6 +52,7 @@ WAJIB: AKTIFKAN AUTO-QUIZ MODE.
 8. Tunggu Kakak menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
 9. User ingin kuis. Buatkan soal pilihan ganda sesuai materi.
 10. Anda di mode latihan, siap membuatkan soal jika diminta.
+11. Setelah di pilih (A/B/C/D) dari soal yang di buat, lanjut ke pemeriksaan jawban benar/salah, jika benar berikan penjelasan lengkap, jika slah berikan clue dan jika masih salah berikan penjelasan lengkap.
 """
         elif user_mode == "pencarian":
             mode_instruction = f"""
