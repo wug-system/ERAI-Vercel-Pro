@@ -22,16 +22,17 @@
         }
         @keyframes gradMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* REVISI DESKTOP: Lebar dikecilkan (700px) agar chat lebih lega ke atas */
+        /* DESKTOP: Lebar 850px sesuai permintaan Admin */
         .app-container {
-            width: 95%; max-width: 700px; height: 90vh; 
+            width: 95%; max-width: 850px; height: 92vh; 
             background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             display: flex; flex-direction: column; position: relative;
             border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
-        header { padding: 15px 20px; background: rgba(255, 255, 255, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.2); flex-shrink: 0; border-radius: 24px 24px 0 0; }
+        header { padding: 15px 20px; background: rgba(255, 255, 255, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.2); flex-shrink: 0; }
         .mode-selector { display: flex; gap: 8px; margin-top: 10px; }
         .mode-selector button {
             flex: 1; padding: 10px; border: 1px solid rgba(255,255,255,0.4); border-radius: 10px;
@@ -48,31 +49,30 @@
         .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 4px; }
         .bot-bubble { align-self: flex-start; background: rgba(255, 255, 255, 0.6); border-bottom-left-radius: 4px; }
 
-        /* REVISI INPUT: Font diperbagus */
         .input-box { 
-            padding: 15px 20px; background: rgba(255, 255, 255, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.2);
-            display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0; border-radius: 0 0 24px 24px;
+            padding: 15px 20px; background: rgba(255, 255, 255, 0.5); border-top: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0;
         }
         .input-wrapper { flex: 1; background: white; border-radius: 15px; padding: 10px 15px; border: 1px solid rgba(108, 92, 231, 0.2); }
+        
+        /* FONT REVISI */
         #userInput { 
             width: 100%; border: none; background: transparent; outline: none; 
-            font-size: 0.95rem; font-family: 'Inter', sans-serif; font-weight: 500; color: #333;
+            font-size: 1rem; font-family: 'Inter', sans-serif; font-weight: 500; color: #333;
             resize: none; max-height: 120px; 
         }
 
         .send-btn { background: var(--wug-purple); color: white; border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* FIX MOBILE: KEMBALI FULLSCREEN & ANTI-KEYBOARD */
+        /* MOBILE OVERRIDES */
         @media (max-width: 768px) {
             body { align-items: flex-start; }
-            .app-container { width: 100% !important; max-width: 100% !important; height: 100dvh !important; border-radius: 0; border: none; }
-            header, .input-box { border-radius: 0; }
-            .input-box { padding-bottom: max(15px, env(safe-area-inset-bottom)); }
+            .app-container { width: 100% !important; max-width: 100% !important; border-radius: 0; border: none; }
         }
 
         #loading-overlay {
             position: absolute; inset: 0; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(15px);
-            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 999; border-radius: 24px;
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 999;
         }
         #loading-overlay.active { display: flex; }
         .spinner { border: 4px solid rgba(108, 92, 231, 0.1); border-top: 4px solid var(--wug-purple); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; }
@@ -98,7 +98,7 @@
 
     <div id="chat-area"></div>
 
-    <div class="input-box">
+    <div class="input-box" id="inputBoxArea">
         <div class="input-wrapper">
             <textarea id="userInput" placeholder="Tulis pesan..." rows="1" oninput="autoHeight(this)"></textarea>
         </div>
@@ -114,21 +114,33 @@
         pencarian: [{ role: "assistant", content: "**Kakak**, apa yang ingin Anda cari?" }]
     };
 
-    const sfx = { pop: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'), send: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3') };
-
-    // FIX KEYBOARD MOBILE (LOCK TINGGI KE VIEWPORT)
-    const fixHeight = () => {
-        if (window.visualViewport) {
-            const h = window.visualViewport.height;
-            document.getElementById('mainContainer').style.height = h + 'px';
-            window.scrollTo(0,0);
-            scrollChat();
+    // --- JS FIX FOR MOBILE KEYBOARD ---
+    function adjustHeight() {
+        const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        const container = document.getElementById('mainContainer');
+        if (window.innerWidth <= 768) {
+            container.style.height = vh + 'px';
+        } else {
+            container.style.height = '92vh';
         }
-    };
-    if (window.visualViewport) window.visualViewport.addEventListener('resize', fixHeight);
+        scrollChat();
+    }
 
-    function autoHeight(elem) { elem.style.height = "auto"; elem.style.height = (elem.scrollHeight) + "px"; }
-    function scrollChat() { const a = document.getElementById('chat-area'); a.scrollTop = a.scrollHeight; }
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', adjustHeight);
+        window.visualViewport.addEventListener('scroll', adjustHeight);
+    }
+    window.addEventListener('resize', adjustHeight);
+
+    function autoHeight(elem) { 
+        elem.style.height = "auto"; 
+        elem.style.height = (elem.scrollHeight) + "px"; 
+    }
+
+    function scrollChat() { 
+        const a = document.getElementById('chat-area'); 
+        a.scrollTop = a.scrollHeight; 
+    }
 
     function renderHistory() {
         const area = document.getElementById('chat-area');
@@ -145,7 +157,6 @@
 
     function setMode(mode) {
         currentMode = mode;
-        sfx.pop.play().catch(() => {});
         document.querySelectorAll('.mode-selector button').forEach(b => b.classList.remove('active'));
         document.getElementById(`btn-${mode}`).classList.add('active');
         renderHistory();
@@ -163,7 +174,6 @@
         histories[currentMode].push({ role: "user", content: msg });
         renderHistory();
         input.value = ''; input.style.height = "auto";
-        sfx.send.play().catch(() => {});
         document.getElementById('loading-overlay').classList.add('active');
 
         try {
@@ -181,8 +191,16 @@
         }
     }
 
-    function startApp() { if (!document.fullscreenElement && window.innerWidth <= 768) document.documentElement.requestFullscreen().catch(() => {}); }
-    window.onload = () => { renderHistory(); fixHeight(); };
+    function startApp() { 
+        if (!document.fullscreenElement && window.innerWidth <= 768) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } 
+    }
+
+    window.onload = () => { 
+        renderHistory(); 
+        adjustHeight(); 
+    };
 </script>
 </body>
 </html>
