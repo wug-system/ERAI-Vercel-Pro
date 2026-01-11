@@ -20,22 +20,72 @@ def index():
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
+        # IDENTITAS DIKUNCI KE ADMIN (Bukan Kakak/Kak)
         user_name = "Kakak / Kak" 
         current_date = datetime.now().strftime("%d %B %Y")
+        
         data = request.json
         user_input = data.get("message", "")
         user_mode = data.get("mode", "belajar")
-        # Batasi history 5 pesan terakhir agar tidak overload (TPM limit)
         history = data.get("history", [])[-5:] 
 
+        # --- LOGIKA SEARCH (MODE PENCARIAN) ---
         search_info = ""
         if user_mode == "pencarian" and tavily_client:
             try:
                 search_res = tavily_client.search(query=f"{user_input} {current_date}", search_depth="advanced")
                 search_info = " ".join([r.get('content') for r in search_res.get('results', [])])
-            except: search_info = "Internet akses terbatas."
+            except: 
+                search_info = "Internet akses terbatas."
 
-        system_prompt = f"Nama: ERAI. User: {user_name}. Hari ini: {current_date}. Mode: {user_mode}. Gunakan LaTeX $...$ dan pemisah ---."
+        # --- LOGIKA INSTRUKSI PER MODE ---
+        if user_mode == "latihan":
+            mode_instruction = r"""
+WAJIB: AKTIFKAN AUTO-QUIZ MODE.
+1. Jika Admin memberikan soal, JANGAN BERIKAN JAWABAN LANGSUNG.
+2. Ubah menjadi kuis interaktif 4 pilihan (A, B, C, D).
+3. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
+4. HANYA berikan jawaban jika Admin sudah memilih opsi A/B/C/D.
+5. Jika Admin memberikan soal atau pertanyaan materi, JANGAN BERIKAN JAWABAN LANGSUNG.
+6. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
+7. Berikan petunjuk (clue) singkat saja.
+8. Tunggu Admin menjawab. Jika benar, baru berikan selamat dan penjelasan step-by-step yang rapi.
+"""
+        elif user_mode == "pencarian":
+            mode_instruction = f"""
+WAJIB: MODE PENCARIAN AKTIF.
+1. Gunakan DATA INTERNET yang tersedia untuk menjawab.
+2. Berikan informasi yang paling relevan dan terbaru.
+3. Sebutkan sumber jika perlu.
+4. Tetap gunakan format pemisah '---' dan LaTeX jika ada data teknis.
+"""
+        else: # Default: Mode Belajar
+            mode_instruction = r"""
+WAJIB: MODE BELAJAR AKTIF.
+1. Berikan penjelasan terstruktur menggunakan "---" antar bagian.
+2. Selesaikan soal step-by-step menggunakan LaTeX ($...$).
+3. Gunakan \ce{...} untuk simbol kimia.
+4. Berikan penjelasan yang sangat rapi, terstruktur, dan mendalam.
+5. Gunakan "Pemisah Garis" (---) antar bagian agar tidak menumpuk.
+6. Gunakan Bullet Points untuk poin-poin penting.
+7. Jika ada rumus per (fraction), taruh di baris baru sendiri, jangan digabung di tengah kalimat.
+"""
+
+        # --- INTEGRASI SYSTEM PROMPT ---
+        system_prompt = f"""
+Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}.
+{mode_instruction}
+Hari ini: {current_date}.
+DATA INTERNET: {search_info if search_info else 'Gunakan internal knowledge'}.
+
+ATURAN FORMATTING:
+- Gunakan --- untuk garis pemisah.
+- Rumus matematika diapit $...$.
+- Rumus kimia diapit \\ce{{...}}.
+- Gunakan bahasa teman sebaya yang suportif (TAPI TETAP PANGGIL 'Admin').
+- DILARANG menggunakan kata 'Kakak' atau 'Kak'.
+"""
+
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
         
         completion = groq_client.chat.completions.create(
@@ -48,7 +98,7 @@ def chat():
     except Exception as e:
         error_msg = str(e).lower()
         if any(code in error_msg for code in ["429", "413", "rate_limit"]):
-            return jsonify({"response": "**[WUG SECURE - NOTIFIKASI]**\n\nKuota harian/token habis. Silakan coba lagi nanti, Admin. 🚀"}), 200
+            return jsonify({"response": "**[WUG SECURE - NOTIFIKASI]**\n\nKuota harian atau memori token habis. Silakan coba lagi nanti, Admin. 🚀"}), 200
         return jsonify({"response": f"**[SYSTEM ERROR]** {str(e)}"}), 200
 
 if __name__ == '__main__':
