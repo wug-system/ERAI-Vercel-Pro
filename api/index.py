@@ -89,10 +89,11 @@ WAJIB: MODE PENCARIAN AKTIF.
             mode_instruction = f"""
 WAJIB: MODE BELAJAR AKTIF.
 {format_asing_rule}
-1. Berikan penjelasan terstruktur dengan pemisah '---'.
-2. Gunakan DATA INTERNET yang tersedia untuk menjawab.
-3. Berikan informasi yang paling relevan dan terbaru.
-4. Sebutkan sumber jika perlu.
+1. Berikan jawaban yang sudah PASTI BENAR, beserta penjelasan lengkap.
+2. Berikan penjelasan terstruktur dengan pemisah '---'.
+3. Gunakan DATA INTERNET yang tersedia untuk menjawab.
+4. Berikan informasi yang paling relevan dan terbaru.
+5. Sebutkan sumber jika perlu.
 """
 
         # --- INTEGRASI SYSTEM PROMPT ---
