@@ -25,32 +25,27 @@
             background-size: 400% 400%; animation: gradMove 15s ease infinite; z-index: -1;
         }
 
-/* --- THINKING ANIMATION (ERAI BERPIKIR) --- */
-.typing-indicator {
-    display: none; /* Sembunyi secara default */
-    align-self: flex-start;
-    background: rgba(255, 255, 255, 0.6);
-    padding: 10px 18px;
-    border-radius: 20px;
-    margin-left: 25px;
-    margin-bottom: 15px;
-    width: fit-content;
-}
-.typing-indicator span {
-    height: 8px; width: 8px; background: #6c5ce7; 
-    display: inline-block; border-radius: 50%; 
-    margin: 0 2px; opacity: 0.4;
-    animation: blink 1s infinite alternate;
-}
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        /* --- THINKING ANIMATION (ERAI BERPIKIR) --- */
+        .typing-indicator {
+            display: none; align-self: flex-start;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 10px 18px; border-radius: 20px;
+            margin-left: 25px; margin-bottom: 15px; width: fit-content;
+        }
+        .typing-indicator span {
+            height: 8px; width: 8px; background: #6c5ce7; 
+            display: inline-block; border-radius: 50%; 
+            margin: 0 2px; opacity: 0.4;
+            animation: blink 1s infinite alternate;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
 
-@keyframes blink { 
-    from { opacity: 0.4; transform: scale(1); } 
-    to { opacity: 1; transform: scale(1.2); } 
-}
+        @keyframes blink { 
+            from { opacity: 0.4; transform: scale(1); } 
+            to { opacity: 1; transform: scale(1.2); } 
+        }
         
-        /* --- SECURITY UI --- */
         #mainContainer.blur-active { filter: blur(60px) brightness(0.3); pointer-events: none; }
         
         #secure-alert {
@@ -72,13 +67,11 @@
 
         @keyframes gradMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* --- UI CONTAINER --- */
         .app-container {
             width: 92%; max-width: 900px; height: 90vh; 
             background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(30px);
             display: flex; flex-direction: column; position: relative;
-            border-radius: 45px; /* Full Rounded Ultra */
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 45px; border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 40px 100px rgba(0,0,0,0.1); transition: all 0.5s ease;
             overflow: hidden;
         }
@@ -93,7 +86,6 @@
 
         #chat-area { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
 
-        /* --- BUBBLE CHAT --- */
         .bubble { 
             max-width: 80%; padding: 15px 20px; border-radius: 25px; font-size: 0.98rem; line-height: 1.6; 
             box-shadow: 0 8px 20px rgba(0,0,0,0.04); position: relative; animation: slideUp 0.4s ease forwards;
@@ -153,122 +145,14 @@
 
     <div id="chat-area"></div>
 
-<div id="thinking" class="typing-indicator">
-    <span></span><span></span><span></span>
-</div>
+    <div id="thinking" class="typing-indicator">
+        <span></span><span></span><span></span>
+    </div>
     
     <div class="input-box">
         <label class="action-btn">📷<input type="file" id="fileInput" hidden onchange="handleFileUpload()"></label>
         <div class="input-wrapper">
             <textarea id="userInput" placeholder="Tanyakan sesuatu..." rows="1" oninput="autoHeight(this)" onkeydown="checkKey(event)"></textarea>
-
-<script>
-    // --- LOGIKA INPUT PATEN v4.0 ---
-    function checkKey(e) {
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        if (e.key === 'Enter') {
-            if (isMobile) {
-                // Di Mobile: Enter selalu buat baris baru, kirim harus pencet tombol roket
-                return; 
-            } else {
-                // Di Desktop:
-                if (e.shiftKey) {
-                    // Shift + Enter = Baris Baru (Biarkan default browser)
-                    return;
-                } else {
-                    // Enter saja = Kirim Pesan
-                    e.preventDefault();
-                    handleSend();
-                }
-            }
-        }
-    }
-
-    // --- REVISI KEAMANAN KEYBOARD (ANTI-SHIFT) ---
-    window.addEventListener('keydown', e => {
-        if (currentMode === 'pencarian') return;
-
-        // Blokir Shift + S (Screenshot), Shift + C (Copy), Shift + Panah (Seleksi)
-        const isShiftAction = e.shiftKey && (
-            e.key.toLowerCase() === 's' || 
-            e.key.toLowerCase() === 'c' || 
-            e.key.includes('Arrow')
-        );
-
-        // Blokir Ctrl/Meta Shortcut
-        const isControlAction = (e.ctrlKey || e.metaKey) && !['v', 'V'].includes(e.key);
-
-        if (isShiftAction || isControlAction || e.key === 'F12') {
-            e.preventDefault();
-            triggerAlertTimed("Aksi Keyboard Dilarang!");
-        }
-    });
-
-    async function handleSend() {
-    const input = document.getElementById('userInput');
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    // --- LOGIKA TAMBAHAN: AUTO-ACTIVATE QUIZ MODE ---
-    let finalMessage = msg;
-    if (currentMode === 'latihan') {
-        const quizTrigger = ['buat', 'kasih', 'uji', 'soal', 'kuis', 'test', 'tanya'];
-        const isAskingQuiz = quizTrigger.some(word => msg.toLowerCase().includes(word));
-        
-        // Jika terdeteksi minta soal, kita beri flag/tanda di pesan agar backend paham
-        if (isAskingQuiz) {
-            console.log("WUG System: Menjalankan Logika Auto-Quiz...");
-            // Opsional: Kakak bisa memanipulasi pesan atau membiarkan backend yang mendeteksi
-        }
-    }
-    // -----------------------------------------------
-
-    // Tampilkan pesan user
-    histories[currentMode].push({ role: "user", content: msg });
-    renderHistory();
-    
-    // Reset Input
-    input.value = '';
-    input.style.height = "auto";
-    sfx.send.play();
-
-    // Animasi Berpikir
-    const thinking = document.getElementById('thinking');
-    thinking.style.display = 'block';
-    scrollChat();
-
-    try {
-        // Koneksi backend sesungguhnya
-        const response = await fetch('/chat', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ 
-                message: msg, 
-                mode: currentMode,
-                trigger_quiz: (currentMode === 'latihan') // Kirim sinyal kuis ke backend
-            })
-        });
-        const data = await response.json();
-        
-        // SEMBUNYIKAN ANIMASI SAAT JAWABAN TIBA
-        thinking.style.display = 'none'; 
-        addBotMessage(data.response);
-        
-    } catch (err) {
-        // Timeout simulasi agar animasi terlihat
-        setTimeout(() => {
-            addBotMessage("Sistem pusat belum terhubung. Pastikan Backend aktif ya, Admin.");
-            thinking.style.display = 'none';
-        }, 1500);
-    }
-}
-
-    function autoHeight(elem) {
-        elem.style.height = "auto";
-        elem.style.height = (elem.scrollHeight) + "px";
-    }
-</script>
         </div>
         <button class="action-btn send-btn" onclick="handleSend()">🚀</button>
     </div>
@@ -289,7 +173,6 @@
         copy: new Audio('https://assets.mixkit.co/active_storage/sfx/2349/2349-preview.mp3')
     };
 
-    // --- INTEGRATED SECURITY SYSTEM ---
     function initSecureMode() {
         document.getElementById('overlay-start').style.display = 'none';
         enterFullscreen();
@@ -321,38 +204,105 @@
 
     // ANTI KLIK KANAN & KEYBOARD (WUG Standard)
     window.addEventListener('contextmenu', e => { 
-        if(currentMode !== 'pencarian') { e.preventDefault(); triggerAlertManual("Klik Kanan Dilarang!"); }
+        if(currentMode !== 'pencarian') { e.preventDefault(); triggerAlertTimed("Klik Kanan Dilarang!"); }
     });
+
     window.addEventListener('keydown', e => {
-        const isPaste = (e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V');
-        const isForbidden = (e.ctrlKey || e.metaKey) && !isPaste;
-        if ((isForbidden || e.key === 'PrintScreen' || (e.ctrlKey && e.shiftKey && e.key === 'I')) && currentMode !== 'pencarian') {
+        if (currentMode === 'pencarian') return;
+
+        const isShiftAction = e.shiftKey && (
+            e.key.toLowerCase() === 's' || 
+            e.key.toLowerCase() === 'c' || 
+            e.key.includes('Arrow')
+        );
+        const isForbidden = (e.ctrlKey || e.metaKey) && !['v', 'V'].includes(e.key);
+
+        if (isShiftAction || isForbidden || e.key === 'PrintScreen' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
             e.preventDefault();
-            triggerAlertManual("Shortcut Keyboard Terdeteksi!");
+            triggerAlertTimed("Aksi Keyboard Dilarang!");
         }
     });
 
-    // FUNGSI ALERT KEAMANAN DENGAN DURASI (3 DETIK)
-function triggerAlertTimed(msg) {
-    const container = document.getElementById('mainContainer');
-    const alertBox = document.getElementById('secure-alert');
-    
-    document.getElementById('alert-msg').innerText = msg;
-    container.classList.add('blur-active');
-    alertBox.style.display = 'block';
-    sfx.alert.play();
+    function triggerAlertTimed(msg) {
+        const container = document.getElementById('mainContainer');
+        const alertBox = document.getElementById('secure-alert');
+        document.getElementById('alert-msg').innerText = msg;
+        container.classList.add('blur-active');
+        alertBox.style.display = 'block';
+        sfx.alert.play();
+        setTimeout(() => {
+            if (document.fullscreenElement || currentMode === 'pencarian') {
+                container.classList.remove('blur-active');
+                alertBox.style.display = 'none';
+            }
+        }, 3000); 
+    }
 
-    // Otomatis tutup setelah 3 detik
-    setTimeout(() => {
-        // Hanya tutup jika sedang di Fullscreen atau Mode Pencarian
-        if (document.fullscreenElement || currentMode === 'pencarian') {
-            container.classList.remove('blur-active');
-            alertBox.style.display = 'none';
+    function checkKey(e) {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (e.key === 'Enter') {
+            if (isMobile) return; 
+            if (e.shiftKey) return; 
+            e.preventDefault();
+            handleSend();
         }
-    }, 3000); 
-}
+    }
 
-    // --- CHAT LOGIC ---
+    async function handleSend() {
+        const input = document.getElementById('userInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        // Auto-Activate Quiz Logic
+        let isAskingQuiz = false;
+        if (currentMode === 'latihan') {
+            const quizTrigger = ['buat', 'kasih', 'uji', 'soal', 'kuis', 'test', 'tanya'];
+            isAskingQuiz = quizTrigger.some(word => msg.toLowerCase().includes(word));
+        }
+
+        // Tampilkan pesan user
+        histories[currentMode].push({ role: "user", content: msg });
+        renderHistory();
+        sfx.send.play();
+        
+        input.value = '';
+        input.style.height = "auto";
+
+        // Animasi Berpikir
+        const thinking = document.getElementById('thinking');
+        thinking.style.display = 'block';
+        scrollChat();
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    message: msg, 
+                    mode: currentMode,
+                    trigger_quiz: isAskingQuiz && (currentMode === 'latihan')
+                })
+            });
+            const data = await response.json();
+            
+            thinking.style.display = 'none'; 
+            addBotMessage(data.response);
+            sfx.pop.play();
+
+        } catch (err) {
+            setTimeout(() => {
+                addBotMessage("Sistem pusat belum terhubung. Pastikan Backend aktif ya, Admin.");
+                thinking.style.display = 'none';
+                sfx.pop.play();
+            }, 1500);
+        }
+    }
+
+    function addBotMessage(content) {
+        histories[currentMode].push({ role: "assistant", content: content });
+        renderHistory();
+    }
+
     function setMode(mode) {
         currentMode = mode;
         if (mode !== 'pencarian') enterFullscreen();
@@ -388,71 +338,9 @@ function triggerAlertTimed(msg) {
         scrollChat();
     }
 
-    function checkEnter(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }
-
-    async function handleSend() {
-    const input = document.getElementById('userInput');
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    // ... (kode tampilkan chat user) ...
-
-   async function handleSend() {
-    const input = document.getElementById('userInput');
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    // 1. Tampilkan pesan user ke layar
-    histories[currentMode].push({ role: "user", content: msg });
-    renderHistory();
-    
-    // 2. Mainkan SFX kirim pesan
-    sfx.send.play(); 
-    
-    // 3. Reset input box
-    input.value = '';
-    input.style.height = "auto";
-
-    // 4. MUNCULKAN ANIMASI BERPIKIR (Sesuai permintaan Kakak)
-    const thinking = document.getElementById('thinking');
-    thinking.style.display = 'block';
-    scrollChat();
-
-    try {
-        // 5. Ambil data dari Backend ERAI
-        const response = await fetch('/chat', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ message: msg, mode: currentMode })
-        });
-        const data = await response.json();
-        
-        // 6. SEMBUNYIKAN ANIMASI SAAT JAWABAN TIBA
-        thinking.style.display = 'none';
-        
-        // 7. Masukkan jawaban bot ke history
-        histories[currentMode].push({ role: "assistant", content: data.response });
-        renderHistory();
-        
-        // 8. Mainkan SFX jawaban masuk
-        sfx.pop.play(); 
-
-    } catch (e) {
-        // Jika error, tunggu 1 detik baru hilangkan animasi (agar tidak kaget)
-        setTimeout(() => {
-            thinking.style.display = 'none';
-            histories[currentMode].push({ 
-                role: "assistant", 
-                content: "Maaf Admin, sistem WUG mendeteksi koneksi backend belum aktif." 
-            });
-            renderHistory();
-            sfx.pop.play(); // Notifikasi suara tetap bunyi
-        }, 1000);
-    }
-}
-        
     function autoHeight(elem) { elem.style.height = "auto"; elem.style.height = (elem.scrollHeight) + "px"; }
     function scrollChat() { const a = document.getElementById('chat-area'); a.scrollTop = a.scrollHeight; }
+    function handleFileUpload() { console.log("File upload clicked"); }
 </script>
 </body>
 </html>
