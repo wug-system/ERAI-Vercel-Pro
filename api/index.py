@@ -44,11 +44,10 @@ def chat():
         # Logika Tambahan: Maksa AI tetap di jalur Mode Latihan
         if user_mode == "latihan":
             if is_answering_quiz and session.get('quiz_active'):
-                # Kirim perintah tersembunyi agar AI membandingkan jawaban dengan benar
+                # REVISI: Perintah lebih tajam agar clue benar & pilihan dimunculkan lagi
                 soal_ref = session.get('last_soal', '')
-                user_input = f"SAYA MEMILIH {user_input.upper()}. Periksa apakah benar atau salah berdasarkan soal ini: '{soal_ref}'. Berikan penjelasan jujur."
+                user_input = f"SAYA MEMILIH {user_input.upper()}. Berdasarkan kuis ini: '{soal_ref}', periksa apakah benar. Jika SALAH: berikan clue yang relevan dan WAJIB tampilkan ulang pilihan A, B, C, D dari soal tersebut agar saya bisa memilih lagi."
             elif not is_answering_quiz:
-                # Maksa AI buat kuis, bukan ngejelasin (Masalah yang Kakak keluhkan)
                 user_input = f"BUATKAN KUIS PILIHAN GANDA (A, B, C, D) dari materi ini. JANGAN DIJELASKAN SEKARANG: {user_input}"
 
         # --- LOGIKA SEARCH (FITUR PATEN TIDAK BERUBAH) ---
@@ -69,7 +68,7 @@ WAJIB: AKTIFKAN AUTO-QUIZ MODE.
 3. HANYA berikan penilaian/jawaban jika Kakak sudah memilih opsi A/B/C/D.
 4. Salah satu dari pilihan TERSEBUT HARUS JAWABAN YANG BENAR.
 5. Gunakan \ce{...} untuk kimia dan $...$ untuk matematika.
-6. Jika Kakak menjawab salah, katakan SALAH secara tegas (jangan beri selamat) dan beri clue.
+6. Jika Kakak menjawab salah, katakan SALAH secara tegas (jangan beri selamat), beri clue, dan TAMPILKAN LAGI pilihan jawabannya.
 """
         elif user_mode == "pencarian":
             mode_instruction = f"""
@@ -104,7 +103,6 @@ ATURAN FORMATTING:
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
         
-        # FIX: Temperature diturunkan ke 0.1 agar AI logis & tidak salah menilai Benar/Salah
         completion = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,
@@ -113,10 +111,13 @@ ATURAN FORMATTING:
 
         response_text = completion.choices[0].message.content
 
-        # UPDATE SESSION UNTUK KUIS
+        # --- REVISI UPDATE SESSION ---
         if user_mode == "latihan" and ("A." in response_text or "A)" in response_text):
             session['quiz_active'] = True
-            session['last_soal'] = response_text 
+            # Hanya update 'last_soal' jika ini soal BARU (bukan saat memberi clue/salah)
+            # Ini supaya AI tidak kehilangan konteks soal asli saat Kakak menjawab salah
+            if "SALAH" not in response_text.upper():
+                session['last_soal'] = response_text 
 
         return jsonify({
             "response": response_text,
