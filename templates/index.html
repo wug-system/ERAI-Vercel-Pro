@@ -282,27 +282,113 @@
         }
     }
 
-    async function handleSend(customMsg = null) {
-        const input = document.getElementById('userInput');
-        let msg = customMsg || input.value.trim();
-        
-        if (!msg && !stagedFile) return;
+    // --- BAGIAN JAVASCRIPT DI DALAM HTML ---
 
-        if (stagedFile) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const displayContent = `[FILE: ${stagedFile.name}]<br><img src="${e.target.result}" class="img-preview"><br>${msg}`;
-                // REVISI: Paksa AI Vision Backend
-                const backendMsg = `[USER_IMAGE_DATA: ${e.target.result}] [SYSTEM_INSTRUCTION: Kakak mengupload foto soal. ANALISA teks/gambar di dalam foto ini, identifikasi pertanyaannya, dan jawab dengan langkah lengkap.] ${msg}`;
-                
-                processChat(displayContent, backendMsg);
-                cancelUpload();
-            };
-            reader.readAsDataURL(stagedFile);
-        } else {
-            processChat(msg, msg);
-        }
+// Update fungsi handleSend untuk menangani pengiriman base64 dengan benar
+async function handleSend(customMsg = null) {
+    const input = document.getElementById('userInput');
+    let msg = customMsg || input.value.trim();
+    
+    if (!msg && !stagedFile) return;
+
+    if (stagedFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const displayContent = `[UPLOAD FILE: ${stagedFile.name}]<br><img src="${e.target.result}" class="img-preview"><br>${msg}`;
+            // Kirim data lengkap ke backend
+            const backendMsg = `[USER_IMAGE_DATA: ${e.target.result}] ${msg}`;
+            
+            processChat(displayContent, backendMsg);
+            cancelUpload();
+        };
+        reader.readAsDataURL(stagedFile);
+    } else {
+        processChat(msg, msg);
     }
+}
+
+async function processChat(display, backend) {
+    histories[currentMode].push({ role: "user", content: display });
+    renderHistory();
+    sfx.send.play();
+    document.getElementById('userInput').value = '';
+    document.getElementById('userInput').style.height = "auto";
+
+    const thinking = document.getElementById('thinking');
+    thinking.style.display = 'block';
+    scrollChat();
+
+    try {
+        const response = await fetch('/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                message: backend, 
+                mode: currentMode,
+                history: histories[currentMode].map(h => ({role: h.role, content: h.content}))
+            })
+        });
+        const data = await response.json();
+        
+        thinking.style.display = 'none'; 
+        
+        // Simpan status kuis ke variable global JS untuk render
+        window.lastIsQuiz = data.is_quiz_active;
+        
+        addBotMessage(data.response);
+        sfx.pop.play();
+    } catch (err) {
+        thinking.style.display = 'none';
+        addBotMessage("Sistem sibuk, Kak. Coba kirim ulang ya!");
+    }
+}
+
+function renderHistory() {
+    const area = document.getElementById('chat-area');
+    area.innerHTML = ''; 
+    histories[currentMode].forEach((msg, idx) => {
+        const div = document.createElement('div');
+        div.className = `bubble ${msg.role === 'user' ? 'user-bubble' : 'bot-bubble'}`;
+        div.innerHTML = marked.parse(msg.content);
+        
+        // Tombol kuis hanya muncul jika:
+        // 1. Mode Latihan
+        // 2. Pesan dari Assistant
+        // 3. Pesan TERAKHIR di history
+        // 4. Backend mengonfirmasi ada kuis aktif
+        const isLast = idx === histories[currentMode].length - 1;
+        if (msg.role === 'assistant' && currentMode === 'latihan' && isLast && window.lastIsQuiz) {
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'quiz-options';
+            ['A', 'B', 'C', 'D'].forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    handleSend(opt);
+                    window.lastIsQuiz = false; // Sembunyikan setelah dijawab
+                };
+                btnContainer.appendChild(btn);
+            });
+            div.appendChild(btnContainer);
+        }
+
+        // Fitur SALIN tetap ada di mode Pencarian
+        if (currentMode === 'pencarian' && msg.role === 'assistant' && idx !== 0) {
+            const btn = document.createElement('button');
+            btn.className = 'copy-btn'; btn.innerText = 'SALIN';
+            btn.onclick = () => {
+                navigator.clipboard.writeText(msg.content);
+                sfx.copy.play(); btn.innerText = 'TERSEAL!';
+                setTimeout(() => btn.innerText = 'SALIN', 2000);
+            };
+            div.appendChild(btn);
+        }
+        area.appendChild(div);
+    });
+    if (window.MathJax) MathJax.typesetPromise();
+    scrollChat();
+}
 
     async function processChat(display, backend) {
         histories[currentMode].push({ role: "user", content: display });
