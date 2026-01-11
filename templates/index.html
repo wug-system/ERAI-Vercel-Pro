@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ERAI - WUG Secure Ultimate v3.7</title>
+    <title>ERAI - WUG Secure Ultimate v4.1</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -25,7 +25,6 @@
             background-size: 400% 400%; animation: gradMove 15s ease infinite; z-index: -1;
         }
 
-        /* --- THINKING ANIMATION (ERAI BERPIKIR) --- */
         .typing-indicator {
             display: none; align-self: flex-start;
             background: rgba(255, 255, 255, 0.6);
@@ -95,6 +94,13 @@
         .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 6px; color: #333; }
         .bot-bubble { align-self: flex-start; background: rgba(255, 255, 255, 0.8); border-bottom-left-radius: 6px; color: #222; }
 
+        .quiz-options { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .opt-btn { 
+            padding: 8px 20px; border: 2px solid var(--wug-purple); border-radius: 12px; 
+            background: white; color: var(--wug-purple); font-weight: 800; cursor: pointer; transition: 0.2s;
+        }
+        .opt-btn:hover { background: var(--wug-purple); color: white; }
+
         .copy-btn {
             background: var(--wug-purple); color: white; border: none; padding: 6px 12px; border-radius: 10px;
             font-size: 10px; cursor: pointer; position: absolute; top: -12px; right: 15px; font-weight: 800;
@@ -133,7 +139,7 @@
 <div class="app-container" id="mainContainer">
     <header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <b style="color: #444; font-family: 'Plus Jakarta Sans'; font-size: 1.2rem;">🤖 ERAI | EXAM MODE v3.7</b>
+            <b style="color: #444; font-family: 'Plus Jakarta Sans'; font-size: 1.2rem;">🤖 ERAI | EXAM MODE v4.1</b>
             <span style="font-size: 0.75rem; background: rgba(108, 92, 231, 0.1); color: var(--wug-purple); padding: 6px 15px; border-radius: 20px; font-weight: 800;">ADMIN ACCESS</span>
         </div>
         <div class="mode-selector">
@@ -150,7 +156,7 @@
     </div>
     
     <div class="input-box">
-        <label class="action-btn">📷<input type="file" id="fileInput" hidden onchange="handleFileUpload()"></label>
+        <label class="action-btn">📷<input type="file" id="fileInput" hidden onchange="handleFileUpload(this)"></label>
         <div class="input-wrapper">
             <textarea id="userInput" placeholder="Tanyakan sesuatu..." rows="1" oninput="autoHeight(this)" onkeydown="checkKey(event)"></textarea>
         </div>
@@ -160,6 +166,7 @@
 
 <script>
     let currentMode = "belajar";
+    let isUploading = false; // Flag bypass keamanan
     let histories = {
         belajar: [{ role: "assistant", content: "Halo **Admin**. Mari belajar dengan fokus hari ini." }],
         latihan: [{ role: "assistant", content: "Mode Latihan aktif. Uji kemampuan Kakak di sini." }],
@@ -189,6 +196,7 @@
     function recoveryFullscreen() { enterFullscreen(); }
 
     document.addEventListener('fullscreenchange', () => {
+        if (isUploading) return; // BYPASS REVISI: Jangan alert jika sedang upload
         const isFS = !!document.fullscreenElement;
         const container = document.getElementById('mainContainer');
         const alertBox = document.getElementById('secure-alert');
@@ -202,22 +210,16 @@
         }
     });
 
-    // ANTI KLIK KANAN & KEYBOARD (WUG Standard)
+    // Anti Shortcut Paten
     window.addEventListener('contextmenu', e => { 
         if(currentMode !== 'pencarian') { e.preventDefault(); triggerAlertTimed("Klik Kanan Dilarang!"); }
     });
 
     window.addEventListener('keydown', e => {
         if (currentMode === 'pencarian') return;
-
-        const isShiftAction = e.shiftKey && (
-            e.key.toLowerCase() === 's' || 
-            e.key.toLowerCase() === 'c' || 
-            e.key.includes('Arrow')
-        );
+        const isShiftAction = e.shiftKey && (e.key.toLowerCase() === 's' || e.key.toLowerCase() === 'c' || e.key.includes('Arrow'));
         const isForbidden = (e.ctrlKey || e.metaKey) && !['v', 'V'].includes(e.key);
-
-        if (isShiftAction || isForbidden || e.key === 'PrintScreen' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        if (isShiftAction || isForbidden || e.key === 'F12' || e.key === 'PrintScreen') {
             e.preventDefault();
             triggerAlertTimed("Aksi Keyboard Dilarang!");
         }
@@ -241,34 +243,29 @@
     function checkKey(e) {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         if (e.key === 'Enter') {
-            if (isMobile) return; 
-            if (e.shiftKey) return; 
+            if (isMobile || e.shiftKey) return; 
             e.preventDefault();
             handleSend();
         }
     }
 
-    async function handleSend() {
+    async function handleSend(customMsg = null) {
         const input = document.getElementById('userInput');
-        const msg = input.value.trim();
+        const msg = customMsg || input.value.trim();
         if (!msg) return;
 
-        // Auto-Activate Quiz Logic
         let isAskingQuiz = false;
         if (currentMode === 'latihan') {
             const quizTrigger = ['buat', 'kasih', 'uji', 'soal', 'kuis', 'test', 'tanya'];
             isAskingQuiz = quizTrigger.some(word => msg.toLowerCase().includes(word));
         }
 
-        // Tampilkan pesan user
         histories[currentMode].push({ role: "user", content: msg });
         renderHistory();
         sfx.send.play();
         
         input.value = '';
         input.style.height = "auto";
-
-        // Animasi Berpikir
         const thinking = document.getElementById('thinking');
         thinking.style.display = 'block';
         scrollChat();
@@ -284,11 +281,9 @@
                 })
             });
             const data = await response.json();
-            
             thinking.style.display = 'none'; 
             addBotMessage(data.response);
             sfx.pop.play();
-
         } catch (err) {
             setTimeout(() => {
                 addBotMessage("Sistem pusat belum terhubung. Pastikan Backend aktif ya, Admin.");
@@ -320,14 +315,29 @@
             div.className = `bubble ${msg.role === 'user' ? 'user-bubble' : 'bot-bubble'}`;
             div.innerHTML = marked.parse(msg.content);
             
+            // LOGIKA REVISI: Deteksi Soal untuk munculkan tombol A,B,C,D
+            if (msg.role === 'assistant' && currentMode === 'latihan') {
+                const lowerContent = msg.content.toLowerCase();
+                if (lowerContent.includes('a.') || lowerContent.includes('a)')) {
+                    const btnContainer = document.createElement('div');
+                    btnContainer.className = 'quiz-options';
+                    ['A', 'B', 'C', 'D'].forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'opt-btn';
+                        btn.innerText = opt;
+                        btn.onclick = () => handleSend(opt); // Langsung kirim opsi saat diklik
+                        btnContainer.appendChild(btn);
+                    });
+                    div.appendChild(btnContainer);
+                }
+            }
+
             if (currentMode === 'pencarian' && msg.role === 'assistant' && idx !== 0) {
                 const btn = document.createElement('button');
-                btn.className = 'copy-btn';
-                btn.innerText = 'SALIN';
+                btn.className = 'copy-btn'; btn.innerText = 'SALIN';
                 btn.onclick = () => {
                     navigator.clipboard.writeText(msg.content);
-                    sfx.copy.play();
-                    btn.innerText = 'TERSEAL!';
+                    sfx.copy.play(); btn.innerText = 'TERSEAL!';
                     setTimeout(() => btn.innerText = 'SALIN', 2000);
                 };
                 div.appendChild(btn);
@@ -338,9 +348,23 @@
         scrollChat();
     }
 
+    // REVISI UPLOAD: Bypass Security
+    function handleFileUpload(input) {
+        isUploading = true; 
+        console.log("WUG System: Uploading... Security Suspended.");
+        
+        // Setelah jendela file tertutup (baik milih atau cancel)
+        window.addEventListener('focus', () => {
+            setTimeout(() => {
+                isUploading = false;
+                enterFullscreen();
+                console.log("WUG System: Security Re-engaged.");
+            }, 500);
+        }, { once: true });
+    }
+
     function autoHeight(elem) { elem.style.height = "auto"; elem.style.height = (elem.scrollHeight) + "px"; }
     function scrollChat() { const a = document.getElementById('chat-area'); a.scrollTop = a.scrollHeight; }
-    function handleFileUpload() { console.log("File upload clicked"); }
 </script>
 </body>
 </html>
