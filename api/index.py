@@ -74,8 +74,9 @@ WAJIB: MODE KUIS SEKALI JAWAB.
 {format_asing_rule}
 1. Jika Kakak memberi materi/soal, buatkan kuis A, B, C, D tanpa penjelasan.
 2. Jika Kakak menjawab A/B/C/D, berikan penilaian (BENAR/SALAH) dan LANGSUNG berikan penjelasan lengkap materi tersebut.
-3. Berikan jawabn dengan tegas bahwa jawabn Kakak itu sudah (BENAR/SALAH)
+3. Berikan jawabn dengan tegas bahwa jawabn Kakak itu sudah (BENAR/SALAH).
 4. Setelah penjelasan diberikan, kuis dianggap selesai.
+5. Ketika Kakak meminta soal, WAJIB berikan 1 soal untuk 1 jawaban.
 """
         elif user_mode == "pencarian":
             mode_instruction = f"""
