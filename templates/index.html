@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ERAI - WUG Secure Ultimate v4.3.1</title>
+    <title>ERAI - WUG Secure Ultimate v4.3.2</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -97,7 +97,6 @@
             font-size: 10px; cursor: pointer; position: absolute; top: -12px; right: 15px; font-weight: 800;
         }
 
-        /* REVISI: STAGING UI AREA */
         #file-preview-zone { 
             display: none; padding: 8px 20px; background: var(--wug-purple); color: white; 
             border-radius: 15px; margin: 0 30px 5px 30px; font-size: 0.8rem; font-weight: 600;
@@ -145,7 +144,7 @@
 <div class="app-container" id="mainContainer">
     <header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <b style="color: #444; font-family: 'Plus Jakarta Sans'; font-size: 1.2rem;">🤖 ERAI | EXAM MODE v4.3.1</b>
+            <b style="color: #444; font-family: 'Plus Jakarta Sans'; font-size: 1.2rem;">🤖 ERAI | EXAM MODE v4.3.2</b>
             <span style="font-size: 0.75rem; background: rgba(108, 92, 231, 0.1); color: var(--wug-purple); padding: 6px 15px; border-radius: 20px; font-weight: 800;">KAKAK ACCESS</span>
         </div>
         <div class="mode-selector">
@@ -167,7 +166,7 @@
             <span style="cursor:pointer; font-size: 1.2rem;" onclick="cancelUpload()">✕</span>
         </div>
         <div class="input-row">
-            <label class="action-btn" onclick="preUploadBypass()">📷<input type="file" id="fileInput" hidden onchange="stageFile(this)"></label>
+            <label class="action-btn" onclick="preUploadBypass()">📷<input type="file" id="fileInput" hidden onchange="stageFile(this)" accept="image/*"></label>
             <div class="input-wrapper">
                 <textarea id="userInput" placeholder="Tanyakan sesuatu, Kak..." rows="1" oninput="autoHeight(this)" onkeydown="checkKey(event)"></textarea>
             </div>
@@ -179,8 +178,8 @@
 <script>
     let currentMode = "belajar";
     let isUploading = false; 
-    let stagedFile = null; // Menyimpan file sementara
-    let quizState = { attempts: 0 }; // Melacak percobaan kuis
+    let stagedFile = null; 
+    let quizState = { attempts: 0, isActive: false };
 
     let histories = {
         belajar: [{ role: "assistant", content: "Halo **Kakak**. Mari belajar dengan fokus hari ini." }],
@@ -208,28 +207,29 @@
         }
     }
 
-    // REVISI: Klik layar otomatis fullscreen
     function recoveryFullscreen() { 
-        if(!isUploading) enterFullscreen(); 
+        if(!isUploading && (currentMode === 'belajar' || currentMode === 'latihan')) enterFullscreen(); 
     }
 
-    // DETEKSI KEAMANAN PATEN
-    document.addEventListener('fullscreenchange', () => {
+    // FUNGSI CEK KEAMANAN (Global agar bisa dipanggil saat pindah mode)
+    function forceSecurityCheck() {
         if (isUploading) return; 
         const isFS = !!document.fullscreenElement;
         const container = document.getElementById('mainContainer');
         const alertBox = document.getElementById('secure-alert');
+        
         if (!isFS && (currentMode === 'belajar' || currentMode === 'latihan')) {
             sfx.alert.play();
             container.classList.add('blur-active');
             alertBox.style.display = 'block';
-        } else if (isFS) {
+        } else if (isFS || currentMode === 'pencarian') {
             container.classList.remove('blur-active');
             alertBox.style.display = 'none';
         }
-    });
+    }
 
-    // REVISI: LOGIKA UPLOAD TAHAN (STAGING)
+    document.addEventListener('fullscreenchange', forceSecurityCheck);
+
     function preUploadBypass() {
         isUploading = true;
     }
@@ -240,8 +240,7 @@
             document.getElementById('file-preview-zone').style.display = 'flex';
             document.getElementById('file-name-display').innerText = "📎 File terpilih: " + stagedFile.name;
         }
-        // Tunggu sebentar agar sistem tidak langsung lock saat jendela file tertutup
-        setTimeout(() => { isUploading = false; }, 1000);
+        setTimeout(() => { isUploading = false; forceSecurityCheck(); }, 1000);
     }
 
     function cancelUpload() {
@@ -289,12 +288,12 @@
         
         if (!msg && !stagedFile) return;
 
-        // Jika ada file yang ditahan, proses bersamaan
         if (stagedFile) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const displayContent = `[FILE: ${stagedFile.name}]<br><img src="${e.target.result}" class="img-preview"><br>${msg}`;
-                const backendMsg = `[ANALISIS FILE: ${stagedFile.name}] ${msg}`;
+                // REVISI: Paksa AI Vision Backend
+                const backendMsg = `[USER_IMAGE_DATA: ${e.target.result}] [SYSTEM_INSTRUCTION: Kakak mengupload foto soal. ANALISA teks/gambar di dalam foto ini, identifikasi pertanyaannya, dan jawab dengan langkah lengkap.] ${msg}`;
                 
                 processChat(displayContent, backendMsg);
                 cancelUpload();
@@ -317,7 +316,6 @@
         scrollChat();
 
         try {
-            // Cek apakah ini jawaban kuis (A, B, C, atau D)
             let isAnswer = /^[a-dA-D]$/.test(backend.trim());
 
             const response = await fetch('/chat', {
@@ -326,14 +324,15 @@
                 body: JSON.stringify({ 
                     message: backend, 
                     mode: currentMode,
+                    quiz_active: quizState.isActive,
                     quiz_attempt: quizState.attempts 
                 })
             });
             const data = await response.json();
             
-            // Logika Percobaan Kuis
             if(isAnswer) quizState.attempts++;
             if(data.is_correct || quizState.attempts >= 2) quizState.attempts = 0;
+            if(data.is_quiz_starting) quizState.isActive = true;
 
             thinking.style.display = 'none'; 
             addBotMessage(data.response);
@@ -353,10 +352,18 @@
 
     function setMode(mode) {
         currentMode = mode;
-        if (mode !== 'pencarian') enterFullscreen();
         sfx.pop.play();
         document.querySelectorAll('.mode-selector button').forEach(b => b.classList.remove('active'));
         document.getElementById(`btn-${mode}`).classList.add('active');
+        
+        // REVISI: Pengecekan Keamanan Saat Balik dari Mode Pencarian
+        if (mode !== 'pencarian') {
+            enterFullscreen();
+            setTimeout(forceSecurityCheck, 300); 
+        } else {
+            document.getElementById('mainContainer').classList.remove('blur-active');
+            document.getElementById('secure-alert').style.display = 'none';
+        }
         renderHistory();
     }
 
