@@ -27,30 +27,27 @@ def chat():
         data = request.json
         user_input = data.get("message", "")
         user_mode = data.get("mode", "belajar")
-        history = data.get("history", [])[-8:] # History lebih panjang agar AI lebih ingat
+        history = data.get("history", [])[-8:] 
 
-        # --- BUG FIX: PENANGANAN GAMBAR ---
+        # --- BUG FIX: PENANGANAN GAMBAR (Hanya modifikasi tipis agar tidak crash) ---
         is_image = "[USER_IMAGE_DATA:" in user_input
         if is_image:
-            # Membersihkan string base64 yang terlalu panjang agar tidak 413, 
-            # tapi memberikan instruksi tajam ke AI untuk 'membayangkan' teks dari OCR
             extracted_msg = user_input.split("] ")[-1]
-            user_input = f"[MODE ANALISIS DOKUMEN] Kakak mengirimkan foto/gambar. Instruksi: {extracted_msg}. (System: Analisis teks dalam gambar secara mendalam dan jawab sesuai mode {user_mode})"
+            user_input = f"[MODE ANALISIS FOTO] Kakak mengirimkan gambar. Analisis teks/soal di dalamnya dan jawab sesuai mode {user_mode}: {extracted_msg}"
 
-        # --- BUG FIX: LOGIKA MEMORY KUIS (State Management) ---
+        # --- BUG FIX: LOGIKA MEMORY KUIS (Hanya penambahan state tanpa ubah fitur) ---
         if 'quiz_active' not in session: session['quiz_active'] = False
         if 'last_soal' not in session: session['last_soal'] = ""
 
-        # Deteksi jika input adalah jawaban kuis (A, B, C, atau D tunggal)
         is_answering_quiz = len(user_input.strip()) == 1 and user_input.strip().upper() in ['A', 'B', 'C', 'D']
         
+        # Penanganan khusus jika sedang kuis di mode latihan
         if user_mode == "latihan" and session.get('quiz_active') and is_answering_quiz:
-            # Paksa AI untuk menilai jawaban berdasarkan soal yang disimpan di session
             soal_sebelumnya = session.get('last_soal', 'materi latihan')
             user_input = f"SAYA MEMILIH JAWABAN {user_input.upper()} untuk soal: '{soal_sebelumnya}'. Berikan penilaian BENAR/SALAH dan penjelasan lengkapnya!"
-            session['quiz_active'] = False # Reset state setelah dijawab
+            session['quiz_active'] = False 
 
-        # --- LOGIKA SEARCH (MODE PENCARIAN) ---
+        # --- LOGIKA SEARCH (FITUR PATEN TIDAK BERUBAH) ---
         search_info = ""
         if user_mode == "pencarian" and tavily_client:
             try:
@@ -59,7 +56,7 @@ def chat():
             except: 
                 search_info = "Internet akses terbatas."
 
-        # --- LOGIKA INSTRUKSI PER MODE (TETAP SESUAI STANDAR WUG) ---
+        # --- LOGIKA INSTRUKSI PER MODE (DIKEMBALIKAN KE STRUKTUR ASLI KAKAK) ---
         if user_mode == "latihan":
             mode_instruction = r"""
 WAJIB: AKTIFKAN AUTO-QUIZ MODE.
@@ -77,7 +74,7 @@ WAJIB: MODE PENCARIAN AKTIF.
 1. Gunakan DATA INTERNET terbaru untuk menjawab.
 2. Berikan informasi relevan dan sumber data.
 """
-        else: # Default: Mode Belajar
+        else: # Default: Mode Belajar (LOGIKA ASLI KAKAK)
             mode_instruction = r"""
 WAJIB: MODE BELAJAR AKTIF.
 1. Berikan penjelasan terstruktur dengan pemisah '---'.
@@ -85,10 +82,10 @@ WAJIB: MODE BELAJAR AKTIF.
 3. Gunakan DATA INTERNET yang tersedia untuk menjawab.
 4. Berikan informasi yang paling relevan dan terbaru.
 5. Sebutkan sumber jika perlu.
-6. Gunakan \ce{...} untuk kimia
+6. Gunakan \ce{...} untuk simbol kimia.
 """
 
-        # --- INTEGRASI SYSTEM PROMPT ---
+        # --- INTEGRASI SYSTEM PROMPT (LOGIKA ASLI KAKAK) ---
         system_prompt = f"""
 Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}. 
 Sistem Keamanan: WUG Secure Active.
@@ -107,15 +104,15 @@ ATURAN FORMATTING:
         completion = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,
-            temperature=0.3 # Suhu diturunkan agar AI lebih konsisten pada logika
+            temperature=0.3 
         )
 
         response_text = completion.choices[0].message.content
 
-        # --- UPDATE SESSION JIKA AI MEMBERIKAN SOAL BARU ---
+        # UPDATE SESSION UNTUK KUIS (PENTING)
         if user_mode == "latihan" and ("A." in response_text or "A)" in response_text):
             session['quiz_active'] = True
-            session['last_soal'] = response_text # Simpan soalnya di server agar ERAI tidak amnesia
+            session['last_soal'] = response_text 
 
         return jsonify({
             "response": response_text,
