@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ERAI - WUG Secure Ultimate v4.2</title>
+    <title>ERAI - WUG Secure Ultimate v4.3.1</title>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -97,10 +97,18 @@
             font-size: 10px; cursor: pointer; position: absolute; top: -12px; right: 15px; font-weight: 800;
         }
 
-        .input-box { 
-            padding: 20px 30px; background: rgba(255, 255, 255, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex; gap: 15px; align-items: flex-end;
+        /* REVISI: STAGING UI AREA */
+        #file-preview-zone { 
+            display: none; padding: 8px 20px; background: var(--wug-purple); color: white; 
+            border-radius: 15px; margin: 0 30px 5px 30px; font-size: 0.8rem; font-weight: 600;
+            justify-content: space-between; align-items: center; animation: slideUp 0.3s ease;
         }
+
+        .input-box { 
+            padding: 15px 30px 25px 30px; background: rgba(255, 255, 255, 0.3); border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; flex-direction: column;
+        }
+        .input-row { display: flex; gap: 15px; align-items: flex-end; width: 100%; }
         .input-wrapper { flex: 1; background: white; border-radius: 22px; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         #userInput { width: 100%; border: none; background: transparent; outline: none; font-size: 1rem; font-family: 'Inter'; resize: none; max-height: 150px; }
 
@@ -118,13 +126,13 @@
         @keyframes shake { 10%, 90% { transform: translate3d(-50%, 0, 0) rotate(-1deg); } 20%, 80% { transform: translate3d(-50%, 0, 0) rotate(2deg); } }
     </style>
 </head>
-<body>
+<body onclick="recoveryFullscreen()">
 
 <div id="bg-canvas"></div>
 
 <div id="overlay-start">
     <h1 style="font-family: 'Plus Jakarta Sans';">ERAI | WUG SECURE</h1>
-    <p style="margin-bottom: 30px;">Identitas Terdeteksi: <b>Admin / 082359161055</b></p>
+    <p style="margin-bottom: 30px;">Identitas Terdeteksi: <b>Kakak / 082359161055</b></p>
     <button onclick="initSecureMode()" style="padding: 20px 50px; border-radius: 50px; border: none; background: white; color: var(--wug-purple); font-weight: 800; cursor: pointer;">MASUK MODE AMAN 🚀</button>
 </div>
 
@@ -137,8 +145,8 @@
 <div class="app-container" id="mainContainer">
     <header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <b style="color: #444; font-family: 'Plus Jakarta Sans'; font-size: 1.2rem;">🤖 ERAI | EXAM MODE v4.2</b>
-            <span style="font-size: 0.75rem; background: rgba(108, 92, 231, 0.1); color: var(--wug-purple); padding: 6px 15px; border-radius: 20px; font-weight: 800;">ADMIN ACCESS</span>
+            <b style="color: #444; font-family: 'Plus Jakarta Sans'; font-size: 1.2rem;">🤖 ERAI | EXAM MODE v4.3.1</b>
+            <span style="font-size: 0.75rem; background: rgba(108, 92, 231, 0.1); color: var(--wug-purple); padding: 6px 15px; border-radius: 20px; font-weight: 800;">KAKAK ACCESS</span>
         </div>
         <div class="mode-selector">
             <button id="btn-belajar" onclick="setMode('belajar')" class="active">Belajar</button>
@@ -154,20 +162,29 @@
     </div>
     
     <div class="input-box">
-        <label class="action-btn" onclick="preUploadBypass()">📷<input type="file" id="fileInput" hidden onchange="handleFileUpload(this)"></label>
-        <div class="input-wrapper">
-            <textarea id="userInput" placeholder="Tanyakan sesuatu..." rows="1" oninput="autoHeight(this)" onkeydown="checkKey(event)"></textarea>
+        <div id="file-preview-zone">
+            <span id="file-name-display"></span>
+            <span style="cursor:pointer; font-size: 1.2rem;" onclick="cancelUpload()">✕</span>
         </div>
-        <button class="action-btn send-btn" onclick="handleSend()">🚀</button>
+        <div class="input-row">
+            <label class="action-btn" onclick="preUploadBypass()">📷<input type="file" id="fileInput" hidden onchange="stageFile(this)"></label>
+            <div class="input-wrapper">
+                <textarea id="userInput" placeholder="Tanyakan sesuatu, Kak..." rows="1" oninput="autoHeight(this)" onkeydown="checkKey(event)"></textarea>
+            </div>
+            <button class="action-btn send-btn" onclick="handleSend()">🚀</button>
+        </div>
     </div>
 </div>
 
 <script>
     let currentMode = "belajar";
     let isUploading = false; 
+    let stagedFile = null; // Menyimpan file sementara
+    let quizState = { attempts: 0 }; // Melacak percobaan kuis
+
     let histories = {
-        belajar: [{ role: "assistant", content: "Halo **Admin**. Mari belajar dengan fokus hari ini." }],
-        latihan: [{ role: "assistant", content: "Mode Latihan aktif. Uji kemampuan Kakak di sini." }],
+        belajar: [{ role: "assistant", content: "Halo **Kakak**. Mari belajar dengan fokus hari ini." }],
+        latihan: [{ role: "assistant", content: "Mode Latihan aktif, Kak. Kirim 'Mulai Kuis' untuk tes kemampuan Kakak." }],
         pencarian: [{ role: "assistant", content: "Mode Pencarian aktif. Kakak bisa menyalin informasi penting di sini." }]
     };
 
@@ -191,11 +208,14 @@
         }
     }
 
-    function recoveryFullscreen() { enterFullscreen(); }
+    // REVISI: Klik layar otomatis fullscreen
+    function recoveryFullscreen() { 
+        if(!isUploading) enterFullscreen(); 
+    }
 
     // DETEKSI KEAMANAN PATEN
     document.addEventListener('fullscreenchange', () => {
-        if (isUploading) return; // FIX: Bypass jika sedang upload
+        if (isUploading) return; 
         const isFS = !!document.fullscreenElement;
         const container = document.getElementById('mainContainer');
         const alertBox = document.getElementById('secure-alert');
@@ -209,37 +229,25 @@
         }
     });
 
+    // REVISI: LOGIKA UPLOAD TAHAN (STAGING)
     function preUploadBypass() {
         isUploading = true;
-        console.log("WUG System: Preparing Upload...");
     }
 
-    async function handleFileUpload(input) {
-        if (!input.files || !input.files[0]) {
-            isUploading = false; 
-            return;
+    function stageFile(input) {
+        if (input.files && input.files[0]) {
+            stagedFile = input.files[0];
+            document.getElementById('file-preview-zone').style.display = 'flex';
+            document.getElementById('file-name-display').innerText = "📎 File terpilih: " + stagedFile.name;
         }
+        // Tunggu sebentar agar sistem tidak langsung lock saat jendela file tertutup
+        setTimeout(() => { isUploading = false; }, 1000);
+    }
 
-        const file = input.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            // Tampilkan file di chat sebagai pesan user
-            const fileContent = `[ADMIN MENGIRIM FILE: ${file.name}]<br><img src="${e.target.result}" class="img-preview">`;
-            histories[currentMode].push({ role: "user", content: fileContent });
-            renderHistory();
-            sfx.send.play();
-
-            // Beri tahu ERAI tentang file tersebut
-            handleSend(`Admin mengirim file: ${file.name}. Silakan analisis gambar/dokumen tersebut.`);
-            
-            // Re-engage security
-            setTimeout(() => {
-                isUploading = false;
-                enterFullscreen();
-            }, 1000);
-        };
-        reader.readAsDataURL(file);
+    function cancelUpload() {
+        stagedFile = null;
+        document.getElementById('file-preview-zone').style.display = 'none';
+        document.getElementById('fileInput').value = '';
     }
 
     // Blokir Akses Keyboard & Klik Kanan
@@ -277,35 +285,63 @@
 
     async function handleSend(customMsg = null) {
         const input = document.getElementById('userInput');
-        const msg = customMsg || input.value.trim();
-        if (!msg) return;
+        let msg = customMsg || input.value.trim();
+        
+        if (!msg && !stagedFile) return;
 
-        if(!customMsg) {
-            histories[currentMode].push({ role: "user", content: msg });
-            renderHistory();
-            sfx.send.play();
-            input.value = '';
-            input.style.height = "auto";
+        // Jika ada file yang ditahan, proses bersamaan
+        if (stagedFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const displayContent = `[FILE: ${stagedFile.name}]<br><img src="${e.target.result}" class="img-preview"><br>${msg}`;
+                const backendMsg = `[ANALISIS FILE: ${stagedFile.name}] ${msg}`;
+                
+                processChat(displayContent, backendMsg);
+                cancelUpload();
+            };
+            reader.readAsDataURL(stagedFile);
+        } else {
+            processChat(msg, msg);
         }
+    }
+
+    async function processChat(display, backend) {
+        histories[currentMode].push({ role: "user", content: display });
+        renderHistory();
+        sfx.send.play();
+        document.getElementById('userInput').value = '';
+        document.getElementById('userInput').style.height = "auto";
 
         const thinking = document.getElementById('thinking');
         thinking.style.display = 'block';
         scrollChat();
 
         try {
+            // Cek apakah ini jawaban kuis (A, B, C, atau D)
+            let isAnswer = /^[a-dA-D]$/.test(backend.trim());
+
             const response = await fetch('/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: msg, mode: currentMode })
+                body: JSON.stringify({ 
+                    message: backend, 
+                    mode: currentMode,
+                    quiz_attempt: quizState.attempts 
+                })
             });
             const data = await response.json();
+            
+            // Logika Percobaan Kuis
+            if(isAnswer) quizState.attempts++;
+            if(data.is_correct || quizState.attempts >= 2) quizState.attempts = 0;
+
             thinking.style.display = 'none'; 
             addBotMessage(data.response);
             sfx.pop.play();
         } catch (err) {
             setTimeout(() => {
-                addBotMessage("Analisis file/pesan selesai, Admin. (Koneksi Backend diperlukan untuk respon AI)");
                 thinking.style.display = 'none';
+                addBotMessage("Analisis selesai, Kak. (Backend diperlukan untuk respon AI yang akurat)");
             }, 1500);
         }
     }
@@ -332,7 +368,6 @@
             div.className = `bubble ${msg.role === 'user' ? 'user-bubble' : 'bot-bubble'}`;
             div.innerHTML = marked.parse(msg.content);
             
-            // Tombol Opsi Kuis Otomatis (Revisi Kemarin)
             if (msg.role === 'assistant' && currentMode === 'latihan') {
                 const lowerContent = msg.content.toLowerCase();
                 if (lowerContent.includes('a.') || lowerContent.includes('a)')) {
