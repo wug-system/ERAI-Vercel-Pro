@@ -369,31 +369,66 @@ function triggerAlertTimed(msg) {
     function checkEnter(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }
 
     async function handleSend() {
-        const input = document.getElementById('userInput');
-        const msg = input.value.trim();
-        if (!msg) return;
+    const input = document.getElementById('userInput');
+    const msg = input.value.trim();
+    if (!msg) return;
 
-        histories[currentMode].push({ role: "user", content: msg });
+    // ... (kode tampilkan chat user) ...
+
+   async function handleSend() {
+    const input = document.getElementById('userInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    // 1. Tampilkan pesan user ke layar
+    histories[currentMode].push({ role: "user", content: msg });
+    renderHistory();
+    
+    // 2. Mainkan SFX kirim pesan
+    sfx.send.play(); 
+    
+    // 3. Reset input box
+    input.value = '';
+    input.style.height = "auto";
+
+    // 4. MUNCULKAN ANIMASI BERPIKIR (Sesuai permintaan Kakak)
+    const thinking = document.getElementById('thinking');
+    thinking.style.display = 'block';
+    scrollChat();
+
+    try {
+        // 5. Ambil data dari Backend ERAI
+        const response = await fetch('/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ message: msg, mode: currentMode })
+        });
+        const data = await response.json();
+        
+        // 6. SEMBUNYIKAN ANIMASI SAAT JAWABAN TIBA
+        thinking.style.display = 'none';
+        
+        // 7. Masukkan jawaban bot ke history
+        histories[currentMode].push({ role: "assistant", content: data.response });
         renderHistory();
-        sfx.send.play();
-        input.value = ''; input.style.height = "auto";
+        
+        // 8. Mainkan SFX jawaban masuk
+        sfx.pop.play(); 
 
-        // Ganti bagian ini untuk menghubungkan ke Backend Python/API Kakak
-        try {
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: msg, mode: currentMode })
+    } catch (e) {
+        // Jika error, tunggu 1 detik baru hilangkan animasi (agar tidak kaget)
+        setTimeout(() => {
+            thinking.style.display = 'none';
+            histories[currentMode].push({ 
+                role: "assistant", 
+                content: "Maaf Admin, sistem WUG mendeteksi koneksi backend belum aktif." 
             });
-            const data = await response.json();
-            histories[currentMode].push({ role: "assistant", content: data.response });
-        } catch (e) {
-            histories[currentMode].push({ role: "assistant", content: "Koneksi terputus. Pastikan server aktif, Kak!" });
-        }
-        renderHistory();
-        sfx.pop.play();
+            renderHistory();
+            sfx.pop.play(); // Notifikasi suara tetap bunyi
+        }, 1000);
     }
-
+}
+        
     function autoHeight(elem) { elem.style.height = "auto"; elem.style.height = (elem.scrollHeight) + "px"; }
     function scrollChat() { const a = document.getElementById('chat-area'); a.scrollTop = a.scrollHeight; }
 </script>
