@@ -4,10 +4,10 @@ from tavily import TavilyClient
 import os
 from datetime import datetime
 
-app = Flask(__name__, template_folder='../templates')
-app.secret_key = "WUG_SECURE_V4_SECRET" # WAJIB: Kunci untuk memory kuis
+app = Flask(__name__, template_folder='templates') # Pastikan folder template benar
+app.secret_key = "ERAI_SECURE_KEY_2026"
 
-# --- API PROTECTION ---
+# --- CONFIGURATION ---
 GROQ_KEY = os.environ.get("GROQ_API_KEY")
 TAVILY_KEY = os.environ.get("TAVILY_API_KEY")
 
@@ -21,119 +21,107 @@ def index():
 @app.route('/chat', methods=['POST'])
 def chat():
     try:
-        user_name = "Kakak / Kak" 
-        current_date = datetime.now().strftime("%d %B %Y")
-        
         data = request.json
         user_input = data.get("message", "")
-        user_mode = data.get("mode", "belajar")
-        history = data.get("history", [])[-8:] 
+        user_mode = data.get("mode", "belajar") # belajar, latihan, pencarian
+        history = data.get("history", [])[-10:] # Ambil 10 percakapan terakhir context window
+        
+        current_date = datetime.now().strftime("%d %B %Y")
 
-        # --- BUG FIX: PENANGANAN GAMBAR ---
-        is_image = "[USER_IMAGE_DATA:" in user_input
-        if is_image:
-            extracted_msg = user_input.split("] ")[-1]
-            user_input = f"[ANALISIS FOTO] {extracted_msg}. Instruksi: Identifikasi semua teks, rumus matematika, dan senyawa kimia. Respon sesuai mode {user_mode}."
-
-        # --- BUG FIX: LOGIKA MEMORY KUIS ---
+        # --- SESSION MANAGEMENT UNTUK KUIS ---
         if 'quiz_active' not in session: session['quiz_active'] = False
         if 'last_soal' not in session: session['last_soal'] = ""
 
+        # Deteksi jawaban A, B, C, D
         is_answering_quiz = len(user_input.strip()) == 1 and user_input.strip().upper() in ['A', 'B', 'C', 'D']
-        
-        # --- REVISI MODE LATIHAN: SEKALI JAWAB LANGSUNG FINISH ---
+
+        # --- LOGIKA MODE LATIHAN (STRICT) ---
         if user_mode == "latihan":
             if is_answering_quiz and session.get('quiz_active'):
+                # User menjawab
                 soal_ref = session.get('last_soal', '')
-                user_input = f"SAYA MEMILIH {user_input.upper()}. Berdasarkan kuis ini: '{soal_ref}', SEGERA berikan penilaian BENAR atau SALAH, lalu berikan penjelasan lengkapnya menggunakan format LaTeX/Kimia. Jangan memberikan kesempatan menjawab lagi."
-                session['quiz_active'] = False 
+                user_input = f"""
+                [JAWABAN USER: {user_input.upper()}]
+                Soal sebelumnya: '{soal_ref}'
+                INSTRUKSI:
+                1. Langsung nyatakan BENAR atau SALAH.
+                2. Berikan penjelasan lengkap dan mendalam (gunakan format LaTeX/Kimia).
+                3. Jangan tawarkan soal baru dulu.
+                """
+                session['quiz_active'] = False # Reset kuis
             elif not is_answering_quiz:
-                user_input = f"BUATKAN KUIS PILIHAN GANDA (A, B, C, D) dari materi ini. Gunakan format LaTeX/Kimia pada soal jika perlu. JANGAN DIJELASKAN SEKARANG: {user_input}"
+                # User minta soal / kirim materi
+                user_input = f"""
+                [PERMINTAAN SOAL/MATERI: {user_input}]
+                INSTRUKSI:
+                1. Buatkan 1 (SATU) soal pilihan ganda (A, B, C, D) yang berbobot.
+                2. JANGAN berikan jawaban atau penjelasan sekarang.
+                3. Tunggu user menjawab.
+                """
 
-        # --- LOGIKA SEARCH (FITUR PATEN TIDAK BERUBAH) ---
-        search_info = ""
+        # --- LOGIKA PENCARIAN (WEB SEARCH) ---
+        search_context = ""
         if user_mode == "pencarian" and tavily_client:
             try:
+                # Search query optimization
                 search_res = tavily_client.search(query=f"{user_input} {current_date}", search_depth="advanced")
-                search_info = " ".join([r.get('content') for r in search_res.get('results', [])])
-            except: 
-                search_info = "Internet akses terbatas."
+                raw_results = search_res.get('results', [])
+                search_context = "\n\nDATA INTERNET TERBARU:\n" + "\n".join([f"- {r['content']} (Sumber: {r['url']})" for r in raw_results])
+            except:
+                search_context = "\n(Koneksi internet untuk pencarian terbatas, gunakan pengetahuan internal)."
 
-        # --- LOGIKA INSTRUKSI PER MODE DENGAN FORMAT TEKS ASING ---
-        # Menambahkan aturan deteksi teks asing ke setiap mode
-        format_asing_rule = r"""
-PENTING (IDENTIFIKASI TEKS ASING):
-- MATEMATIKA: Gunakan $...$ untuk simbol/rumus inline (misal: $E=mc^2$) dan $$...$$ untuk rumus blok.
-- KIMIA: Gunakan \ce{...} untuk semua senyawa kimia dan reaksi (misal: \ce{H2SO4}).
-- FISIKA: Gunakan satuan internasional dan format pangkat LaTeX.
-"""
-
-        if user_mode == "latihan":
-            mode_instruction = f"""
-WAJIB: MODE KUIS SEKALI JAWAB.
-{format_asing_rule}
-1. Jika Kakak memberi materi/soal, buatkan kuis A, B, C, D tanpa penjelasan.
-2. Jika Kakak menjawab A/B/C/D, berikan penilaian (BENAR/SALAH) dan LANGSUNG berikan penjelasan lengkap materi tersebut.
-3. Berikan jawabn dengan tegas bahwa jawabn Kakak itu sudah (BENAR/SALAH).
-4. Setelah penjelasan diberikan, kuis dianggap selesai.
-5. Ketika Kakak meminta soal, WAJIB berikan satu soal saja.
-"""
+        # --- SYSTEM PROMPT (PERSONA & FORMATTING) ---
+        # Anonim, Cerdas, Spesifik Mode
+        
+        base_instruction = ""
+        if user_mode == "belajar":
+            base_instruction = "Anda adalah asisten belajar yang cerdas. Jelaskan konsep dengan terstruktur, gunakan analogi jika perlu. Format rumus matematika dengan $...$ (inline) atau $$...$$ (blok), dan kimia dengan \ce{...}."
+        elif user_mode == "latihan":
+            base_instruction = "Anda adalah penguji yang tegas namun edukatif. Fokus pada format Soal Pilihan Ganda. Jika memberikan penjelasan, harus sangat mendetail."
         elif user_mode == "pencarian":
-            mode_instruction = f"""
-WAJIB: MODE PENCARIAN AKTIF.
-{format_asing_rule}
-1. Gunakan DATA INTERNET terbaru untuk menjawab.
-2. Berikan informasi relevan dan sumber data.
-"""
-        else: # Default: Mode Belajar
-            mode_instruction = f"""
-WAJIB: MODE BELAJAR AKTIF.
-{format_asing_rule}
-1. Berikan jawaban yang sudah PASTI BENAR, beserta penjelasan lengkap.
-2. Berikan penjelasan terstruktur dengan pemisah '---'.
-3. Gunakan DATA INTERNET yang tersedia untuk menjawab.
-4. Berikan informasi yang paling relevan dan terbaru.
-5. Sebutkan sumber jika perlu.
-"""
+            base_instruction = "Anda adalah mesin pencari pintar. Jawab langsung pada intinya berdasarkan Data Internet yang disediakan. Sertakan sumber."
 
-        # --- INTEGRASI SYSTEM PROMPT ---
         system_prompt = f"""
-Nama kamu ERAI, Tutor Sebaya WUG untuk {user_name}. 
-Sistem Keamanan: WUG Secure Active.
-{mode_instruction}
-Hari ini: {current_date}.
-DATA INTERNET: {search_info if search_info else 'Gunakan internal knowledge'}.
+        Role: ERAI (Educational Resource AI).
+        User: Panggil "Kakak".
+        Tanggal: {current_date}.
+        Mode: {user_mode.upper()}.
+        
+        INSTRUKSI UTAMA:
+        {base_instruction}
 
-ATURAN FORMATTING:
-- Gunakan --- untuk pemisah.
-- Selalu panggil 'Kakak'.
-"""
+        FORMATTING WAJIB:
+        - Matematika: Gunakan $...$ untuk inline, $$...$$ untuk block.
+        - Kimia: Gunakan \ce{{...}}.
+        - Layout: Gunakan Markdown rapi (Bold, List, Header).
+        
+        CONTEXT TAMBAHAN:
+        {search_context}
+        """
 
         messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
-        
+
         completion = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,
-            temperature=0.1 
+            temperature=0.3 if user_mode == "latihan" else 0.6 # Lebih kreatif di mode belajar, strict di latihan
         )
 
         response_text = completion.choices[0].message.content
 
-        # UPDATE SESSION: Aktifkan kuis hanya saat soal baru muncul
+        # Update Session jika AI memberikan soal baru
         if user_mode == "latihan" and ("A." in response_text or "A)" in response_text) and not is_answering_quiz:
             session['quiz_active'] = True
-            session['last_soal'] = response_text 
+            session['last_soal'] = response_text
 
         return jsonify({
             "response": response_text,
+            "mode": user_mode,
             "is_quiz_active": session.get('quiz_active', False)
         })
 
     except Exception as e:
-        error_msg = str(e).lower()
-        if any(code in error_msg for code in ["429", "413", "rate_limit"]):
-            return jsonify({"response": "**[WUG SECURE - NOTIFIKASI]**\n\nKuota habis atau file terlalu besar, Kak. 🚀"}), 200
-        return jsonify({"response": f"**[SYSTEM ERROR]** {str(e)}"}), 200
+        return jsonify({"response": f"Maaf Kak, ada kesalahan sistem: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
