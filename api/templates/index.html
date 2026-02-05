@@ -11,10 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         window.MathJax = {
-            tex: { 
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            },
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
             svg: { fontCache: 'global' }
         };
     </script>
@@ -22,8 +19,6 @@
 
     <style>
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.5);
             --primary: #2d3436;
             --accent: #6c5ce7;
             --bg-belajar: linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 100%);
@@ -45,18 +40,18 @@
             transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* --- SIDEBAR & NAV --- */
+        /* --- SIDEBAR DESKTOP --- */
         .sidebar {
             width: 260px;
             background: rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(20px);
-            border-right: 1px solid var(--glass-border);
+            border-right: 1px solid rgba(255,255,255,0.5);
             padding: 30px 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            z-index: 100;
-            flex-shrink: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
         }
 
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
@@ -72,18 +67,29 @@
         .nav-item.active[data-mode="latihan"] { border-left: 4px solid var(--color-latihan); color: var(--color-latihan); }
         .nav-item.active[data-mode="pencarian"] { border-left: 4px solid var(--color-pencarian); color: var(--color-pencarian); }
 
-        /* --- MAIN CONTENT --- */
-        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; background: rgba(255, 255, 255, 0.1); height: 100vh; overflow: hidden; }
-        .view-section { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-        .chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+        /* --- MOBILE HEADER & BURGER --- */
+        .mobile-header {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+            z-index: 900; align-items: center; padding: 0 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.5);
+        }
+        .burger-btn { font-size: 1.5rem; cursor: pointer; color: var(--primary); }
 
-        .bubble { max-width: 85%; padding: 15px 20px; border-radius: 20px; line-height: 1.8; font-size: 1rem; animation: fadeIn 0.3s; }
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; height: 100vh; }
+        .chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px; }
+
+        .bubble { max-width: 80%; padding: 18px 25px; border-radius: 20px; line-height: 1.8; animation: fadeIn 0.3s; }
         .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .bot-bubble { align-self: flex-start; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid white; border-bottom-left-radius: 5px; }
 
+        /* --- QUIZ CARD (PATEN) --- */
         .quiz-card {
             background: rgba(255, 255, 255, 0.9); padding: 40px; border-radius: 25px;
-            width: 95%; max-width: 1000px; margin: 20px auto; overflow-y: auto; max-height: 80%; backdrop-filter: blur(10px);
+            width: 95%; max-width: 1000px; margin: 20px auto; overflow-y: auto; max-height: 80%;
+            backdrop-filter: blur(10px); box-shadow: 0 20px 60px rgba(0,0,0,0.05);
         }
         .quiz-text { line-height: 2; font-size: 1.05rem; }
         .quiz-text p { margin-bottom: 20px; }
@@ -91,55 +97,74 @@
         .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
 
         /* --- INPUT AREA --- */
-        .input-area { padding: 15px 20px; background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.5); display: flex; gap: 10px; align-items: center; }
-        .input-wrapper { background: white; border-radius: 18px; padding: 10px 15px; flex: 1; display: flex; align-items: center; border: 1px solid rgba(0,0,0,0.05); }
+        .input-area {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            padding: 20px 30px; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px);
+            display: flex; gap: 15px; align-items: center;
+        }
+        .input-wrapper { background: white; border-radius: 18px; padding: 10px 20px; flex: 1; display: flex; align-items: center; border: 1px solid rgba(0,0,0,0.05); }
         textarea { border: none; outline: none; width: 100%; resize: none; background: transparent; font-size: 1rem; max-height: 100px; }
 
-        .btn-icon { width: 42px; height: 42px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .btn-icon { width: 45px; height: 45px; border-radius: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .btn-send { background: var(--accent); color: white; }
 
-        /* --- MOBILE RESPONSIVE --- */
+        /* --- MODERN ABOUT MODAL (RESTORED) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3); backdrop-filter: blur(15px);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal {
+            background: white; padding: 40px; border-radius: 30px; text-align: center;
+            max-width: 400px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            animation: modalPop 0.3s forwards;
+        }
+
+        /* --- MOBILE ADAPTATION --- */
         @media (max-width: 768px) {
-            body { flex-direction: column; }
+            .mobile-header { display: flex; }
             .sidebar {
-                width: 100%; height: 70px; padding: 0 10px; flex-direction: row; 
-                position: fixed; bottom: 0; left: 0; border-right: none; border-top: 1px solid var(--glass-border);
-                background: rgba(255, 255, 255, 0.9);
+                position: fixed; left: -260px; top: 0; height: 100vh;
+                background: white; z-index: 1100; box-shadow: 10px 0 30px rgba(0,0,0,0.1);
             }
-            .logo, .sidebar-footer { display: none; }
-            .nav-menu { flex-direction: row; width: 100%; justify-content: space-around; align-items: center; gap: 5px; }
-            .nav-item { padding: 10px; flex-direction: column; gap: 4px; font-size: 0.7rem; border-left: none !important; }
-            .nav-item i { font-size: 1.2rem; }
-            .nav-item.active { background: transparent; box-shadow: none; border-bottom: 3px solid; border-radius: 0; }
-            .main-content { height: calc(100vh - 70px); }
+            .sidebar.open { transform: translateX(260px); }
+            .main-content { padding-top: 60px; }
+            .chat-area { padding: 15px; }
             .quiz-opt { grid-template-columns: 1fr; }
+            .input-area { padding: 10px 15px; }
         }
 
         .hidden { display: none !important; }
+        @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .typing { display: flex; gap: 5px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 15px; width: fit-content; align-self: flex-start; }
-        .typing span { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: bounce 1.4s infinite; }
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <nav class="sidebar">
-        <div class="logo"><i class="fas fa-brain"></i><span>ERAI</span></div>
-        <div class="nav-menu">
-            <div class="nav-item active" data-mode="belajar" onclick="switchMode('belajar')">
-                <i class="fas fa-book-open"></i> <span>Belajar</span>
+    <header class="mobile-header">
+        <div class="burger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+        <div style="margin-left: 15px; font-weight: 800;">ERAI</div>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="top-sec">
+            <div class="logo"><i class="fas fa-brain"></i><span>ERAI</span></div>
+            <div class="nav-menu">
+                <div class="nav-item active" data-mode="belajar" onclick="switchMode('belajar')">
+                    <i class="fas fa-book-open"></i> <span>Belajar</span>
+                </div>
+                <div class="nav-item" data-mode="latihan" onclick="switchMode('latihan')">
+                    <i class="fas fa-dumbbell"></i> <span>Latihan</span>
+                </div>
+                <div class="nav-item" data-mode="pencarian" onclick="switchMode('pencarian')">
+                    <i class="fas fa-globe"></i> <span>Pencarian</span>
+                </div>
             </div>
-            <div class="nav-item" data-mode="latihan" onclick="switchMode('latihan')">
-                <i class="fas fa-dumbbell"></i> <span>Latihan</span>
-            </div>
-            <div class="nav-item" data-mode="pencarian" onclick="switchMode('pencarian')">
-                <i class="fas fa-globe"></i> <span>Cari</span>
-            </div>
-            <div class="nav-item" onclick="toggleAbout()"><i class="fas fa-info-circle"></i> <span>Info</span></div>
         </div>
         <div class="sidebar-footer">
-            <button onclick="toggleAbout()"><i class="fas fa-info-circle"></i> Tentang ERAI</button>
+            <button onclick="toggleAbout()" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:#636e72;">
+                <i class="fas fa-info-circle"></i> Tentang ERAI
+            </button>
         </div>
     </nav>
 
@@ -149,17 +174,15 @@
                 <div class="bubble bot-bubble">Halo Kak! Saya ERAI. Mau belajar topik apa hari ini?</div>
             </div>
         </div>
-
         <div id="container-latihan" class="view-section hidden">
             <div class="quiz-card" id="quiz-display">
-                <h2 style="color: var(--color-latihan); margin-bottom:10px;">Mode Latihan</h2>
-                <p>Ketik materi, lalu jawab pertanyaan dari ERAI.</p>
+                <h2 style="color: var(--color-latihan); margin-bottom:15px;">Mode Latihan</h2>
+                <p>Ketik materi untuk mulai latihan.</p>
             </div>
         </div>
-
         <div id="container-pencarian" class="view-section hidden">
             <div class="chat-area" id="chat-pencarian">
-                <div class="search-hero" id="search-hero" style="text-align:center; padding-top: 50px;">
+                <div id="search-hero" style="text-align:center; padding-top: 50px;">
                     <h2 style="color: var(--color-pencarian);">Pencarian Pintar</h2>
                 </div>
             </div>
@@ -168,28 +191,29 @@
         <div class="input-area">
             <button class="btn-icon" id="btn-voice" onclick="toggleVoice()" style="background:white; color:var(--accent);"><i class="fas fa-microphone"></i></button>
             <div class="input-wrapper">
-                <textarea id="userInput" rows="1" placeholder="Tanya ERAI..." oninput="autoHeight(this)" onkeydown="checkEnter(event)"></textarea>
+                <textarea id="userInput" rows="1" placeholder="Tanya sesuatu..." oninput="autoHeight(this)" onkeydown="checkEnter(event)"></textarea>
             </div>
             <button class="btn-icon btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </main>
 
     <div class="modal-overlay" id="modal-about" onclick="toggleAbout()">
-        <div class="modal" onclick="event.stopPropagation()" style="background:white; padding:30px; border-radius:25px; text-align:center; max-width:350px;">
-            <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
-            <h3>ERAI v5.0</h3>
-            <p style="font-size:0.9rem; margin:10px 0;">WUG Secure System Active</p>
-            <button onclick="toggleAbout()" style="background:var(--accent); color:white; border:none; padding:10px 20px; border-radius:10px; cursor:pointer;">Oke</button>
+        <div class="modal" onclick="event.stopPropagation()">
+            <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: var(--accent); margin-bottom: 20px;"></i>
+            <h2 style="margin-bottom: 10px;">ERAI System v5.0</h2>
+            <p style="color: #636e72; line-height: 1.6;">Asisten cerdas pendidikan, dirancang untuk membantu Kakak belajar lebih cepat.</p>
+            <div style="margin: 25px 0; padding: 15px; background: #f8f9fa; border-radius: 15px;">
+                <span style="font-weight: 800; color: #b2bec3; letter-spacing: 1px;">WUG SECURE SYSTEM</span>
+            </div>
+            <button onclick="toggleAbout()" style="padding: 12px 30px; border-radius: 12px; border: none; background: var(--accent); color: white; cursor: pointer; font-weight: bold;">Tutup</button>
         </div>
     </div>
 
     <script>
         let currentMode = 'belajar';
         let histories = { belajar: [], latihan: [], pencarian: [] };
-        let recognition = null;
         let isRecording = false;
 
-        // --- SFX SYSTEM ---
         const sfx = {
             click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
             send: new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-preview.mp3'),
@@ -197,57 +221,28 @@
             voice: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3')
         };
 
-        function playSFX(key) {
-            sfx[key].currentTime = 0;
-            sfx[key].play().catch(() => {}); // Mencegah error jika browser blokir autoplay
+        function playSFX(key) { sfx[key].currentTime = 0; sfx[key].play().catch(() => {}); }
+
+        function toggleSidebar() { 
+            document.getElementById('sidebar').classList.toggle('open'); 
+            playSFX('click');
         }
 
-        // --- Logika Speech (Paten) ---
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.lang = 'id-ID';
-            recognition.onresult = (e) => {
-                document.getElementById('userInput').value = e.results[0][0].transcript;
-                sendMessage();
-            };
-            recognition.onend = () => {
-                isRecording = false;
-                document.getElementById('btn-voice').style.background = "white";
-            };
-        }
-
-        function toggleVoice() {
-            if (!recognition) return;
-            playSFX('voice');
-            if (isRecording) { recognition.stop(); } 
-            else { 
-                recognition.start(); isRecording = true; 
-                document.getElementById('btn-voice').style.background = "#ff4757"; 
-                document.getElementById('btn-voice').style.color = "white"; 
-            }
-        }
-
-        // --- Mode Switch ---
         function switchMode(mode) {
-            if (currentMode === mode) return;
             playSFX('click');
             currentMode = mode;
-            const bg = { belajar: 'var(--bg-belajar)', latihan: 'var(--bg-latihan)', pencarian: 'var(--bg-pencarian)' };
-            document.body.style.background = bg[mode];
-
+            document.body.style.background = `var(--bg-${mode})`;
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.querySelector(`[data-mode="${mode}"]`)?.classList.add('active');
-            
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`container-${mode}`).classList.remove('hidden');
+            if(window.innerWidth <= 768) toggleSidebar();
         }
 
-        // --- Logika Chat (Paten) ---
         async function sendMessage(manualMsg = null) {
             const inputEl = document.getElementById('userInput');
             const msg = manualMsg || inputEl.value.trim();
             if (!msg) return;
-
             playSFX('send');
             inputEl.value = '';
             inputEl.style.height = 'auto';
@@ -256,11 +251,9 @@
                 appendBubble(msg, 'user', `chat-${currentMode}`);
             } else {
                 const display = document.getElementById('quiz-display');
-                display.innerHTML += `<div style="margin-top:15px; font-size:0.9rem; border-top:1px solid #eee; padding-top:10px;"><b>Jawaban:</b> ${msg}</div>`;
+                display.innerHTML += `<div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px; font-style:italic;">Kakak: ${msg}</div>`;
                 display.scrollTop = display.scrollHeight;
             }
-
-            showThinking();
 
             try {
                 const res = await fetch('/chat', {
@@ -269,31 +262,12 @@
                     body: JSON.stringify({ message: msg, mode: currentMode, history: histories[currentMode] })
                 });
                 const data = await res.json();
-                removeThinking();
                 playSFX('pop');
-
                 if (currentMode === 'latihan') renderQuizCard(data.response, data.is_quiz_active);
                 else appendBubble(data.response, 'bot', `chat-${currentMode}`);
-                
                 histories[currentMode].push({ role: "user", content: msg }, { role: "assistant", content: data.response });
-            } catch (err) {
-                removeThinking();
-                alert("Koneksi terputus.");
-            }
+            } catch (err) { alert("Error koneksi."); }
         }
-
-        function showThinking() {
-            if (currentMode === 'latihan') return;
-            const container = document.getElementById(`chat-${currentMode}`);
-            const loader = document.createElement('div');
-            loader.id = 'er-thinking';
-            loader.className = 'typing';
-            loader.innerHTML = '<span></span><span></span><span></span>';
-            container.appendChild(loader);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function removeThinking() { document.getElementById('er-thinking')?.remove(); }
 
         function appendBubble(text, role, containerId) {
             const container = document.getElementById(containerId);
@@ -307,16 +281,13 @@
 
         function renderQuizCard(text, isActive) {
             const display = document.getElementById('quiz-display');
-            let htmlContent = `<div class="quiz-text">${marked.parse(text)}</div>`;
+            let html = `<div class="quiz-text">${marked.parse(text)}</div>`;
             if (isActive) {
-                htmlContent += `<div class="quiz-opt">
-                    <button class="quiz-btn" onclick="sendMessage('A')" style="padding:15px; border:2px solid var(--color-latihan); border-radius:12px; background:white; font-weight:bold; cursor:pointer;">A</button>
-                    <button class="quiz-btn" onclick="sendMessage('B')" style="padding:15px; border:2px solid var(--color-latihan); border-radius:12px; background:white; font-weight:bold; cursor:pointer;">B</button>
-                    <button class="quiz-btn" onclick="sendMessage('C')" style="padding:15px; border:2px solid var(--color-latihan); border-radius:12px; background:white; font-weight:bold; cursor:pointer;">C</button>
-                    <button class="quiz-btn" onclick="sendMessage('D')" style="padding:15px; border:2px solid var(--color-latihan); border-radius:12px; background:white; font-weight:bold; cursor:pointer;">D</button>
+                html += `<div class="quiz-opt">
+                    ${['A','B','C','D'].map(opt => `<button onclick="sendMessage('${opt}')" class="quiz-btn" style="padding:15px; border:2px solid var(--color-latihan); border-radius:12px; background:white; font-weight:bold; cursor:pointer;">${opt}</button>`).join('')}
                 </div>`;
             }
-            display.innerHTML = htmlContent;
+            display.innerHTML = html;
             if(window.MathJax) MathJax.typesetPromise([display]);
             display.scrollTop = display.scrollHeight;
         }
@@ -325,6 +296,16 @@
             playSFX('click');
             const m = document.getElementById('modal-about'); 
             m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; 
+        }
+
+        function toggleVoice() {
+            if (!('webkitSpeechRecognition' in window)) return;
+            const rec = new webkitSpeechRecognition();
+            rec.lang = 'id-ID';
+            rec.onstart = () => { playSFX('voice'); document.getElementById('btn-voice').style.color = 'red'; };
+            rec.onresult = (e) => { document.getElementById('userInput').value = e.results[0][0].transcript; sendMessage(); };
+            rec.onend = () => { document.getElementById('btn-voice').style.color = 'var(--accent)'; };
+            rec.start();
         }
 
         function autoHeight(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
