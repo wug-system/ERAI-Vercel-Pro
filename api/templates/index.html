@@ -26,33 +26,26 @@
             --glass-border: rgba(255, 255, 255, 0.5);
             --primary: #2d3436;
             --accent: #6c5ce7;
-            
-            /* Gradients per Mode */
             --bg-belajar: linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 100%);
             --bg-latihan: linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%);
             --bg-pencarian: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
-            
             --color-belajar: #0984e3;
             --color-latihan: #d63031;
             --color-pencarian: #00b894;
         }
 
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         
         body {
             height: 100vh;
-            background: var(--bg-belajar); /* Default mode belajar */
+            background: var(--bg-belajar);
             display: flex;
             overflow: hidden;
             color: var(--primary);
-            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1); /* Transisi halus */
+            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* --- SIDEBAR & NAV --- */
         .sidebar {
             width: 260px;
             background: rgba(255, 255, 255, 0.3);
@@ -62,7 +55,6 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: 0.3s;
             z-index: 100;
             flex-shrink: 0;
         }
@@ -73,122 +65,78 @@
         .nav-menu { display: flex; flex-direction: column; gap: 10px; }
         .nav-item {
             padding: 12px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; color: #636e72;
-            display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; border: 1px solid transparent;
+            display: flex; align-items: center; gap: 12px; transition: 0.3s; border: 1px solid transparent;
         }
-        .nav-item:hover { background: rgba(255, 255, 255, 0.4); transform: translateX(5px); }
         .nav-item.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .nav-item.active[data-mode="belajar"] { border-left: 4px solid var(--color-belajar); color: var(--color-belajar); }
         .nav-item.active[data-mode="latihan"] { border-left: 4px solid var(--color-latihan); color: var(--color-latihan); }
         .nav-item.active[data-mode="pencarian"] { border-left: 4px solid var(--color-pencarian); color: var(--color-pencarian); }
 
-        .sidebar-footer button {
-            background: transparent; border: none; color: #636e72; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;
-        }
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; background: rgba(255, 255, 255, 0.1); height: 100vh; overflow: hidden; }
+        .view-section { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+        .chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
 
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            background: rgba(255, 255, 255, 0.1);
-            height: 100vh;
-        }
-
-        .view-section {
-            flex: 1; 
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-area { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 20px 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            scroll-behavior: smooth; 
-        }
-
-        .bubble { max-width: 80%; padding: 18px 25px; border-radius: 20px; line-height: 1.8; font-size: 1rem; position: relative; animation: fadeIn 0.3s; }
-        .bubble p { margin-bottom: 12px; }
-        .bubble li { margin-bottom: 8px; }
-        mjx-container { margin: 10px 0 !important; }
-
-        .user-bubble { align-self: flex-end; background: white; color: #2d3436; border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .bubble { max-width: 85%; padding: 15px 20px; border-radius: 20px; line-height: 1.8; font-size: 1rem; animation: fadeIn 0.3s; }
+        .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .bot-bubble { align-self: flex-start; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid white; border-bottom-left-radius: 5px; }
-
-        .typing { display: flex; gap: 5px; padding: 15px 20px; background: rgba(255,255,255,0.5); border-radius: 15px; width: fit-content; align-self: flex-start; margin-bottom: 20px; }
-        .typing span { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
-        .typing span:nth-child(1) { animation-delay: -0.32s; }
-        .typing span:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.3); backdrop-filter: blur(12px);
-            display: none; justify-content: center; align-items: center; z-index: 1000;
-            animation: fadeIn 0.3s;
-        }
-        .modal {
-            background: white; padding: 40px; border-radius: 30px; text-align: center;
-            max-width: 400px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-            transform: scale(0.9); animation: modalPop 0.3s forwards;
-        }
-        @keyframes modalPop { to { transform: scale(1); opacity: 1; } }
 
         .quiz-card {
             background: rgba(255, 255, 255, 0.9); padding: 40px; border-radius: 25px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.08); 
-            width: 95%; max-width: 1000px;
-            margin: 20px auto; animation: slideUp 0.5s ease;
-            overflow-y: auto; max-height: 80%;
-            backdrop-filter: blur(10px);
+            width: 95%; max-width: 1000px; margin: 20px auto; overflow-y: auto; max-height: 80%; backdrop-filter: blur(10px);
         }
-
-        .quiz-text { line-height: 2; font-size: 1.05rem; color: #2d3436; }
+        .quiz-text { line-height: 2; font-size: 1.05rem; }
         .quiz-text p { margin-bottom: 20px; }
         .quiz-text li { margin-bottom: 12px; }
+        .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
 
-        .input-area {
-            padding: 20px 30px; background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.5); display: flex; gap: 15px; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        .input-wrapper { background: white; border: 2px solid rgba(0,0,0,0.05); border-radius: 18px; padding: 10px 20px; flex: 1; max-width: 800px; display: flex; align-items: center; }
+        /* --- INPUT AREA --- */
+        .input-area { padding: 15px 20px; background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.5); display: flex; gap: 10px; align-items: center; }
+        .input-wrapper { background: white; border-radius: 18px; padding: 10px 15px; flex: 1; display: flex; align-items: center; border: 1px solid rgba(0,0,0,0.05); }
         textarea { border: none; outline: none; width: 100%; resize: none; background: transparent; font-size: 1rem; max-height: 100px; }
 
-        .btn-icon { width: 45px; height: 45px; border-radius: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; background: white; }
+        .btn-icon { width: 42px; height: 42px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .btn-send { background: var(--accent); color: white; }
-        .btn-voice.recording { background: #ff4757; color: white; animation: pulse 1s infinite; }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* --- MOBILE RESPONSIVE --- */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 100%; height: 70px; padding: 0 10px; flex-direction: row; 
+                position: fixed; bottom: 0; left: 0; border-right: none; border-top: 1px solid var(--glass-border);
+                background: rgba(255, 255, 255, 0.9);
+            }
+            .logo, .sidebar-footer { display: none; }
+            .nav-menu { flex-direction: row; width: 100%; justify-content: space-around; align-items: center; gap: 5px; }
+            .nav-item { padding: 10px; flex-direction: column; gap: 4px; font-size: 0.7rem; border-left: none !important; }
+            .nav-item i { font-size: 1.2rem; }
+            .nav-item.active { background: transparent; box-shadow: none; border-bottom: 3px solid; border-radius: 0; }
+            .main-content { height: calc(100vh - 70px); }
+            .quiz-opt { grid-template-columns: 1fr; }
+        }
+
         .hidden { display: none !important; }
-        .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
-        .quiz-btn { padding: 15px; border: 2px solid var(--color-latihan); background: white; border-radius: 12px; font-weight: bold; color: var(--color-latihan); cursor: pointer; transition: 0.2s; }
-        .quiz-btn:hover { background: var(--color-latihan); color: white; }
-
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .typing { display: flex; gap: 5px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 15px; width: fit-content; align-self: flex-start; }
+        .typing span { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: bounce 1.4s infinite; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
-        <div class="top-sec">
-            <div class="logo"><i class="fas fa-brain"></i><span>ERAI</span></div>
-            <div class="nav-menu">
-                <div class="nav-item active" data-mode="belajar" onclick="switchMode('belajar')">
-                    <i class="fas fa-book-open"></i> <span>Belajar</span>
-                </div>
-                <div class="nav-item" data-mode="latihan" onclick="switchMode('latihan')">
-                    <i class="fas fa-dumbbell"></i> <span>Latihan</span>
-                </div>
-                <div class="nav-item" data-mode="pencarian" onclick="switchMode('pencarian')">
-                    <i class="fas fa-globe"></i> <span>Pencarian</span>
-                </div>
+        <div class="logo"><i class="fas fa-brain"></i><span>ERAI</span></div>
+        <div class="nav-menu">
+            <div class="nav-item active" data-mode="belajar" onclick="switchMode('belajar')">
+                <i class="fas fa-book-open"></i> <span>Belajar</span>
             </div>
+            <div class="nav-item" data-mode="latihan" onclick="switchMode('latihan')">
+                <i class="fas fa-dumbbell"></i> <span>Latihan</span>
+            </div>
+            <div class="nav-item" data-mode="pencarian" onclick="switchMode('pencarian')">
+                <i class="fas fa-globe"></i> <span>Cari</span>
+            </div>
+            <div class="nav-item" onclick="toggleAbout()"><i class="fas fa-info-circle"></i> <span>Info</span></div>
         </div>
         <div class="sidebar-footer">
             <button onclick="toggleAbout()"><i class="fas fa-info-circle"></i> Tentang ERAI</button>
@@ -204,38 +152,34 @@
 
         <div id="container-latihan" class="view-section hidden">
             <div class="quiz-card" id="quiz-display">
-                <h2 style="color: var(--color-latihan); margin-bottom:15px;">Mode Latihan Siap</h2>
-                <p>Ketik topik atau materi yang ingin Kakak uji, ERAI akan buatkan soal untuk Kakak.</p>
+                <h2 style="color: var(--color-latihan); margin-bottom:10px;">Mode Latihan</h2>
+                <p>Ketik materi, lalu jawab pertanyaan dari ERAI.</p>
             </div>
         </div>
 
         <div id="container-pencarian" class="view-section hidden">
             <div class="chat-area" id="chat-pencarian">
-                <div class="search-hero" id="search-hero" style="text-align:center; padding: 50px 0;">
-                    <h1 style="font-size: 2.5rem; color: var(--color-pencarian);">Pencarian Pintar</h1>
-                    <p>Cari informasi real-time tanpa gangguan.</p>
+                <div class="search-hero" id="search-hero" style="text-align:center; padding-top: 50px;">
+                    <h2 style="color: var(--color-pencarian);">Pencarian Pintar</h2>
                 </div>
             </div>
         </div>
 
         <div class="input-area">
-            <button class="btn-icon btn-voice" id="btn-voice" onclick="toggleVoice()"><i class="fas fa-microphone"></i></button>
+            <button class="btn-icon" id="btn-voice" onclick="toggleVoice()" style="background:white; color:var(--accent);"><i class="fas fa-microphone"></i></button>
             <div class="input-wrapper">
-                <textarea id="userInput" rows="1" placeholder="Ketik pesan..." oninput="autoHeight(this)" onkeydown="checkEnter(event)"></textarea>
+                <textarea id="userInput" rows="1" placeholder="Tanya ERAI..." oninput="autoHeight(this)" onkeydown="checkEnter(event)"></textarea>
             </div>
             <button class="btn-icon btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </main>
 
     <div class="modal-overlay" id="modal-about" onclick="toggleAbout()">
-        <div class="modal" onclick="event.stopPropagation()">
-            <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: var(--accent); margin-bottom: 20px;"></i>
-            <h2 style="margin-bottom: 10px;">ERAI System v5.0</h2>
-            <p style="color: #636e72; line-height: 1.6;">Asisten cerdas untuk pendidikan tanpa batas, dirancang dengan dedikasi tinggi untuk mendukung Kakak.</p>
-            <div style="margin: 25px 0; padding: 15px; background: #f8f9fa; border-radius: 15px;">
-                <span style="font-weight: 800; color: #b2bec3; letter-spacing: 1px;">WUG SECURE SYSTEM</span>
-            </div>
-            <button onclick="toggleAbout()" style="padding: 10px 25px; border-radius: 10px; border: none; background: var(--accent); color: white; cursor: pointer; font-weight: bold;">Tutup</button>
+        <div class="modal" onclick="event.stopPropagation()" style="background:white; padding:30px; border-radius:25px; text-align:center; max-width:350px;">
+            <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
+            <h3>ERAI v5.0</h3>
+            <p style="font-size:0.9rem; margin:10px 0;">WUG Secure System Active</p>
+            <button onclick="toggleAbout()" style="background:var(--accent); color:white; border:none; padding:10px 20px; border-radius:10px; cursor:pointer;">Oke</button>
         </div>
     </div>
 
@@ -245,69 +189,74 @@
         let recognition = null;
         let isRecording = false;
 
-        // Speech System
+        // --- SFX SYSTEM ---
+        const sfx = {
+            click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+            send: new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-preview.mp3'),
+            pop: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
+            voice: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3')
+        };
+
+        function playSFX(key) {
+            sfx[key].currentTime = 0;
+            sfx[key].play().catch(() => {}); // Mencegah error jika browser blokir autoplay
+        }
+
+        // --- Logika Speech (Paten) ---
         if ('webkitSpeechRecognition' in window) {
             recognition = new webkitSpeechRecognition();
             recognition.lang = 'id-ID';
-            recognition.continuous = false;
             recognition.onresult = (e) => {
-                const text = e.results[0][0].transcript;
-                document.getElementById('userInput').value = text;
+                document.getElementById('userInput').value = e.results[0][0].transcript;
                 sendMessage();
             };
             recognition.onend = () => {
                 isRecording = false;
-                document.getElementById('btn-voice').classList.remove('recording');
+                document.getElementById('btn-voice').style.background = "white";
             };
         }
 
         function toggleVoice() {
-            if (!recognition) { alert("Browser Kakak tidak mendukung input suara."); return; }
+            if (!recognition) return;
+            playSFX('voice');
             if (isRecording) { recognition.stop(); } 
-            else { recognition.start(); isRecording = true; document.getElementById('btn-voice').classList.add('recording'); }
+            else { 
+                recognition.start(); isRecording = true; 
+                document.getElementById('btn-voice').style.background = "#ff4757"; 
+                document.getElementById('btn-voice').style.color = "white"; 
+            }
         }
 
-        // --- DYNAMIC BACKGROUND LOGIC ---
+        // --- Mode Switch ---
         function switchMode(mode) {
+            if (currentMode === mode) return;
+            playSFX('click');
             currentMode = mode;
-            
-            // Ubah Background Body berdasarkan mode
-            const root = document.documentElement;
-            if (mode === 'belajar') {
-                document.body.style.background = "var(--bg-belajar)";
-            } else if (mode === 'latihan') {
-                document.body.style.background = "var(--bg-latihan)";
-            } else if (mode === 'pencarian') {
-                document.body.style.background = "var(--bg-pencarian)";
-            }
+            const bg = { belajar: 'var(--bg-belajar)', latihan: 'var(--bg-latihan)', pencarian: 'var(--bg-pencarian)' };
+            document.body.style.background = bg[mode];
 
-            // Update UI Sidebar
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            document.querySelector(`[data-mode="${mode}"]`)?.classList.add('active');
             
-            // Switch Container
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`container-${mode}`).classList.remove('hidden');
         }
 
+        // --- Logika Chat (Paten) ---
         async function sendMessage(manualMsg = null) {
             const inputEl = document.getElementById('userInput');
             const msg = manualMsg || inputEl.value.trim();
             if (!msg) return;
 
+            playSFX('send');
             inputEl.value = '';
             inputEl.style.height = 'auto';
-
-            if (currentMode === 'pencarian') {
-                const hero = document.getElementById('search-hero');
-                if(hero) hero.style.display = 'none';
-            }
 
             if (currentMode !== 'latihan') {
                 appendBubble(msg, 'user', `chat-${currentMode}`);
             } else {
                 const display = document.getElementById('quiz-display');
-                display.innerHTML += `<div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px; font-style:italic;"><b>Kakak menjawab:</b> ${msg}</div>`;
+                display.innerHTML += `<div style="margin-top:15px; font-size:0.9rem; border-top:1px solid #eee; padding-top:10px;"><b>Jawaban:</b> ${msg}</div>`;
                 display.scrollTop = display.scrollHeight;
             }
 
@@ -320,18 +269,16 @@
                     body: JSON.stringify({ message: msg, mode: currentMode, history: histories[currentMode] })
                 });
                 const data = await res.json();
-                
                 removeThinking();
+                playSFX('pop');
 
-                if (currentMode === 'latihan') {
-                    renderQuizCard(data.response, data.is_quiz_active);
-                } else {
-                    appendBubble(data.response, 'bot', `chat-${currentMode}`);
-                }
+                if (currentMode === 'latihan') renderQuizCard(data.response, data.is_quiz_active);
+                else appendBubble(data.response, 'bot', `chat-${currentMode}`);
+                
                 histories[currentMode].push({ role: "user", content: msg }, { role: "assistant", content: data.response });
             } catch (err) {
                 removeThinking();
-                alert("Gangguan koneksi, Kak.");
+                alert("Koneksi terputus.");
             }
         }
 
@@ -346,10 +293,7 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        function removeThinking() {
-            const loader = document.getElementById('er-thinking');
-            if (loader) loader.remove();
-        }
+        function removeThinking() { document.getElementById('er-thinking')?.remove(); }
 
         function appendBubble(text, role, containerId) {
             const container = document.getElementById(containerId);
@@ -366,10 +310,10 @@
             let htmlContent = `<div class="quiz-text">${marked.parse(text)}</div>`;
             if (isActive) {
                 htmlContent += `<div class="quiz-opt">
-                    <button class="quiz-btn" onclick="sendMessage('A')">A</button>
-                    <button class="quiz-btn" onclick="sendMessage('B')">B</button>
-                    <button class="quiz-btn" onclick="sendMessage('C')">C</button>
-                    <button class="quiz-btn" onclick="sendMessage('D')">D</button>
+                    <button class="quiz-btn" onclick="sendMessage('A')" style="padding:15px; border:2px solid var(--color-latihan); border-radius:12px; background:white; font-weight:bold; cursor:pointer;">A</button>
+                    <button class="quiz-btn" onclick="sendMessage('B')" style="padding:15px; border:2px solid var(--color-latihan); border-radius:12px; background:white; font-weight:bold; cursor:pointer;">B</button>
+                    <button class="quiz-btn" onclick="sendMessage('C')" style="padding:15px; border:2px solid var(--color-latihan); border-radius:12px; background:white; font-weight:bold; cursor:pointer;">C</button>
+                    <button class="quiz-btn" onclick="sendMessage('D')" style="padding:15px; border:2px solid var(--color-latihan); border-radius:12px; background:white; font-weight:bold; cursor:pointer;">D</button>
                 </div>`;
             }
             display.innerHTML = htmlContent;
@@ -378,6 +322,7 @@
         }
 
         function toggleAbout() { 
+            playSFX('click');
             const m = document.getElementById('modal-about'); 
             m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; 
         }
