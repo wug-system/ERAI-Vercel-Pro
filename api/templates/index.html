@@ -29,6 +29,17 @@
             --color-pencarian: #00b894;
         }
 
+        /* --- MODERN SCROLLBAR --- */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: rgba(0, 0, 0, 0.1); 
+            border-radius: 20px; 
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         
         body {
@@ -40,7 +51,7 @@
             transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* --- SIDEBAR DESKTOP --- */
+        /* --- SIDEBAR --- */
         .sidebar {
             width: 260px;
             background: rgba(255, 255, 255, 0.3);
@@ -51,7 +62,7 @@
             flex-direction: column;
             justify-content: space-between;
             z-index: 1000;
-            transition: transform 0.3s ease;
+            transition: 0.3s ease;
         }
 
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
@@ -67,7 +78,7 @@
         .nav-item.active[data-mode="latihan"] { border-left: 4px solid var(--color-latihan); color: var(--color-latihan); }
         .nav-item.active[data-mode="pencarian"] { border-left: 4px solid var(--color-pencarian); color: var(--color-pencarian); }
 
-        /* --- MOBILE HEADER & BURGER --- */
+        /* --- MOBILE HEADER --- */
         .mobile-header {
             display: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 60px;
@@ -75,40 +86,61 @@
             z-index: 900; align-items: center; padding: 0 20px;
             border-bottom: 1px solid rgba(255,255,255,0.5);
         }
-        .burger-btn { font-size: 1.5rem; cursor: pointer; color: var(--primary); }
+        .burger-btn { font-size: 1.5rem; cursor: pointer; }
 
-        /* --- MAIN CONTENT --- */
-        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; height: 100vh; }
-        .chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px; }
+        /* --- MAIN CONTENT & CHAT --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; height: 100vh; overflow: hidden; }
+        
+        .view-section { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; /* Penting untuk scroll internal */
+        }
+
+        .chat-area { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            padding-bottom: 120px; /* Jarak untuk input */
+            scroll-behavior: smooth;
+        }
 
         .bubble { max-width: 80%; padding: 18px 25px; border-radius: 20px; line-height: 1.8; animation: fadeIn 0.3s; }
         .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .bot-bubble { align-self: flex-start; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid white; border-bottom-left-radius: 5px; }
 
-        /* --- QUIZ CARD (PATEN) --- */
+        /* --- THINKING ANIMATION --- */
+        .typing { display: flex; gap: 5px; padding: 15px 20px; background: rgba(255,255,255,0.5); border-radius: 15px; width: fit-content; align-self: flex-start; margin-bottom: 20px; }
+        .typing span { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .typing span:nth-child(1) { animation-delay: -0.32s; }
+        .typing span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+
+        /* --- QUIZ CARD --- */
         .quiz-card {
             background: rgba(255, 255, 255, 0.9); padding: 40px; border-radius: 25px;
-            width: 95%; max-width: 1000px; margin: 20px auto; overflow-y: auto; max-height: 80%;
+            width: 95%; max-width: 1000px; margin: 20px auto; overflow-y: auto;
             backdrop-filter: blur(10px); box-shadow: 0 20px 60px rgba(0,0,0,0.05);
         }
-        .quiz-text { line-height: 2; font-size: 1.05rem; }
-        .quiz-text p { margin-bottom: 20px; }
-        .quiz-text li { margin-bottom: 12px; }
         .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
 
         /* --- INPUT AREA --- */
         .input-area {
             position: absolute; bottom: 0; left: 0; width: 100%;
             padding: 20px 30px; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px);
-            display: flex; gap: 15px; align-items: center;
+            display: flex; gap: 15px; align-items: center; z-index: 800;
         }
-        .input-wrapper { background: white; border-radius: 18px; padding: 10px 20px; flex: 1; display: flex; align-items: center; border: 1px solid rgba(0,0,0,0.05); }
+        .input-wrapper { background: white; border-radius: 18px; padding: 10px 20px; flex: 1; display: flex; border: 1px solid rgba(0,0,0,0.05); }
         textarea { border: none; outline: none; width: 100%; resize: none; background: transparent; font-size: 1rem; max-height: 100px; }
 
         .btn-icon { width: 45px; height: 45px; border-radius: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .btn-send { background: var(--accent); color: white; }
 
-        /* --- MODERN ABOUT MODAL (RESTORED) --- */
+        /* --- ABOUT MODAL --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.3); backdrop-filter: blur(15px);
@@ -120,34 +152,31 @@
             animation: modalPop 0.3s forwards;
         }
 
-        /* --- MOBILE ADAPTATION --- */
         @media (max-width: 768px) {
             .mobile-header { display: flex; }
-            .sidebar {
-                position: fixed; left: -260px; top: 0; height: 100vh;
-                background: white; z-index: 1100; box-shadow: 10px 0 30px rgba(0,0,0,0.1);
-            }
+            .sidebar { position: fixed; left: -260px; top: 0; height: 100vh; background: white; }
             .sidebar.open { transform: translateX(260px); }
             .main-content { padding-top: 60px; }
-            .chat-area { padding: 15px; }
+            .chat-area { padding: 15px; padding-bottom: 100px; }
+            .quiz-card { padding: 25px; }
             .quiz-opt { grid-template-columns: 1fr; }
             .input-area { padding: 10px 15px; }
         }
 
         .hidden { display: none !important; }
-        @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modalPop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
 
     <header class="mobile-header">
         <div class="burger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-        <div style="margin-left: 15px; font-weight: 800;">ERAI</div>
+        <div style="margin-left: 15px; font-weight: 800; letter-spacing: 1px;">ERAI</div>
     </header>
 
     <nav class="sidebar" id="sidebar">
-        <div class="top-sec">
+        <div>
             <div class="logo"><i class="fas fa-brain"></i><span>ERAI</span></div>
             <div class="nav-menu">
                 <div class="nav-item active" data-mode="belajar" onclick="switchMode('belajar')">
@@ -174,16 +203,21 @@
                 <div class="bubble bot-bubble">Halo Kak! Saya ERAI. Mau belajar topik apa hari ini?</div>
             </div>
         </div>
+
         <div id="container-latihan" class="view-section hidden">
-            <div class="quiz-card" id="quiz-display">
-                <h2 style="color: var(--color-latihan); margin-bottom:15px;">Mode Latihan</h2>
-                <p>Ketik materi untuk mulai latihan.</p>
+            <div class="chat-area" id="chat-latihan">
+                <div class="quiz-card" id="quiz-display">
+                    <h2 style="color: var(--color-latihan); margin-bottom:15px;">Mode Latihan</h2>
+                    <p>Ketik materi yang ingin diuji, ERAI akan siapkan soalnya.</p>
+                </div>
             </div>
         </div>
+
         <div id="container-pencarian" class="view-section hidden">
             <div class="chat-area" id="chat-pencarian">
                 <div id="search-hero" style="text-align:center; padding-top: 50px;">
                     <h2 style="color: var(--color-pencarian);">Pencarian Pintar</h2>
+                    <p style="opacity: 0.7;">Tanyakan informasi apa saja secara real-time.</p>
                 </div>
             </div>
         </div>
@@ -191,7 +225,7 @@
         <div class="input-area">
             <button class="btn-icon" id="btn-voice" onclick="toggleVoice()" style="background:white; color:var(--accent);"><i class="fas fa-microphone"></i></button>
             <div class="input-wrapper">
-                <textarea id="userInput" rows="1" placeholder="Tanya sesuatu..." oninput="autoHeight(this)" onkeydown="checkEnter(event)"></textarea>
+                <textarea id="userInput" rows="1" placeholder="Tanya ERAI..." oninput="autoHeight(this)" onkeydown="checkEnter(event)"></textarea>
             </div>
             <button class="btn-icon btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
@@ -200,11 +234,8 @@
     <div class="modal-overlay" id="modal-about" onclick="toggleAbout()">
         <div class="modal" onclick="event.stopPropagation()">
             <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: var(--accent); margin-bottom: 20px;"></i>
-            <h2 style="margin-bottom: 10px;">ERAI System v5.0</h2>
-            <p style="color: #636e72; line-height: 1.6;">Asisten cerdas pendidikan, dirancang untuk membantu Kakak belajar lebih cepat.</p>
-            <div style="margin: 25px 0; padding: 15px; background: #f8f9fa; border-radius: 15px;">
-                <span style="font-weight: 800; color: #b2bec3; letter-spacing: 1px;">WUG SECURE SYSTEM</span>
-            </div>
+            <h2>ERAI System v5.0</h2>
+            <p style="color: #636e72; margin: 15px 0;">WUG Secure System Active</p>
             <button onclick="toggleAbout()" style="padding: 12px 30px; border-radius: 12px; border: none; background: var(--accent); color: white; cursor: pointer; font-weight: bold;">Tutup</button>
         </div>
     </div>
@@ -212,8 +243,6 @@
     <script>
         let currentMode = 'belajar';
         let histories = { belajar: [], latihan: [], pencarian: [] };
-        let isRecording = false;
-
         const sfx = {
             click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
             send: new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-preview.mp3'),
@@ -229,6 +258,7 @@
         }
 
         function switchMode(mode) {
+            if (currentMode === mode) return;
             playSFX('click');
             currentMode = mode;
             document.body.style.background = `var(--bg-${mode})`;
@@ -236,24 +266,45 @@
             document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`container-${mode}`).classList.remove('hidden');
-            if(window.innerWidth <= 768) toggleSidebar();
+            if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+        }
+
+        function showThinking() {
+            const container = document.getElementById(`chat-${currentMode}`);
+            const loader = document.createElement('div');
+            loader.id = 'er-thinking';
+            loader.className = 'typing';
+            loader.innerHTML = '<span></span><span></span><span></span>';
+            container.appendChild(loader);
+            scrollToBottom();
+        }
+
+        function removeThinking() { document.getElementById('er-thinking')?.remove(); }
+
+        function scrollToBottom() {
+            const container = document.getElementById(`chat-${currentMode}`);
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         }
 
         async function sendMessage(manualMsg = null) {
             const inputEl = document.getElementById('userInput');
             const msg = manualMsg || inputEl.value.trim();
             if (!msg) return;
+
             playSFX('send');
             inputEl.value = '';
             inputEl.style.height = 'auto';
 
-            if (currentMode !== 'latihan') {
-                appendBubble(msg, 'user', `chat-${currentMode}`);
-            } else {
+            if (currentMode === 'latihan') {
                 const display = document.getElementById('quiz-display');
                 display.innerHTML += `<div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px; font-style:italic;">Kakak: ${msg}</div>`;
-                display.scrollTop = display.scrollHeight;
+                scrollToBottom();
+            } else {
+                if(currentMode === 'pencarian') document.getElementById('search-hero').style.display = 'none';
+                appendBubble(msg, 'user', `chat-${currentMode}`);
             }
+
+            showThinking();
 
             try {
                 const res = await fetch('/chat', {
@@ -262,11 +313,15 @@
                     body: JSON.stringify({ message: msg, mode: currentMode, history: histories[currentMode] })
                 });
                 const data = await res.json();
+                removeThinking();
                 playSFX('pop');
+
                 if (currentMode === 'latihan') renderQuizCard(data.response, data.is_quiz_active);
                 else appendBubble(data.response, 'bot', `chat-${currentMode}`);
+                
                 histories[currentMode].push({ role: "user", content: msg }, { role: "assistant", content: data.response });
-            } catch (err) { alert("Error koneksi."); }
+                scrollToBottom();
+            } catch (err) { removeThinking(); alert("Koneksi Error."); }
         }
 
         function appendBubble(text, role, containerId) {
@@ -276,7 +331,7 @@
             div.innerHTML = marked.parse(text);
             container.appendChild(div);
             if(window.MathJax) MathJax.typesetPromise([div]);
-            container.scrollTop = container.scrollHeight;
+            scrollToBottom();
         }
 
         function renderQuizCard(text, isActive) {
@@ -289,7 +344,7 @@
             }
             display.innerHTML = html;
             if(window.MathJax) MathJax.typesetPromise([display]);
-            display.scrollTop = display.scrollHeight;
+            scrollToBottom();
         }
 
         function toggleAbout() { 
