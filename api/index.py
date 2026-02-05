@@ -18,7 +18,7 @@ tavily_client = TavilyClient(api_key=TAVILY_KEY) if TAVILY_KEY else None
 def index():
     return render_template('index.html')
 
-@app.route('/ask', methods=['POST'])
+@app.route('/chat', methods=['POST'])
 def chat():
     try:
         data = request.json
