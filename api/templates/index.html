@@ -9,7 +9,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <script>
+        mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' });
         window.MathJax = {
             tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
             svg: { fontCache: 'global' }
@@ -104,7 +106,9 @@
         .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .bot-bubble { align-self: flex-start; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid white; border-bottom-left-radius: 5px; }
 
-        /* --- FITUR SALIN BARU --- */
+        /* Style untuk diagram */
+        .mermaid { background: white; border-radius: 10px; padding: 10px; margin: 10px 0; overflow-x: auto; }
+
         .copy-trigger {
             margin-top: 10px; padding: 5px 10px; font-size: 0.75rem;
             background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); 
@@ -395,12 +399,19 @@
             const div = document.createElement('div');
             div.className = `bubble ${role}-bubble`;
             
-            // Content Wrapper
+            // Content Wrapper & Diagram Processor
             const contentDiv = document.createElement('div');
-            contentDiv.innerHTML = marked.parse(text);
+            let processedText = text;
+            
+            // Deteksi kode mermaid (diagram)
+            const mermaidRegex = /```mermaid([\s\S]*?)```/g;
+            processedText = text.replace(mermaidRegex, (match, code) => {
+                return `<div class="mermaid">${code.trim()}</div>`;
+            });
+
+            contentDiv.innerHTML = marked.parse(processedText);
             div.appendChild(contentDiv);
 
-            // Tambahkan tombol salin jika bot yang menjawab (kecuali di kuis/latihan)
             if (role === 'bot' && currentMode !== 'latihan') {
                 const copyBtn = document.createElement('div');
                 copyBtn.className = 'copy-trigger';
@@ -414,7 +425,13 @@
             }
 
             container.appendChild(div);
+            
+            // Render MathJax & Mermaid
             if(window.MathJax) MathJax.typesetPromise([div]);
+            if(processedText.includes('class="mermaid"')) {
+                mermaid.run({ nodes: div.querySelectorAll('.mermaid') });
+            }
+            
             scrollToBottom();
         }
 
