@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERAI | Intelligent Assistant</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,6 +44,7 @@
         
         body {
             height: 100vh;
+            height: 100dvh; /* Dynamic viewport untuk mobile */
             background: var(--bg-belajar);
             display: flex;
             overflow: hidden;
@@ -89,13 +90,20 @@
         .burger-btn { font-size: 1.5rem; cursor: pointer; }
 
         /* --- MAIN CONTENT & CHAT --- */
-        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; height: 100vh; overflow: hidden; }
+        .main-content { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            height: 100%; 
+            overflow: hidden; 
+        }
         
         .view-section { 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
-            overflow: hidden; /* Penting untuk scroll internal */
+            overflow: hidden; 
         }
 
         .chat-area { 
@@ -105,7 +113,7 @@
             display: flex; 
             flex-direction: column; 
             gap: 20px; 
-            padding-bottom: 120px; /* Jarak untuk input */
+            padding-bottom: 90px; /* Spasi untuk input area */
             scroll-behavior: smooth;
         }
 
@@ -122,22 +130,23 @@
 
         /* --- QUIZ CARD --- */
         .quiz-card {
-            background: rgba(255, 255, 255, 0.9); padding: 40px; border-radius: 25px;
+            background: rgba(255, 255, 255, 0.9); padding: 30px; border-radius: 25px;
             width: 95%; max-width: 1000px; margin: 20px auto; overflow-y: auto;
             backdrop-filter: blur(10px); box-shadow: 0 20px 60px rgba(0,0,0,0.05);
         }
-        .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
 
         /* --- INPUT AREA --- */
         .input-area {
             position: absolute; bottom: 0; left: 0; width: 100%;
-            padding: 20px 30px; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px);
-            display: flex; gap: 15px; align-items: center; z-index: 800;
+            padding: 15px 20px; background: rgba(255,255,255,0.85); backdrop-filter: blur(25px);
+            display: flex; gap: 10px; align-items: center; z-index: 1100;
+            border-top: 1px solid rgba(255,255,255,0.5);
         }
-        .input-wrapper { background: white; border-radius: 18px; padding: 10px 20px; flex: 1; display: flex; border: 1px solid rgba(0,0,0,0.05); }
-        textarea { border: none; outline: none; width: 100%; resize: none; background: transparent; font-size: 1rem; max-height: 100px; }
+        .input-wrapper { background: white; border-radius: 15px; padding: 8px 15px; flex: 1; display: flex; border: 1px solid rgba(0,0,0,0.05); }
+        textarea { border: none; outline: none; width: 100%; resize: none; background: transparent; font-size: 1rem; max-height: 80px; line-height: 1.5; }
 
-        .btn-icon { width: 45px; height: 45px; border-radius: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .btn-icon { width: 42px; height: 42px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .btn-send { background: var(--accent); color: white; }
 
         /* --- ABOUT MODAL --- */
@@ -152,15 +161,19 @@
             animation: modalPop 0.3s forwards;
         }
 
+        /* --- MOBILE ADAPTATION --- */
         @media (max-width: 768px) {
             .mobile-header { display: flex; }
-            .sidebar { position: fixed; left: -260px; top: 0; height: 100vh; background: white; }
+            .sidebar { 
+                position: fixed; left: -260px; top: 0; height: 100dvh; 
+                background: white; width: 260px;
+            }
             .sidebar.open { transform: translateX(260px); }
-            .main-content { padding-top: 60px; }
-            .chat-area { padding: 15px; padding-bottom: 100px; }
-            .quiz-card { padding: 25px; }
+            .main-content { padding-top: 60px; height: calc(100dvh - 60px); }
+            .chat-area { padding: 15px; padding-bottom: 85px; }
+            .bubble { max-width: 90%; font-size: 0.95rem; padding: 12px 18px; }
             .quiz-opt { grid-template-columns: 1fr; }
-            .input-area { padding: 10px 15px; }
+            .input-area { padding: 10px 12px; bottom: 0; }
         }
 
         .hidden { display: none !important; }
@@ -172,7 +185,7 @@
 
     <header class="mobile-header">
         <div class="burger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-        <div style="margin-left: 15px; font-weight: 800; letter-spacing: 1px;">ERAI</div>
+        <div style="margin-left: 15px; font-weight: 800;">ERAI</div>
     </header>
 
     <nav class="sidebar" id="sidebar">
@@ -207,8 +220,8 @@
         <div id="container-latihan" class="view-section hidden">
             <div class="chat-area" id="chat-latihan">
                 <div class="quiz-card" id="quiz-display">
-                    <h2 style="color: var(--color-latihan); margin-bottom:15px;">Mode Latihan</h2>
-                    <p>Ketik materi yang ingin diuji, ERAI akan siapkan soalnya.</p>
+                    <h2 style="color: var(--color-latihan); margin-bottom:10px;">Mode Latihan</h2>
+                    <p>Ketik materi untuk mulai kuis.</p>
                 </div>
             </div>
         </div>
@@ -217,7 +230,6 @@
             <div class="chat-area" id="chat-pencarian">
                 <div id="search-hero" style="text-align:center; padding-top: 50px;">
                     <h2 style="color: var(--color-pencarian);">Pencarian Pintar</h2>
-                    <p style="opacity: 0.7;">Tanyakan informasi apa saja secara real-time.</p>
                 </div>
             </div>
         </div>
@@ -297,12 +309,12 @@
 
             if (currentMode === 'latihan') {
                 const display = document.getElementById('quiz-display');
-                display.innerHTML += `<div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px; font-style:italic;">Kakak: ${msg}</div>`;
-                scrollToBottom();
+                display.innerHTML += `<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px; font-size:0.9rem;">Kakak: ${msg}</div>`;
             } else {
                 if(currentMode === 'pencarian') document.getElementById('search-hero').style.display = 'none';
                 appendBubble(msg, 'user', `chat-${currentMode}`);
             }
+            scrollToBottom();
 
             showThinking();
 
@@ -321,7 +333,7 @@
                 
                 histories[currentMode].push({ role: "user", content: msg }, { role: "assistant", content: data.response });
                 scrollToBottom();
-            } catch (err) { removeThinking(); alert("Koneksi Error."); }
+            } catch (err) { removeThinking(); }
         }
 
         function appendBubble(text, role, containerId) {
@@ -336,10 +348,10 @@
 
         function renderQuizCard(text, isActive) {
             const display = document.getElementById('quiz-display');
-            let html = `<div class="quiz-text">${marked.parse(text)}</div>`;
+            let html = `<div class="quiz-text" style="font-size:0.95rem;">${marked.parse(text)}</div>`;
             if (isActive) {
                 html += `<div class="quiz-opt">
-                    ${['A','B','C','D'].map(opt => `<button onclick="sendMessage('${opt}')" class="quiz-btn" style="padding:15px; border:2px solid var(--color-latihan); border-radius:12px; background:white; font-weight:bold; cursor:pointer;">${opt}</button>`).join('')}
+                    ${['A','B','C','D'].map(opt => `<button onclick="sendMessage('${opt}')" class="quiz-btn" style="padding:12px; border:2px solid var(--color-latihan); border-radius:10px; background:white; font-weight:bold;">${opt}</button>`).join('')}
                 </div>`;
             }
             display.innerHTML = html;
