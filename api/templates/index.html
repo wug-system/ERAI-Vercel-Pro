@@ -26,7 +26,12 @@
             --glass-border: rgba(255, 255, 255, 0.5);
             --primary: #2d3436;
             --accent: #6c5ce7;
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            
+            /* Gradients per Mode */
+            --bg-belajar: linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 100%);
+            --bg-latihan: linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%);
+            --bg-pencarian: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
+            
             --color-belajar: #0984e3;
             --color-latihan: #d63031;
             --color-pencarian: #00b894;
@@ -41,16 +46,16 @@
         
         body {
             height: 100vh;
-            background: var(--bg-gradient);
+            background: var(--bg-belajar); /* Default mode belajar */
             display: flex;
             overflow: hidden;
             color: var(--primary);
+            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1); /* Transisi halus */
         }
 
-        /* --- SIDEBAR --- */
         .sidebar {
             width: 260px;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(20px);
             border-right: 1px solid var(--glass-border);
             padding: 30px 20px;
@@ -70,23 +75,22 @@
             padding: 12px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; color: #636e72;
             display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; border: 1px solid transparent;
         }
-        .nav-item:hover { background: rgba(255, 255, 255, 0.5); transform: translateX(5px); }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.4); transform: translateX(5px); }
         .nav-item.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .nav-item.active[data-mode="belajar"] { border-left: 4px solid var(--color-belajar); color: var(--color-belajar); }
         .nav-item.active[data-mode="latihan"] { border-left: 4px solid var(--color-latihan); color: var(--color-latihan); }
         .nav-item.active[data-mode="pencarian"] { border-left: 4px solid var(--color-pencarian); color: var(--color-pencarian); }
 
         .sidebar-footer button {
-            background: transparent; border: none; color: #b2bec3; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;
+            background: transparent; border: none; color: #636e72; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;
         }
 
-        /* --- MAIN CONTENT --- */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             position: relative;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             height: 100vh;
         }
 
@@ -107,7 +111,6 @@
             scroll-behavior: smooth; 
         }
 
-        /* --- BUBBLES --- */
         .bubble { max-width: 80%; padding: 18px 25px; border-radius: 20px; line-height: 1.8; font-size: 1rem; position: relative; animation: fadeIn 0.3s; }
         .bubble p { margin-bottom: 12px; }
         .bubble li { margin-bottom: 8px; }
@@ -116,7 +119,6 @@
         .user-bubble { align-self: flex-end; background: white; color: #2d3436; border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .bot-bubble { align-self: flex-start; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid white; border-bottom-left-radius: 5px; }
 
-        /* --- THINKING ANIMATION --- */
         .typing { display: flex; gap: 5px; padding: 15px 20px; background: rgba(255,255,255,0.5); border-radius: 15px; width: fit-content; align-self: flex-start; margin-bottom: 20px; }
         .typing span { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
         .typing span:nth-child(1) { animation-delay: -0.32s; }
@@ -124,7 +126,6 @@
 
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
 
-        /* --- MODAL ABOUT (POPUP + BLUR) --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.3); backdrop-filter: blur(12px);
@@ -138,16 +139,21 @@
         }
         @keyframes modalPop { to { transform: scale(1); opacity: 1; } }
 
-        /* --- QUIZ & INPUT --- */
         .quiz-card {
-            background: white; padding: 35px; border-radius: 25px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.08); width: 100%; max-width: 800px;
-            margin: 0 auto 20px auto; animation: slideUp 0.5s ease;
-            overflow-y: auto; max-height: 70%;
+            background: rgba(255, 255, 255, 0.9); padding: 40px; border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08); 
+            width: 95%; max-width: 1000px;
+            margin: 20px auto; animation: slideUp 0.5s ease;
+            overflow-y: auto; max-height: 80%;
+            backdrop-filter: blur(10px);
         }
 
+        .quiz-text { line-height: 2; font-size: 1.05rem; color: #2d3436; }
+        .quiz-text p { margin-bottom: 20px; }
+        .quiz-text li { margin-bottom: 12px; }
+
         .input-area {
-            padding: 20px 30px; background: rgba(255,255,255,0.9); backdrop-filter: blur(20px);
+            padding: 20px 30px; background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);
             border-top: 1px solid rgba(255,255,255,0.5); display: flex; gap: 15px; align-items: center; justify-content: center; flex-shrink: 0;
         }
         .input-wrapper { background: white; border: 2px solid rgba(0,0,0,0.05); border-radius: 18px; padding: 10px 20px; flex: 1; max-width: 800px; display: flex; align-items: center; }
@@ -155,10 +161,13 @@
 
         .btn-icon { width: 45px; height: 45px; border-radius: 14px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; background: white; }
         .btn-send { background: var(--accent); color: white; }
+        .btn-voice.recording { background: #ff4757; color: white; animation: pulse 1s infinite; }
 
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .hidden { display: none !important; }
-        .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .quiz-btn { padding: 12px; border: 2px solid var(--color-latihan); background: white; border-radius: 12px; font-weight: bold; color: var(--color-latihan); cursor: pointer; }
+        .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        .quiz-btn { padding: 15px; border: 2px solid var(--color-latihan); background: white; border-radius: 12px; font-weight: bold; color: var(--color-latihan); cursor: pointer; transition: 0.2s; }
+        .quiz-btn:hover { background: var(--color-latihan); color: white; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -195,7 +204,7 @@
 
         <div id="container-latihan" class="view-section hidden">
             <div class="quiz-card" id="quiz-display">
-                <h2 style="color: var(--color-latihan); margin-bottom:10px;">Mode Latihan Siap</h2>
+                <h2 style="color: var(--color-latihan); margin-bottom:15px;">Mode Latihan Siap</h2>
                 <p>Ketik topik atau materi yang ingin Kakak uji, ERAI akan buatkan soal untuk Kakak.</p>
             </div>
         </div>
@@ -233,11 +242,50 @@
     <script>
         let currentMode = 'belajar';
         let histories = { belajar: [], latihan: [], pencarian: [] };
-        
+        let recognition = null;
+        let isRecording = false;
+
+        // Speech System
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'id-ID';
+            recognition.continuous = false;
+            recognition.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                document.getElementById('userInput').value = text;
+                sendMessage();
+            };
+            recognition.onend = () => {
+                isRecording = false;
+                document.getElementById('btn-voice').classList.remove('recording');
+            };
+        }
+
+        function toggleVoice() {
+            if (!recognition) { alert("Browser Kakak tidak mendukung input suara."); return; }
+            if (isRecording) { recognition.stop(); } 
+            else { recognition.start(); isRecording = true; document.getElementById('btn-voice').classList.add('recording'); }
+        }
+
+        // --- DYNAMIC BACKGROUND LOGIC ---
         function switchMode(mode) {
             currentMode = mode;
+            
+            // Ubah Background Body berdasarkan mode
+            const root = document.documentElement;
+            if (mode === 'belajar') {
+                document.body.style.background = "var(--bg-belajar)";
+            } else if (mode === 'latihan') {
+                document.body.style.background = "var(--bg-latihan)";
+            } else if (mode === 'pencarian') {
+                document.body.style.background = "var(--bg-pencarian)";
+            }
+
+            // Update UI Sidebar
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            
+            // Switch Container
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`container-${mode}`).classList.remove('hidden');
         }
@@ -250,17 +298,19 @@
             inputEl.value = '';
             inputEl.style.height = 'auto';
 
-            if (currentMode === 'pencarian') document.getElementById('search-hero').style.display = 'none';
+            if (currentMode === 'pencarian') {
+                const hero = document.getElementById('search-hero');
+                if(hero) hero.style.display = 'none';
+            }
 
             if (currentMode !== 'latihan') {
                 appendBubble(msg, 'user', `chat-${currentMode}`);
             } else {
                 const display = document.getElementById('quiz-display');
-                display.innerHTML += `<div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;"><b>Kakak:</b> ${msg}</div>`;
+                display.innerHTML += `<div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px; font-style:italic;"><b>Kakak menjawab:</b> ${msg}</div>`;
                 display.scrollTop = display.scrollHeight;
             }
 
-            // Tampilkan Animasi Berpikir
             showThinking();
 
             try {
@@ -271,13 +321,14 @@
                 });
                 const data = await res.json();
                 
-                removeThinking(); // Sembunyikan animasi setelah dapet jawaban
+                removeThinking();
 
                 if (currentMode === 'latihan') {
                     renderQuizCard(data.response, data.is_quiz_active);
                 } else {
                     appendBubble(data.response, 'bot', `chat-${currentMode}`);
                 }
+                histories[currentMode].push({ role: "user", content: msg }, { role: "assistant", content: data.response });
             } catch (err) {
                 removeThinking();
                 alert("Gangguan koneksi, Kak.");
