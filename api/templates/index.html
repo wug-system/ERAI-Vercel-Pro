@@ -56,8 +56,10 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-belajar); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center;
+            text-align: center; padding: 20px;
         }
+
+        .ad-container { margin: 20px 0; min-height: 60px; }
 
         /* --- SIDEBAR --- */
         .sidebar {
@@ -164,7 +166,21 @@
     <div id="start-gate">
         <i class="fas fa-brain" style="font-size: 4rem; color: var(--accent); margin-bottom: 20px;"></i>
         <h1 style="margin-bottom: 10px;">ERAI SYSTEM</h1>
-        <p style="color: #636e72; margin-bottom: 30px;">Siap untuk belajar lebih fokus?</p>
+        <p style="color: #636e72; margin-bottom: 10px;">Siap untuk belajar lebih fokus?</p>
+        
+        <div class="ad-container">
+            <script>
+                atOptions = {
+                    'key' : '8090e06433cda7c177e5ea8c9e9ca5ea',
+                    'format' : 'iframe',
+                    'height' : 60,
+                    'width' : 468,
+                    'params' : {}
+                };
+            </script>
+            <script src="https://www.highperformanceformat.com/8090e06433cda7c177e5ea8c9e9ca5ea/invoke.js"></script>
+        </div>
+
         <button onclick="enterERAI()" style="padding: 15px 40px; border-radius: 15px; border: none; background: var(--accent); color: white; font-weight: 800; cursor: pointer; font-size: 1.1rem; transition: 0.3s;">
             MULAI SEKARANG
         </button>
@@ -261,7 +277,6 @@
 
         function playSFX(key) { sfx[key].currentTime = 0; sfx[key].play().catch(() => {}); }
 
-        // FULLSCREEN LOGIC
         function enterERAI() {
             playSFX('click');
             const elem = document.documentElement;
