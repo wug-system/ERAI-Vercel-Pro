@@ -9,210 +9,113 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script>
-        window.MathJax = {
-            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-            svg: { fontCache: 'global' }
-        };
-    </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
     <style>
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.5);
             --primary: #2d3436;
             --accent: #6c5ce7;
             --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            
-            /* Mode Specific Colors */
-            --color-belajar: #0984e3;
-            --color-latihan: #d63031;
-            --color-pencarian: #00b894;
+            --color-belajar: #6366f1;
+            --color-latihan: #f43f5e;
+            --color-pencarian: #10b981;
         }
+
+        /* --- CUSTOM SCROLLBAR --- */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        body {
-            height: 100vh;
-            background: var(--bg-gradient);
-            display: flex;
-            overflow: hidden;
-            color: var(--primary);
-        }
+        body { height: 100vh; background: var(--bg-gradient); display: flex; overflow: hidden; color: var(--primary); }
 
-        /* --- SIDEBAR (Navigation) --- */
+        /* --- SIDEBAR --- */
         .sidebar {
             width: 260px;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(20px);
-            border-right: 1px solid var(--glass-border);
+            border-right: 1px solid rgba(255,255,255,0.5);
             padding: 30px 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: 0.3s;
             z-index: 100;
         }
 
-        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .logo i { color: var(--accent); }
 
         .nav-menu { display: flex; flex-direction: column; gap: 10px; }
-        
         .nav-item {
-            padding: 12px 15px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            color: #636e72;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.3s ease;
-            border: 1px solid transparent;
+            padding: 12px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; color: #636e72;
+            display: flex; align-items: center; gap: 12px; transition: 0.3s;
         }
-        
-        .nav-item:hover { background: rgba(255, 255, 255, 0.5); transform: translateX(5px); }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.5); }
         .nav-item.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         
-        /* Dynamic Accent Colors for Active State */
         .nav-item.active[data-mode="belajar"] { border-left: 4px solid var(--color-belajar); color: var(--color-belajar); }
         .nav-item.active[data-mode="latihan"] { border-left: 4px solid var(--color-latihan); color: var(--color-latihan); }
         .nav-item.active[data-mode="pencarian"] { border-left: 4px solid var(--color-pencarian); color: var(--color-pencarian); }
 
-        .sidebar-footer button {
-            background: transparent; border: none; color: #b2bec3; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;
-        }
-        .sidebar-footer button:hover { color: var(--accent); }
+        /* --- MAIN AREA --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; background: rgba(255,255,255,0.1); }
 
-        /* --- MAIN CONTENT AREA --- */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            background: rgba(255, 255, 255, 0.2);
+        .chat-area {
+            flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px;
+            scroll-behavior: smooth; padding-bottom: 100px; /* Jarak agar tidak tertutup input */
         }
 
-        /* --- MODE AMBIENTS (CSS Logic) --- */
+        /* --- BUBBLES --- */
+        .bubble { max-width: 85%; padding: 16px 22px; border-radius: 18px; line-height: 1.7; font-size: 15px; animation: fadeIn 0.3s; }
+        .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .bot-bubble { align-self: flex-start; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom-left-radius: 4px; }
         
-        /* 1. BELAJAR: Standard Chat */
-        #container-belajar { padding: 0 20px; max-width: 900px; margin: 0 auto; width: 100%; height: 100%; display: flex; flex-direction: column; }
-        
-        /* 2. LATIHAN: Focused Card Style */
-        #container-latihan { 
-            padding: 40px; 
-            background: rgba(0,0,0,0.02); 
-            height: 100%; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
-        .quiz-card {
-            background: white;
-            padding: 40px;
-            border-radius: 25px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-            width: 100%;
-            max-width: 800px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(0,0,0,0.05);
-            animation: slideUp 0.5s ease;
-        }
+        /* Spasi antar paragraf biar gak "atep" */
+        .bubble p { margin-bottom: 12px; }
+        .bubble ul, .bubble ol { margin-bottom: 12px; padding-left: 20px; }
 
-        /* 3. PENCARIAN: Minimalist Search Engine */
-        #container-pencarian {
-            padding: 50px 100px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .search-hero { margin-top: 10vh; width: 100%; max-width: 700px; text-align: center; transition: 0.5s; }
-        .search-results-area { width: 100%; max-width: 800px; margin-top: 30px; flex: 1; overflow-y: auto; padding-right: 10px; }
-
-        /* --- CHAT BUBBLES (General) --- */
-        .chat-area { flex: 1; overflow-y: auto; padding: 20px 0; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
-        .bubble { max-width: 80%; padding: 18px 25px; border-radius: 20px; line-height: 1.6; font-size: 1rem; position: relative; animation: fadeIn 0.3s; }
-        .user-bubble { align-self: flex-end; background: white; color: #2d3436; border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .bot-bubble { align-self: flex-start; background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); border: 1px solid white; border-bottom-left-radius: 5px; }
-
-        /* --- INPUT AREA (Fixed Bottom) --- */
+        /* --- INPUT AREA --- */
         .input-area {
-            padding: 20px 30px;
-            background: rgba(255,255,255,0.8);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.5);
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            justify-content: center;
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 20px 40px; background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(15px); border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex; gap: 15px; align-items: center; justify-content: center;
         }
         
         .input-wrapper {
-            background: white;
-            border: 2px solid rgba(0,0,0,0.05);
-            border-radius: 18px;
-            padding: 10px 20px;
-            flex: 1;
-            max-width: 800px;
-            display: flex;
-            align-items: center;
-            transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            background: white; border: 2px solid #edf2f7; border-radius: 15px;
+            padding: 8px 15px; flex: 1; max-width: 800px; display: flex; align-items: center;
         }
-        .input-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 4px 20px rgba(108, 92, 231, 0.15); }
+        textarea { border: none; outline: none; width: 100%; resize: none; font-size: 15px; max-height: 150px; }
 
-        textarea { border: none; outline: none; width: 100%; resize: none; background: transparent; font-size: 1rem; max-height: 100px; }
-
-        .btn-icon {
-            width: 45px; height: 45px; border-radius: 14px; border: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
-            transition: 0.3s; background: white; color: var(--primary);
+        .btn-send {
+            width: 45px; height: 45px; border-radius: 12px; border: none; 
+            background: var(--accent); color: white; cursor: pointer; transition: 0.3s;
         }
-        .btn-send { background: var(--accent); color: white; }
-        .btn-send:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3); }
-        .btn-voice.recording { background: #ff4757; color: white; animation: pulse 1s infinite; }
+        .btn-send:hover { transform: scale(1.05); background: #5649c1; }
 
-        /* --- MODAL ABOUT --- */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center; z-index: 1000;
+        /* Mode Latihan - Card Style */
+        .quiz-container { width: 100%; max-width: 750px; margin: 0 auto; }
+        .quiz-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .quiz-opt { 
+            padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; 
+            background: white; cursor: pointer; font-weight: 600; text-align: center;
         }
-        .modal { background: white; padding: 40px; border-radius: 30px; text-align: center; max-width: 400px; width: 90%; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .quiz-opt:hover { border-color: var(--color-latihan); background: #fff1f2; }
 
-        /* UTILS */
         .hidden { display: none !important; }
-        .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .quiz-btn { padding: 15px; border: 2px solid var(--color-latihan); background: white; border-radius: 15px; font-weight: bold; color: var(--color-latihan); cursor: pointer; transition: 0.2s; }
-        .quiz-btn:hover { background: var(--color-latihan); color: white; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); } }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
-        /* MOBILE RESPONSIVE */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; padding: 15px; flex-direction: row; align-items: center; border-bottom: 1px solid var(--glass-border); border-right: none; }
-            .logo span { display: none; } /* Hide text logo on mobile */
-            .nav-menu { flex-direction: row; gap: 5px; }
-            .nav-item span { display: none; } /* Icon only nav */
-            .sidebar-footer { display: none; }
-            .sidebar .logo { margin-bottom: 0; }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
-        <div class="top-sec">
-            <div class="logo">
-                <i class="fas fa-brain"></i>
-                <span>ERAI</span>
-            </div>
+        <div>
+            <div class="logo"><i class="fas fa-brain"></i><span>ERAI</span></div>
             <div class="nav-menu">
                 <div class="nav-item active" data-mode="belajar" onclick="switchMode('belajar')">
                     <i class="fas fa-book-open"></i> <span>Belajar</span>
@@ -226,129 +129,44 @@
             </div>
         </div>
         <div class="sidebar-footer">
-            <button onclick="toggleAbout()"><i class="fas fa-info-circle"></i> Tentang ERAI</button>
+            <small style="color: #b2bec3;">v5.1 WUG System</small>
         </div>
     </nav>
 
     <main class="main-content">
-        
-        <div id="container-belajar" class="view-section">
-            <div class="chat-area" id="chat-belajar">
-                <div class="bubble bot-bubble">Halo Kak! Saya ERAI. Mau belajar topik apa hari ini?</div>
-            </div>
-        </div>
-
-        <div id="container-latihan" class="view-section hidden">
-            <div class="quiz-card" id="quiz-display">
-                <h2 style="color: var(--color-latihan);">Mode Latihan Siap</h2>
-                <p>Ketik topik atau materi yang ingin Kakak uji, ERAI akan buatkan soal untuk Kakak.</p>
-            </div>
-            <div class="chat-area hidden" id="chat-latihan"></div> </div>
-
-        <div id="container-pencarian" class="view-section hidden">
-            <div class="search-hero" id="search-hero">
-                <h1 style="font-size: 2.5rem; margin-bottom: 10px; color: var(--color-pencarian);">Pencarian Pintar</h1>
-                <p>Cari informasi real-time tanpa gangguan.</p>
-            </div>
-            <div class="search-results-area" id="chat-pencarian"></div>
+        <div class="chat-area" id="main-chat-container">
+            <div class="bubble bot-bubble">Halo Kak! Aku <b>ERAI</b>. Mau bahas apa kita hari ini di mode <span id="mode-text">Belajar</span>?</div>
         </div>
 
         <div class="input-area">
-            <button class="btn-icon btn-voice" id="btn-voice" onclick="toggleVoice()" title="Rekam & Rangkum">
-                <i class="fas fa-microphone"></i>
-            </button>
             <div class="input-wrapper">
-                <textarea id="userInput" rows="1" placeholder="Ketik pesan..." oninput="autoHeight(this)" onkeydown="checkEnter(event)"></textarea>
+                <textarea id="userInput" rows="1" placeholder="Tanyakan materi..." oninput="autoHeight(this)" onkeydown="checkEnter(event)"></textarea>
             </div>
-            <button class="btn-icon btn-send" onclick="sendMessage()">
+            <button class="btn-send" onclick="handleSend()">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
-
     </main>
 
-    <div class="modal-overlay" id="modal-about" onclick="toggleAbout()">
-        <div class="modal" onclick="event.stopPropagation()">
-            <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--accent); margin-bottom: 20px;"></i>
-            <h3>ERAI System v5.0</h3>
-            <p style="color: #636e72; margin: 15px 0;">Asisten cerdas untuk pendidikan tanpa batas.</p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            <small style="font-weight: bold; color: #b2bec3;">Supported by WUG Secure System & WISMADEVELOP</small>
-        </div>
-    </div>
-
     <script>
-        // --- VARIABLES ---
         let currentMode = 'belajar';
-        let histories = { belajar: [], latihan: [], pencarian: [] };
-        let recognition = null;
-        let isRecording = false;
+        const chatContainer = document.getElementById('main-chat-container');
 
-        // --- INIT VOICE RECOGNITION (WEB API) ---
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.continuous = false;
-            recognition.lang = 'id-ID';
-            recognition.interimResults = false;
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('userInput').value = transcript;
-                // Auto send dengan instruksi rangkum
-                sendMessage(`[TRANSKRIP SUARA]: ${transcript}. \n\nTolong buatkan rangkuman point-point penting dari ucapan di atas.`);
-            };
-
-            recognition.onend = function() {
-                isRecording = false;
-                document.getElementById('btn-voice').classList.remove('recording');
-            };
-        } else {
-            alert("Browser Kakak tidak mendukung fitur Voice to Text. Coba gunakan Chrome desktop.");
-        }
-
-        function toggleVoice() {
-            if (!recognition) return;
-            if (isRecording) {
-                recognition.stop();
-            } else {
-                recognition.start();
-                isRecording = true;
-                document.getElementById('btn-voice').classList.add('recording');
-            }
-        }
-
-        // --- MODE SWITCHING LOGIC ---
         function switchMode(mode) {
             currentMode = mode;
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            document.getElementById('mode-text').innerText = mode.charAt(0).toUpperCase() + mode.slice(1);
             
-            // 1. Update Sidebar Active State
-            document.querySelectorAll('.nav-item').forEach(el => {
-                el.classList.remove('active');
-                if(el.dataset.mode === mode) el.classList.add('active');
-            });
-
-            // 2. Show/Hide Views (Ambient Change)
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`container-${mode}`).classList.remove('hidden');
-
-            // 3. UI Adjustments per Mode
-            const inputArea = document.querySelector('.input-area');
-            const searchHero = document.getElementById('search-hero');
-            
-            if (mode === 'pencarian') {
-                // Input agak beda feelnya kalau mau
-                document.getElementById('userInput').placeholder = "Cari informasi di internet...";
-                if (histories.pencarian.length > 0) searchHero.style.display = 'none';
-                else searchHero.style.display = 'block';
-            } else if (mode === 'latihan') {
-                document.getElementById('userInput').placeholder = "Jawab A/B/C/D atau minta soal...";
-            } else {
-                document.getElementById('userInput').placeholder = "Tanyakan materi pelajaran...";
-            }
+            const placeholders = {
+                belajar: "Tanyakan materi pelajaran...",
+                latihan: "Jawab kuis atau minta soal baru...",
+                pencarian: "Cari info apa saja di internet..."
+            };
+            document.getElementById('userInput').placeholder = placeholders[mode];
         }
 
-        // --- CHAT LOGIC ---
-        async function sendMessage(manualMsg = null) {
+        async function handleSend(manualMsg = null) {
             const inputEl = document.getElementById('userInput');
             const msg = manualMsg || inputEl.value.trim();
             if (!msg) return;
@@ -356,106 +174,81 @@
             inputEl.value = '';
             inputEl.style.height = 'auto';
 
-            // Tampilkan User Chat (Kecuali di mode Latihan yg pakai kartu, kita simpan di background)
-            if (currentMode !== 'latihan') {
-                appendBubble(msg, 'user', `chat-${currentMode}`);
-            } else {
-                // Di mode latihan, update kartu display seolah user ngomong
-                const display = document.getElementById('quiz-display');
-                display.innerHTML = `<h3 style="color:#636e72;">Kakak:</h3><p style="font-size:1.2rem;">${msg}</p><hr style="margin:20px 0; border-top:1px dashed #ccc;"><p><i>Sedang memeriksa...</i></p>`;
-            }
+            appendBubble(msg, 'user');
 
-            // Jika mode pencarian, sembunyikan Hero
-            if (currentMode === 'pencarian') document.getElementById('search-hero').style.display = 'none';
-
-            histories[currentMode].push({ role: "user", content: msg });
+            // Loading state
+            const loadingId = 'load-' + Date.now();
+            appendBubble("ERAI sedang berpikir...", 'bot', loadingId);
 
             try {
-                const res = await fetch('/chat', {
+                // PASTIKAN ENDPOINT SAMA DENGAN PYTHON (Latihan: /ask)
+                const res = await fetch('/ask', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        message: msg,
-                        mode: currentMode,
-                        history: histories[currentMode]
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, mode: currentMode })
                 });
-                const data = await res.json();
                 
-                histories[currentMode].push({ role: "assistant", content: data.response });
-
-                if (currentMode === 'latihan') {
-                    renderQuizCard(data.response, data.is_quiz_active);
+                const data = await res.json();
+                document.getElementById(loadingId).remove();
+                
+                if (data.reply) {
+                    appendBubble(data.reply, 'bot');
                 } else {
-                    appendBubble(data.response, 'bot', `chat-${currentMode}`);
+                    appendBubble("Maaf Kak, ERAI bingung jawabnya.", 'bot');
                 }
-
             } catch (err) {
-                alert("Ada gangguan koneksi, Kak.");
+                document.getElementById(loadingId).innerText = "Aduh, koneksi terputus, Kak. Coba lagi ya?";
             }
         }
 
-        // --- RENDERERS ---
-        function appendBubble(text, role, containerId) {
-            const container = document.getElementById(containerId);
+        function appendBubble(text, role, id = null) {
             const div = document.createElement('div');
             div.className = `bubble ${role}-bubble`;
-            div.innerHTML = marked.parse(text);
-            container.appendChild(div);
+            if (id) div.id = id;
             
-            // Render Math
-            if(window.MathJax) MathJax.typesetPromise([div]);
-            
-            // Scroll to bottom
-            if (currentMode === 'pencarian') {
-                const searchArea = document.getElementById('search-results-area');
-                if(searchArea) searchArea.scrollTop = searchArea.scrollHeight;
-            } else {
-                container.scrollTop = container.scrollHeight;
-            }
-        }
+            // Konversi markdown sederhana
+            let formatted = marked.parse(text);
+            div.innerHTML = formatted;
 
-        function renderQuizCard(text, isActive) {
-            const display = document.getElementById('quiz-display');
-            let htmlContent = marked.parse(text);
-            
-            // Tambahkan tombol jika kuis aktif
-            if (isActive) {
-                htmlContent += `
-                <div class="quiz-opt">
-                    <button class="quiz-btn" onclick="sendMessage('A')">A</button>
-                    <button class="quiz-btn" onclick="sendMessage('B')">B</button>
-                    <button class="quiz-btn" onclick="sendMessage('C')">C</button>
-                    <button class="quiz-btn" onclick="sendMessage('D')">D</button>
-                </div>`;
-            } else {
-                htmlContent += `<div style="margin-top:20px; text-align:center;"><small style="color:#888;">Kirim topik untuk soal baru</small></div>`;
+            // Jika mode latihan dan ada pilihan jawaban, tambahkan tombol
+            if (currentMode === 'latihan' && role === 'bot' && text.includes('Pilihan:')) {
+                const btnGroup = document.createElement('div');
+                btnGroup.className = 'quiz-btn-group';
+                ['A', 'B', 'C', 'D'].forEach(opt => {
+                    const btn = document.createElement('div');
+                    btn.className = 'quiz-opt';
+                    btn.innerText = opt;
+                    btn.onclick = () => handleSend(opt);
+                    btnGroup.appendChild(btn);
+                });
+                div.appendChild(btnGroup);
             }
 
-            display.innerHTML = htmlContent;
-            if(window.MathJax) MathJax.typesetPromise([display]);
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Render Rumus Matematika/Kimia
+            renderMathInElement(div, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\ce{', right: '}', display: false}
+                ],
+                throwOnError : false
+            });
         }
 
-        // --- UTILS ---
         function autoHeight(el) {
             el.style.height = 'auto';
             el.style.height = el.scrollHeight + 'px';
         }
+
         function checkEnter(e) {
-            if(e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                sendMessage();
+                handleSend();
             }
         }
-        function toggleAbout() {
-            const modal = document.getElementById('modal-about');
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        // Init MathJax
-        window.addEventListener('load', () => {
-             // Default greeting
-        });
     </script>
 </body>
 </html>
