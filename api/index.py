@@ -1,127 +1,47 @@
-from flask import Flask, render_template, request, jsonify, session
-from groq import Groq
-from tavily import TavilyClient
 import os
-from datetime import datetime
+from flask import Flask, render_template, request, jsonify
+from groq import Groq
 
-app = Flask(__name__, template_folder='templates') # Pastikan folder template benar
-app.secret_key = "ERAI_SECURE_KEY_2026"
+# --- KONFIGURASI FLASK UNTUK VERCEL ---
+# Menentukan path folder template secara eksplisit agar terbaca di environment server
+template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
+app = Flask(__name__, template_folder=template_dir)
 
-# --- CONFIGURATION ---
-GROQ_KEY = os.environ.get("GROQ_API_KEY")
-TAVILY_KEY = os.environ.get("TAVILY_API_KEY")
-
-groq_client = Groq(api_key=GROQ_KEY)
-tavily_client = TavilyClient(api_key=TAVILY_KEY) if TAVILY_KEY else None
+# Inisialisasi Client Groq (Pastikan GROQ_API_KEY sudah ada di Environment Variables Vercel)
+groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 @app.route('/')
 def index():
+    # Mencari index.html di dalam folder api/templates/
     return render_template('index.html')
 
-@app.route('/chat', methods=['POST'])
-def chat():
+@app.route('/ask', methods=['POST'])
+def ask():
     try:
-        data = request.json
-        user_input = data.get("message", "")
-        user_mode = data.get("mode", "belajar") # belajar, latihan, pencarian
-        history = data.get("history", [])[-10:] # Ambil 10 percakapan terakhir context window
-        
-        current_date = datetime.now().strftime("%d %B %Y")
+        data = request.get_json()
+        user_message = data.get("message", "")
 
-        # --- SESSION MANAGEMENT UNTUK KUIS ---
-        if 'quiz_active' not in session: session['quiz_active'] = False
-        if 'last_soal' not in session: session['last_soal'] = ""
-
-        # Deteksi jawaban A, B, C, D
-        is_answering_quiz = len(user_input.strip()) == 1 and user_input.strip().upper() in ['A', 'B', 'C', 'D']
-
-        # --- LOGIKA MODE LATIHAN (STRICT) ---
-        if user_mode == "latihan":
-            if is_answering_quiz and session.get('quiz_active'):
-                # User menjawab
-                soal_ref = session.get('last_soal', '')
-                user_input = f"""
-                [JAWABAN USER: {user_input.upper()}]
-                Soal sebelumnya: '{soal_ref}'
-                INSTRUKSI:
-                1. Langsung nyatakan BENAR atau SALAH.
-                2. Berikan penjelasan lengkap dan mendalam (gunakan format LaTeX/Kimia).
-                3. Jangan tawarkan soal baru dulu.
-                """
-                session['quiz_active'] = False # Reset kuis
-            elif not is_answering_quiz:
-                # User minta soal / kirim materi
-                user_input = f"""
-                [PERMINTAAN SOAL/MATERI: {user_input}]
-                INSTRUKSI:
-                1. Buatkan 1 (SATU) soal pilihan ganda (A, B, C, D) yang berbobot.
-                2. JANGAN berikan jawaban atau penjelasan sekarang.
-                3. Tunggu user menjawab.
-                """
-
-        # --- LOGIKA PENCARIAN (WEB SEARCH) ---
-        search_context = ""
-        if user_mode == "pencarian" and tavily_client:
-            try:
-                # Search query optimization
-                search_res = tavily_client.search(query=f"{user_input} {current_date}", search_depth="advanced")
-                raw_results = search_res.get('results', [])
-                search_context = "\n\nDATA INTERNET TERBARU:\n" + "\n".join([f"- {r['content']} (Sumber: {r['url']})" for r in raw_results])
-            except:
-                search_context = "\n(Koneksi internet untuk pencarian terbatas, gunakan pengetahuan internal)."
-
-        # --- SYSTEM PROMPT (PERSONA & FORMATTING) ---
-        # Anonim, Cerdas, Spesifik Mode
-        
-        base_instruction = ""
-        if user_mode == "belajar":
-            base_instruction = "Anda adalah asisten belajar yang cerdas. Jelaskan konsep dengan terstruktur, gunakan analogi jika perlu. Format rumus matematika dengan $...$ (inline) atau $$...$$ (blok), dan kimia dengan \ce{...}."
-        elif user_mode == "latihan":
-            base_instruction = "Anda adalah penguji yang tegas namun edukatif. Fokus pada format Soal Pilihan Ganda. Jika memberikan penjelasan, harus sangat mendetail."
-        elif user_mode == "pencarian":
-            base_instruction = "Anda adalah mesin pencari pintar. Jawab langsung pada intinya berdasarkan Data Internet yang disediakan. Sertakan sumber."
-
-        system_prompt = f"""
-        Role: ERAI (Educational Resource AI).
-        User: Panggil "Kakak".
-        Tanggal: {current_date}.
-        Mode: {user_mode.upper()}.
-        
-        INSTRUKSI UTAMA:
-        {base_instruction}
-
-        FORMATTING WAJIB:
-        - Matematika: Gunakan $...$ untuk inline, $$...$$ untuk block.
-        - Kimia: Gunakan \ce{{...}}.
-        - Layout: Gunakan Markdown rapi (Bold, List, Header).
-        
-        CONTEXT TAMBAHAN:
-        {search_context}
-        """
-
-        messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": user_input}]
+        # --- WUG SECURE SYSTEM & ERAI IDENTITY ---
+        # Menggunakan 'r' sebelum tanda kutip untuk menghindari SyntaxWarning LaTeX
+        base_instruction = r"Anda adalah ERAI, Tutor Sebaya WUG (WUG Standard). Jelaskan konsep dengan terstruktur, santai namun cerdas. Gunakan analogi jika perlu. Format rumus matematika dengan $...$ (inline) atau $$...$$ (blok), dan kimia dengan \ce{...}. Selalu sapa pengguna dengan 'Kakak' atau 'Kak'."
 
         completion = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=messages,
-            temperature=0.3 if user_mode == "latihan" else 0.6 # Lebih kreatif di mode belajar, strict di latihan
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": base_instruction},
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.7,
+            max_tokens=1024,
+            top_p=1,
+            stream=False
         )
 
         response_text = completion.choices[0].message.content
-
-        # Update Session jika AI memberikan soal baru
-        if user_mode == "latihan" and ("A." in response_text or "A)" in response_text) and not is_answering_quiz:
-            session['quiz_active'] = True
-            session['last_soal'] = response_text
-
-        return jsonify({
-            "response": response_text,
-            "mode": user_mode,
-            "is_quiz_active": session.get('quiz_active', False)
-        })
+        return jsonify({"reply": response_text})
 
     except Exception as e:
-        return jsonify({"response": f"Maaf Kak, ada kesalahan sistem: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Standar Vercel: App harus bisa diekspor
+app.debug = False # Matikan debug untuk production
