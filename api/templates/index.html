@@ -4,33 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERAI | Intelligent Assistant</title>
-    
+   
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+   
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-
     <script>
         mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' });
         window.MathJax = {
-            tex: { 
-                inlineMath: [['$', '$'], ['\\(', '\\)']], 
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                packages: { '[+]': ['mhchem'] } 
+                packages: { '[+]': ['mhchem'] }
             },
             loader: { load: ['[tex]/mhchem'] },
             svg: { fontCache: 'global' }
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
     <style>
         :root {
             --primary: #2d3436;
@@ -49,7 +46,6 @@
             --text-color: #2d3436;
             --text-muted: #636e72;
         }
-
         /* DARK MODE VARIABLES */
         [data-theme="dark"] {
             --primary: #dfe6e9;
@@ -64,19 +60,17 @@
             --text-color: #f1f2f6;
             --text-muted: #b2bec3;
         }
-
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { 
-            background: rgba(0, 0, 0, 0.1); 
-            border-radius: 20px; 
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
             border: 2px solid transparent;
             background-clip: content-box;
         }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        
+       
         body {
             height: 100dvh;
             background: var(--bg-belajar);
@@ -85,7 +79,6 @@
             color: var(--text-color);
             transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
         }
-
         /* DASHBOARD STYLES */
         #dashboard-page {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -95,7 +88,6 @@
             color: #2d3436; /* Tetap light untuk dashboard dasar, kecuali di override */
         }
         [data-theme="dark"] #dashboard-page { background: #1e293b; color: #f1f2f6; }
-
         .db-header { text-align: center; margin-bottom: 40px; }
         .db-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -103,39 +95,34 @@
         }
         .db-card {
             background: var(--card-bg); padding: 35px 25px; border-radius: 28px; cursor: pointer;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: 1px solid #edf2f7; text-align: center;
             box-shadow: 0 10px 20px rgba(0,0,0,0.02);
             color: var(--text-color);
         }
         [data-theme="dark"] .db-card { border-color: #334155; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-
         .db-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
         .db-card i { font-size: 3rem; margin-bottom: 20px; }
         .db-card h3 { font-size: 1.4rem; margin-bottom: 12px; }
         .db-card.belajar:hover { border-color: var(--color-belajar); background: rgba(9, 132, 227, 0.02); }
         .db-card.latihan:hover { border-color: var(--color-latihan); background: rgba(214, 48, 49, 0.02); }
         .db-card.pencarian:hover { border-color: var(--color-pencarian); background: rgba(0, 184, 148, 0.02); }
-        
+       
         /* Dark mode hover effect adjustments */
         [data-theme="dark"] .db-card.belajar:hover { background: rgba(9, 132, 227, 0.1); }
         [data-theme="dark"] .db-card.latihan:hover { background: rgba(214, 48, 49, 0.1); }
         [data-theme="dark"] .db-card.pencarian:hover { background: rgba(0, 184, 148, 0.1); }
-
         .status-badge {
             display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;
             font-weight: 700; text-transform: uppercase; margin-bottom: 15px;
         }
-
         #start-gate {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-belajar); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             text-align: center; padding: 20px;
         }
-
         .ad-container { margin: 20px 0; min-height: 60px; }
-
         .sidebar {
             width: 260px;
             background: var(--sidebar-bg);
@@ -146,10 +133,8 @@
             z-index: 1000; transition: 0.3s ease;
         }
         [data-theme="dark"] .sidebar { border-right: 1px solid rgba(255,255,255,0.1); }
-
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--text-color); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .logo i { color: var(--accent); }
-
         .nav-menu { display: flex; flex-direction: column; gap: 10px; }
         .nav-item {
             padding: 12px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; color: var(--text-muted);
@@ -158,11 +143,10 @@
         .nav-item:hover { background: rgba(255,255,255,0.2); }
         .nav-item.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         [data-theme="dark"] .nav-item.active { background: #334155; color: white; }
-        
+       
         .nav-item.active[data-mode="belajar"] { border-left: 4px solid var(--color-belajar); color: var(--color-belajar); }
         .nav-item.active[data-mode="latihan"] { border-left: 4px solid var(--color-latihan); color: var(--color-latihan); }
         .nav-item.active[data-mode="pencarian"] { border-left: 4px solid var(--color-pencarian); color: var(--color-pencarian); }
-
         .mobile-header {
             display: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 60px;
@@ -171,20 +155,16 @@
             border-bottom: 1px solid rgba(255,255,255,0.5);
         }
         [data-theme="dark"] .mobile-header { background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid rgba(255,255,255,0.1); color: white; }
-
         .burger-btn { font-size: 1.5rem; cursor: pointer; }
-
         .main-content { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; overflow: hidden; }
         .view-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 90px; scroll-behavior: smooth; }
-
         .bubble { max-width: 80%; padding: 18px 25px; border-radius: 20px; line-height: 1.8; animation: fadeIn 0.3s; position: relative; color: var(--text-color); }
         .user-bubble { align-self: flex-end; background: var(--bubble-user); border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         [data-theme="dark"] .user-bubble { color: white; }
-        
+       
         .bot-bubble { align-self: flex-start; background: var(--bubble-bot); backdrop-filter: blur(10px); border: 1px solid white; border-bottom-left-radius: 5px; }
         [data-theme="dark"] .bot-bubble { border: 1px solid #334155; }
-
         pre[class*="language-"] {
             border-radius: 12px;
             margin: 15px 0;
@@ -202,25 +182,21 @@
             color: white; padding: 2px 8px; border-radius: 4px; transition: 0.3s;
         }
         .copy-code-btn:hover { background: rgba(255,255,255,0.3); }
-
         .mermaid { background: white; border-radius: 10px; padding: 10px; margin: 10px 0; overflow-x: auto; }
         [data-theme="dark"] .mermaid { background: #e2e8f0; } /* Keep mermaid light for visibility or adjust opacity */
-
         .copy-trigger {
             margin-top: 10px; padding: 5px 10px; font-size: 0.75rem;
-            background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); 
-            border-radius: 8px; cursor: pointer; display: flex; align-items: center; 
+            background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 8px; cursor: pointer; display: flex; align-items: center;
             gap: 6px; color: var(--text-muted); transition: 0.2s; width: fit-content;
         }
         .copy-trigger:hover { background: white; color: var(--accent); }
         [data-theme="dark"] .copy-trigger:hover { background: #334155; }
-
         .typing { display: flex; gap: 5px; padding: 15px 20px; background: rgba(255,255,255,0.5); border-radius: 15px; width: fit-content; align-self: flex-start; margin-bottom: 20px; }
         .typing span { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
         .typing span:nth-child(1) { animation-delay: -0.32s; }
         .typing span:nth-child(2) { animation-delay: -0.16s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
-
         .quiz-card {
             background: rgba(255, 255, 255, 0.9); padding: 30px; border-radius: 25px;
             width: 95%; max-width: 1000px; margin: 20px auto; overflow-y: auto;
@@ -228,10 +204,8 @@
             color: #2d3436;
         }
         [data-theme="dark"] .quiz-card { background: rgba(30, 41, 59, 0.9); color: #f1f2f6; }
-
         .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
         .quiz-btn { color: #2d3436; }
-
         .input-area {
             position: absolute; bottom: 0; left: 0; width: 100%;
             padding: 15px 20px; background: var(--input-bg); backdrop-filter: blur(25px);
@@ -239,15 +213,11 @@
             border-top: 1px solid rgba(255,255,255,0.5);
         }
         [data-theme="dark"] .input-area { border-top: 1px solid rgba(255,255,255,0.1); }
-
         .input-wrapper { background: white; border-radius: 15px; padding: 8px 15px; flex: 1; display: flex; border: 1px solid rgba(0,0,0,0.05); }
         [data-theme="dark"] .input-wrapper { background: #334155; border-color: #475569; }
-
         textarea { border: none; outline: none; width: 100%; resize: none; background: transparent; font-size: 1rem; max-height: 80px; line-height: 1.5; color: var(--text-color); }
-
         .btn-icon { width: 42px; height: 42px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .btn-send { background: var(--accent); color: white; }
-
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.3); backdrop-filter: blur(15px);
@@ -259,7 +229,6 @@
             animation: modalPop 0.3s forwards; color: #2d3436;
         }
         [data-theme="dark"] .modal { background: #1e293b; color: #f1f2f6; }
-
         @media (max-width: 768px) {
             .mobile-header { display: flex; }
             .sidebar { position: fixed; left: -260px; top: 0; height: 100dvh; background: white; width: 260px; }
@@ -271,19 +240,45 @@
             .quiz-opt { grid-template-columns: 1fr; }
             .input-area { padding: 10px 12px; bottom: 0; }
         }
-
         .hidden { display: none !important; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes modalPop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        #theme-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: var(--text-muted);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+
+        #theme-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        [data-theme="dark"] #theme-btn {
+            background: rgba(0, 0, 0, 0.25);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        [data-theme="dark"] #theme-btn:hover {
+            background: rgba(0, 0, 0, 0.35);
+        }
     </style>
 </head>
 <body>
-
     <div id="start-gate">
         <i class="fas fa-brain" style="font-size: 4rem; color: var(--accent); margin-bottom: 20px;"></i>
         <h1 style="margin-bottom: 10px; color: var(--text-color);">ERAI SYSTEM</h1>
         <p style="color: var(--text-muted); margin-bottom: 10px;">Siap untuk belajar lebih fokus?</p>
-        
+       
         <div class="ad-container">
             <script>
                 atOptions = {
@@ -296,20 +291,17 @@
             </script>
             <script src="https://www.highperformanceformat.com/8090e06433cda7c177e5ea8c9e9ca5ea/invoke.js"></script>
         </div>
-
         <button onclick="enterERAI()" style="padding: 15px 40px; border-radius: 15px; border: none; background: var(--accent); color: white; font-weight: 800; cursor: pointer; font-size: 1.1rem; transition: 0.3s;">
             MULAI SEKARANG
         </button>
     </div>
-
     <div id="dashboard-page">
         <script src="https://pl28657332.effectivegatecpm.com/13/bb/3a/13bb3afbca062a193f671c4db1890446.js"></script>
-
         <div class="db-header">
             <div class="logo" style="justify-content: center; margin-bottom: 5px;"><i class="fas fa-brain"></i><span>ERAI DASHBOARD</span></div>
             <p style="color: var(--text-muted); font-weight: 500;">Pilih mode untuk memulai interaksi pintar Kakak</p>
         </div>
-        
+       
         <div class="db-grid">
             <div class="db-card belajar" onclick="selectFromDashboard('belajar')">
                 <span class="status-badge" style="background: #e0f2fe; color: #0984e3;">Ready</span><br>
@@ -330,23 +322,21 @@
                 <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">Cari informasi terkini dari web secara cerdas, ringkas, dan akurat.</p>
             </div>
         </div>
-        
+       
         <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 15px; width: 100%; max-width: 400px; text-align: center;">
             <div style="font-size: 0.8rem; color: #b2bec3; margin-bottom: 10px; letter-spacing: 1px; font-weight: 700;">SECURITY STATUS</div>
             <button onclick="window.open('https://www.effectivegatecpm.com/jtrnm8mg4i?key=6fb56a8b4bcc60d4d412208411a17ac6', '_blank')" style="background:white; border:1px solid #eee; padding: 10px 20px; border-radius: 12px; cursor:pointer; font-weight:600; color:#2d3436; display: flex; align-items: center; gap: 10px; margin: 0 auto 15px auto;">
                 <i class="fas fa-shield-alt" style="color: #00b894;"></i> WUG SECURE ACTIVE
             </button>
-            
+           
             <script async="async" data-cfasync="false" src="https://pl28657584.effectivegatecpm.com/b862eb9f43d2b84ef599ea531b994ec6/invoke.js"></script>
             <div id="container-b862eb9f43d2b84ef599ea531b994ec6"></div>
         </div>
     </div>
-
     <header class="mobile-header">
         <div class="burger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
         <div style="margin-left: 15px; font-weight: 800;">ERAI</div>
     </header>
-
     <nav class="sidebar" id="sidebar">
         <div>
             <div class="logo"><i class="fas fa-brain"></i><span>ERAI</span></div>
@@ -363,8 +353,9 @@
             </div>
         </div>
         <div class="sidebar-footer">
-            <button onclick="toggleTheme()" id="theme-btn" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:var(--text-muted); margin-bottom: 10px; display: block; width: 100%; text-align: left;">
-                <i class="fas fa-moon" id="theme-icon"></i> Mode Gelap
+            <button onclick="toggleTheme()" id="theme-btn">
+                <i class="fas fa-moon" id="theme-icon"></i>
+                <span id="theme-text">Mode Gelap</span>
             </button>
             <button onclick="showDashboard()" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:var(--text-muted); margin-bottom: 10px; display: block; width: 100%; text-align: left;">
                 <i class="fas fa-th-large"></i> Dashboard
@@ -374,14 +365,12 @@
             </button>
         </div>
     </nav>
-
     <main class="main-content">
         <div id="container-belajar" class="view-section">
             <div class="chat-area" id="chat-belajar">
                 <div class="bubble bot-bubble">Halo Kak! Saya ERAI. Mau belajar topik apa hari ini?</div>
             </div>
         </div>
-
         <div id="container-latihan" class="view-section hidden">
             <div class="chat-area" id="chat-latihan">
                 <div class="quiz-card" id="quiz-display">
@@ -390,7 +379,6 @@
                 </div>
             </div>
         </div>
-
         <div id="container-pencarian" class="view-section hidden">
             <div class="chat-area" id="chat-pencarian">
                 <div id="search-hero" style="text-align:center; padding-top: 50px;">
@@ -410,7 +398,6 @@
                 </div>
             </div>
         </div>
-
         <div class="input-area">
             <button class="btn-icon" id="btn-voice" onclick="toggleVoice()" style="background:var(--card-bg); color:var(--accent);"><i class="fas fa-microphone"></i></button>
             <div class="input-wrapper">
@@ -419,7 +406,6 @@
             <button class="btn-icon btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </main>
-
     <div class="modal-overlay" id="modal-warning">
         <div class="modal">
             <i class="fas fa-exclamation-circle" style="font-size: 3.5rem; color: #ff7675; margin-bottom: 20px;"></i>
@@ -428,7 +414,6 @@
             <button onclick="enterERAI()" style="padding: 12px 30px; border-radius: 12px; border: none; background: #2d3436; color: white; cursor: pointer; font-weight: bold;">KEMBALI FOKUS</button>
         </div>
     </div>
-
     <div class="modal-overlay" id="modal-about" onclick="toggleAbout()">
         <div class="modal" onclick="event.stopPropagation()">
             <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: var(--accent); margin-bottom: 20px;"></i>
@@ -437,7 +422,6 @@
             <button onclick="toggleAbout()" style="padding: 12px 30px; border-radius: 12px; border: none; background: var(--accent); color: white; cursor: pointer; font-weight: bold;">Tutup</button>
         </div>
     </div>
-
     <script>
         let currentMode = 'belajar';
         let histories = { belajar: [], latihan: [], pencarian: [] };
@@ -448,16 +432,13 @@
             voice: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
             warning: new Audio('https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3')
         };
-
         function playSFX(key) { sfx[key].currentTime = 0; sfx[key].play().catch(() => {}); }
-
         /* THEME HANDLING */
         function initTheme() {
             const savedTheme = localStorage.getItem('erai_theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             updateThemeIcon(savedTheme);
         }
-
         function toggleTheme() {
             const current = document.documentElement.getAttribute('data-theme');
             const target = current === 'dark' ? 'light' : 'dark';
@@ -466,64 +447,57 @@
             updateThemeIcon(target);
             playSFX('click');
         }
-
         function updateThemeIcon(theme) {
             const icon = document.getElementById('theme-icon');
-            const btn = document.getElementById('theme-btn');
-            if(theme === 'dark') {
+            const text = document.getElementById('theme-text');
+            
+            if (theme === 'dark') {
                 icon.className = 'fas fa-sun';
-                btn.innerHTML = '<i class="fas fa-sun" id="theme-icon"></i> Mode Terang';
+                text.textContent = 'Mode Terang';
             } else {
                 icon.className = 'fas fa-moon';
-                btn.innerHTML = '<i class="fas fa-moon" id="theme-icon"></i> Mode Gelap';
+                text.textContent = 'Mode Gelap';
             }
         }
-
         function enterERAI() {
             playSFX('click');
             const elem = document.documentElement;
             if (elem.requestFullscreen) elem.requestFullscreen();
             document.getElementById('start-gate').style.display = 'none';
             document.getElementById('modal-warning').style.display = 'none';
-            showDashboard(); 
+            showDashboard();
         }
-
         function showDashboard() {
             playSFX('pop');
             document.getElementById('dashboard-page').style.display = 'flex';
         }
-
         function selectFromDashboard(mode) {
             document.getElementById('dashboard-page').style.display = 'none';
             switchMode(mode);
         }
-
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) {
                 playSFX('warning');
                 document.getElementById('modal-warning').style.display = 'flex';
             }
         });
-
-        function toggleSidebar() { 
-            document.getElementById('sidebar').classList.toggle('open'); 
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
             playSFX('click');
         }
-
         function switchMode(mode) {
             playSFX('click');
             currentMode = mode;
             // Background dihandle oleh CSS variable body sekarang
             document.body.className = mode; // Helper class if needed, but variables handle colors
             document.body.style.background = `var(--bg-${mode})`; // Force update variable ref if needed
-            
+           
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`container-${mode}`).classList.remove('hidden');
             if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
         }
-
         function showThinking() {
             const container = document.getElementById(`chat-${currentMode}`);
             const loader = document.createElement('div');
@@ -533,23 +507,18 @@
             container.appendChild(loader);
             scrollToBottom();
         }
-
         function removeThinking() { document.getElementById('er-thinking')?.remove(); }
-
         function scrollToBottom() {
             const container = document.getElementById(`chat-${currentMode}`);
             container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         }
-
         async function sendMessage(manualMsg = null) {
             const inputEl = document.getElementById('userInput');
             const msg = manualMsg || inputEl.value.trim();
             if (!msg) return;
-
             playSFX('send');
             inputEl.value = '';
             inputEl.style.height = 'auto';
-
             if (currentMode === 'latihan') {
                 const display = document.getElementById('quiz-display');
                 display.innerHTML += `<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px; font-size:0.9rem;">Kakak: ${msg}</div>`;
@@ -559,26 +528,23 @@
             }
             scrollToBottom();
             showThinking();
-
             try {
                 const res = await fetch('/chat', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ message: msg, mode: currentMode, history: histories[currentMode] })
                 });
-                
+               
                 if (!res.ok) throw new Error('API_LIMIT_REACHED');
-
                 const data = await res.json();
                 removeThinking();
                 playSFX('pop');
-
                 if (currentMode === 'latihan') renderQuizCard(data.response, data.is_quiz_active);
                 else appendBubble(data.response, 'bot', `chat-${currentMode}`);
-                
+               
                 histories[currentMode].push({ role: "user", content: msg }, { role: "assistant", content: data.response });
                 scrollToBottom();
-            } catch (err) { 
+            } catch (err) {
                 removeThinking();
                 playSFX('warning');
                 const customError = "Aduh maaf banget Kak, kuota ERAI lagi mencapai batas nih. 😅 Coba lagi dalam 1-2 menit ya Kak!";
@@ -589,22 +555,19 @@
                 }
             }
         }
-
         function copyCode(btn, code) {
             navigator.clipboard.writeText(decodeURIComponent(code));
             btn.innerText = 'Tersalin!';
             setTimeout(() => { btn.innerText = 'Salin'; }, 2000);
         }
-
         function appendBubble(text, role, containerId) {
             const container = document.getElementById(containerId);
             const div = document.createElement('div');
             div.className = `bubble ${role}-bubble`;
-            
+           
             let processedText = text;
             const mermaidRegex = /```mermaid([\s\S]*?)```/g;
             processedText = processedText.replace(mermaidRegex, (match, code) => `<div class="mermaid">${code.trim()}</div>`);
-
             const codeRegex = /```(\w+)?([\s\S]*?)```/g;
             processedText = processedText.replace(codeRegex, (match, lang, code) => {
                 const language = lang || 'javascript';
@@ -617,9 +580,7 @@
                             <pre class="language-${language}"><code class="language-${language}">${code.trim()}</code></pre>
                         </div>`;
             });
-
             div.innerHTML = marked.parse(processedText);
-
             if (role === 'bot' && currentMode !== 'latihan') {
                 const copyBtn = document.createElement('div');
                 copyBtn.className = 'copy-trigger';
@@ -631,14 +592,12 @@
                 };
                 div.appendChild(copyBtn);
             }
-
             container.appendChild(div);
             if(window.MathJax) MathJax.typesetPromise([div]);
             if(processedText.includes('class="mermaid"')) mermaid.run({ nodes: div.querySelectorAll('.mermaid') });
             Prism.highlightAllUnder(div);
             scrollToBottom();
         }
-
         function renderQuizCard(text, isActive) {
             const display = document.getElementById('quiz-display');
             let html = `<div class="quiz-text" style="font-size:0.95rem;">${marked.parse(text)}</div>`;
@@ -651,13 +610,11 @@
             if(window.MathJax) MathJax.typesetPromise([display]);
             scrollToBottom();
         }
-
-        function toggleAbout() { 
+        function toggleAbout() {
             playSFX('click');
-            const m = document.getElementById('modal-about'); 
-            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; 
+            const m = document.getElementById('modal-about');
+            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
         }
-
         function toggleVoice() {
             if (!('webkitSpeechRecognition' in window)) return;
             const rec = new webkitSpeechRecognition();
@@ -667,10 +624,9 @@
             rec.onend = () => { document.getElementById('btn-voice').style.color = 'var(--accent)'; };
             rec.start();
         }
-
         function autoHeight(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
         function checkEnter(e) { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
-        
+       
         // Initialize Theme on Load
         initTheme();
     </script>
