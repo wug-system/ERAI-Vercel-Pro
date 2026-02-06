@@ -41,6 +41,28 @@
             --color-belajar: #0984e3;
             --color-latihan: #d63031;
             --color-pencarian: #00b894;
+            --bubble-user: white;
+            --bubble-bot: rgba(255,255,255,0.7);
+            --sidebar-bg: rgba(255, 255, 255, 0.3);
+            --input-bg: rgba(255,255,255,0.85);
+            --card-bg: white;
+            --text-color: #2d3436;
+            --text-muted: #636e72;
+        }
+
+        /* DARK MODE VARIABLES */
+        [data-theme="dark"] {
+            --primary: #dfe6e9;
+            --bg-belajar: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --bg-latihan: linear-gradient(135deg, #2b0a0a 0%, #450a0a 100%);
+            --bg-pencarian: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            --bubble-user: #334155;
+            --bubble-bot: rgba(15, 23, 42, 0.7);
+            --sidebar-bg: rgba(0, 0, 0, 0.5);
+            --input-bg: rgba(30, 41, 59, 0.9);
+            --card-bg: #1e293b;
+            --text-color: #f1f2f6;
+            --text-muted: #b2bec3;
         }
 
         ::-webkit-scrollbar { width: 6px; }
@@ -60,8 +82,8 @@
             background: var(--bg-belajar);
             display: flex;
             overflow: hidden;
-            color: var(--primary);
-            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-color);
+            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
         }
 
         /* DASHBOARD STYLES */
@@ -70,24 +92,35 @@
             background: #fdfdfd; z-index: 5000;
             display: none; flex-direction: column; align-items: center; padding: 40px 20px;
             overflow-y: auto;
+            color: #2d3436; /* Tetap light untuk dashboard dasar, kecuali di override */
         }
+        [data-theme="dark"] #dashboard-page { background: #1e293b; color: #f1f2f6; }
+
         .db-header { text-align: center; margin-bottom: 40px; }
         .db-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px; width: 100%; max-width: 1000px;
         }
         .db-card {
-            background: white; padding: 35px 25px; border-radius: 28px; cursor: pointer;
+            background: var(--card-bg); padding: 35px 25px; border-radius: 28px; cursor: pointer;
             transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             border: 1px solid #edf2f7; text-align: center;
             box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+            color: var(--text-color);
         }
+        [data-theme="dark"] .db-card { border-color: #334155; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
         .db-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
         .db-card i { font-size: 3rem; margin-bottom: 20px; }
         .db-card h3 { font-size: 1.4rem; margin-bottom: 12px; }
         .db-card.belajar:hover { border-color: var(--color-belajar); background: rgba(9, 132, 227, 0.02); }
         .db-card.latihan:hover { border-color: var(--color-latihan); background: rgba(214, 48, 49, 0.02); }
         .db-card.pencarian:hover { border-color: var(--color-pencarian); background: rgba(0, 184, 148, 0.02); }
+        
+        /* Dark mode hover effect adjustments */
+        [data-theme="dark"] .db-card.belajar:hover { background: rgba(9, 132, 227, 0.1); }
+        [data-theme="dark"] .db-card.latihan:hover { background: rgba(214, 48, 49, 0.1); }
+        [data-theme="dark"] .db-card.pencarian:hover { background: rgba(0, 184, 148, 0.1); }
 
         .status-badge {
             display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;
@@ -105,23 +138,27 @@
 
         .sidebar {
             width: 260px;
-            background: rgba(255, 255, 255, 0.3);
+            background: var(--sidebar-bg);
             backdrop-filter: blur(20px);
             border-right: 1px solid rgba(255,255,255,0.5);
             padding: 30px 20px;
             display: flex; flex-direction: column; justify-content: space-between;
             z-index: 1000; transition: 0.3s ease;
         }
+        [data-theme="dark"] .sidebar { border-right: 1px solid rgba(255,255,255,0.1); }
 
-        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--text-color); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
         .logo i { color: var(--accent); }
 
         .nav-menu { display: flex; flex-direction: column; gap: 10px; }
         .nav-item {
-            padding: 12px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; color: #636e72;
+            padding: 12px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; color: var(--text-muted);
             display: flex; align-items: center; gap: 12px; transition: 0.3s; border: 1px solid transparent;
         }
+        .nav-item:hover { background: rgba(255,255,255,0.2); }
         .nav-item.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        [data-theme="dark"] .nav-item.active { background: #334155; color: white; }
+        
         .nav-item.active[data-mode="belajar"] { border-left: 4px solid var(--color-belajar); color: var(--color-belajar); }
         .nav-item.active[data-mode="latihan"] { border-left: 4px solid var(--color-latihan); color: var(--color-latihan); }
         .nav-item.active[data-mode="pencarian"] { border-left: 4px solid var(--color-pencarian); color: var(--color-pencarian); }
@@ -133,15 +170,20 @@
             z-index: 900; align-items: center; padding: 0 20px;
             border-bottom: 1px solid rgba(255,255,255,0.5);
         }
+        [data-theme="dark"] .mobile-header { background: rgba(30, 41, 59, 0.8); border-bottom: 1px solid rgba(255,255,255,0.1); color: white; }
+
         .burger-btn { font-size: 1.5rem; cursor: pointer; }
 
         .main-content { flex: 1; display: flex; flex-direction: column; position: relative; height: 100%; overflow: hidden; }
         .view-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 90px; scroll-behavior: smooth; }
 
-        .bubble { max-width: 80%; padding: 18px 25px; border-radius: 20px; line-height: 1.8; animation: fadeIn 0.3s; position: relative; }
-        .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .bot-bubble { align-self: flex-start; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid white; border-bottom-left-radius: 5px; }
+        .bubble { max-width: 80%; padding: 18px 25px; border-radius: 20px; line-height: 1.8; animation: fadeIn 0.3s; position: relative; color: var(--text-color); }
+        .user-bubble { align-self: flex-end; background: var(--bubble-user); border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        [data-theme="dark"] .user-bubble { color: white; }
+        
+        .bot-bubble { align-self: flex-start; background: var(--bubble-bot); backdrop-filter: blur(10px); border: 1px solid white; border-bottom-left-radius: 5px; }
+        [data-theme="dark"] .bot-bubble { border: 1px solid #334155; }
 
         pre[class*="language-"] {
             border-radius: 12px;
@@ -162,14 +204,16 @@
         .copy-code-btn:hover { background: rgba(255,255,255,0.3); }
 
         .mermaid { background: white; border-radius: 10px; padding: 10px; margin: 10px 0; overflow-x: auto; }
+        [data-theme="dark"] .mermaid { background: #e2e8f0; } /* Keep mermaid light for visibility or adjust opacity */
 
         .copy-trigger {
             margin-top: 10px; padding: 5px 10px; font-size: 0.75rem;
             background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05); 
             border-radius: 8px; cursor: pointer; display: flex; align-items: center; 
-            gap: 6px; color: #636e72; transition: 0.2s; width: fit-content;
+            gap: 6px; color: var(--text-muted); transition: 0.2s; width: fit-content;
         }
         .copy-trigger:hover { background: white; color: var(--accent); }
+        [data-theme="dark"] .copy-trigger:hover { background: #334155; }
 
         .typing { display: flex; gap: 5px; padding: 15px 20px; background: rgba(255,255,255,0.5); border-radius: 15px; width: fit-content; align-self: flex-start; margin-bottom: 20px; }
         .typing span { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
@@ -181,17 +225,25 @@
             background: rgba(255, 255, 255, 0.9); padding: 30px; border-radius: 25px;
             width: 95%; max-width: 1000px; margin: 20px auto; overflow-y: auto;
             backdrop-filter: blur(10px); box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+            color: #2d3436;
         }
+        [data-theme="dark"] .quiz-card { background: rgba(30, 41, 59, 0.9); color: #f1f2f6; }
+
         .quiz-opt { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .quiz-btn { color: #2d3436; }
 
         .input-area {
             position: absolute; bottom: 0; left: 0; width: 100%;
-            padding: 15px 20px; background: rgba(255,255,255,0.85); backdrop-filter: blur(25px);
+            padding: 15px 20px; background: var(--input-bg); backdrop-filter: blur(25px);
             display: flex; gap: 10px; align-items: center; z-index: 1100;
             border-top: 1px solid rgba(255,255,255,0.5);
         }
+        [data-theme="dark"] .input-area { border-top: 1px solid rgba(255,255,255,0.1); }
+
         .input-wrapper { background: white; border-radius: 15px; padding: 8px 15px; flex: 1; display: flex; border: 1px solid rgba(0,0,0,0.05); }
-        textarea { border: none; outline: none; width: 100%; resize: none; background: transparent; font-size: 1rem; max-height: 80px; line-height: 1.5; }
+        [data-theme="dark"] .input-wrapper { background: #334155; border-color: #475569; }
+
+        textarea { border: none; outline: none; width: 100%; resize: none; background: transparent; font-size: 1rem; max-height: 80px; line-height: 1.5; color: var(--text-color); }
 
         .btn-icon { width: 42px; height: 42px; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .btn-send { background: var(--accent); color: white; }
@@ -204,12 +256,14 @@
         .modal {
             background: white; padding: 40px; border-radius: 30px; text-align: center;
             max-width: 400px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-            animation: modalPop 0.3s forwards;
+            animation: modalPop 0.3s forwards; color: #2d3436;
         }
+        [data-theme="dark"] .modal { background: #1e293b; color: #f1f2f6; }
 
         @media (max-width: 768px) {
             .mobile-header { display: flex; }
             .sidebar { position: fixed; left: -260px; top: 0; height: 100dvh; background: white; width: 260px; }
+            [data-theme="dark"] .sidebar { background: #0f172a; }
             .sidebar.open { transform: translateX(260px); }
             .main-content { padding-top: 60px; height: calc(100dvh - 60px); }
             .chat-area { padding: 15px; padding-bottom: 85px; }
@@ -227,8 +281,8 @@
 
     <div id="start-gate">
         <i class="fas fa-brain" style="font-size: 4rem; color: var(--accent); margin-bottom: 20px;"></i>
-        <h1 style="margin-bottom: 10px;">ERAI SYSTEM</h1>
-        <p style="color: #636e72; margin-bottom: 10px;">Siap untuk belajar lebih fokus?</p>
+        <h1 style="margin-bottom: 10px; color: var(--text-color);">ERAI SYSTEM</h1>
+        <p style="color: var(--text-muted); margin-bottom: 10px;">Siap untuk belajar lebih fokus?</p>
         
         <div class="ad-container">
             <script>
@@ -253,7 +307,7 @@
 
         <div class="db-header">
             <div class="logo" style="justify-content: center; margin-bottom: 5px;"><i class="fas fa-brain"></i><span>ERAI DASHBOARD</span></div>
-            <p style="color: #636e72; font-weight: 500;">Pilih mode untuk memulai interaksi pintar Kakak</p>
+            <p style="color: var(--text-muted); font-weight: 500;">Pilih mode untuk memulai interaksi pintar Kakak</p>
         </div>
         
         <div class="db-grid">
@@ -261,19 +315,19 @@
                 <span class="status-badge" style="background: #e0f2fe; color: #0984e3;">Ready</span><br>
                 <i class="fas fa-book-open" style="color: var(--color-belajar);"></i>
                 <h3 style="color: var(--color-belajar);">Mode Belajar</h3>
-                <p style="font-size: 0.9rem; color: #636e72; line-height: 1.6;">Eksplorasi materi dengan penjelasan mendalam, kode, dan diagram interaktif.</p>
+                <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">Eksplorasi materi dengan penjelasan mendalam, kode, dan diagram interaktif.</p>
             </div>
             <div class="db-card latihan" onclick="selectFromDashboard('latihan')">
                 <span class="status-badge" style="background: #fee2e2; color: #d63031;">Active</span><br>
                 <i class="fas fa-dumbbell" style="color: var(--color-latihan);"></i>
                 <h3 style="color: var(--color-latihan);">Mode Latihan</h3>
-                <p style="font-size: 0.9rem; color: #636e72; line-height: 1.6;">Uji kemampuanmu dengan kuis interaktif dan tantangan soal pilihan ganda.</p>
+                <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">Uji kemampuanmu dengan kuis interaktif dan tantangan soal pilihan ganda.</p>
             </div>
             <div class="db-card pencarian" onclick="selectFromDashboard('pencarian')">
                 <span class="status-badge" style="background: #dcfce7; color: #00b894;">Connected</span><br>
                 <i class="fas fa-globe" style="color: var(--color-pencarian);"></i>
                 <h3 style="color: var(--color-pencarian);">Mode Pencarian</h3>
-                <p style="font-size: 0.9rem; color: #636e72; line-height: 1.6;">Cari informasi terkini dari web secara cerdas, ringkas, dan akurat.</p>
+                <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">Cari informasi terkini dari web secara cerdas, ringkas, dan akurat.</p>
             </div>
         </div>
         
@@ -309,10 +363,13 @@
             </div>
         </div>
         <div class="sidebar-footer">
-            <button onclick="showDashboard()" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:#636e72; margin-bottom: 10px; display: block;">
+            <button onclick="toggleTheme()" id="theme-btn" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:var(--text-muted); margin-bottom: 10px; display: block; width: 100%; text-align: left;">
+                <i class="fas fa-moon" id="theme-icon"></i> Mode Gelap
+            </button>
+            <button onclick="showDashboard()" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:var(--text-muted); margin-bottom: 10px; display: block; width: 100%; text-align: left;">
                 <i class="fas fa-th-large"></i> Dashboard
             </button>
-            <button onclick="toggleAbout()" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:#636e72;">
+            <button onclick="toggleAbout()" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:var(--text-muted); width: 100%; text-align: left;">
                 <i class="fas fa-info-circle"></i> Tentang ERAI
             </button>
         </div>
@@ -355,7 +412,7 @@
         </div>
 
         <div class="input-area">
-            <button class="btn-icon" id="btn-voice" onclick="toggleVoice()" style="background:white; color:var(--accent);"><i class="fas fa-microphone"></i></button>
+            <button class="btn-icon" id="btn-voice" onclick="toggleVoice()" style="background:var(--card-bg); color:var(--accent);"><i class="fas fa-microphone"></i></button>
             <div class="input-wrapper">
                 <textarea id="userInput" rows="1" placeholder="Tanya ERAI..." oninput="autoHeight(this)" onkeydown="checkEnter(event)"></textarea>
             </div>
@@ -367,7 +424,7 @@
         <div class="modal">
             <i class="fas fa-exclamation-circle" style="font-size: 3.5rem; color: #ff7675; margin-bottom: 20px;"></i>
             <h2 style="margin-bottom: 10px;">Peringatan Keamanan</h2>
-            <p style="color: #636e72; margin-bottom: 25px;">ERAI mendeteksi Anda keluar dari mode fokus. Mohon kembali ke Fullscreen untuk melanjutkan sesi.</p>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">ERAI mendeteksi Anda keluar dari mode fokus. Mohon kembali ke Fullscreen untuk melanjutkan sesi.</p>
             <button onclick="enterERAI()" style="padding: 12px 30px; border-radius: 12px; border: none; background: #2d3436; color: white; cursor: pointer; font-weight: bold;">KEMBALI FOKUS</button>
         </div>
     </div>
@@ -376,7 +433,7 @@
         <div class="modal" onclick="event.stopPropagation()">
             <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: var(--accent); margin-bottom: 20px;"></i>
             <h2>ERAI System v5.0</h2>
-            <p style="color: #636e72; margin: 15px 0;">WUG Secure System Active</p>
+            <p style="color: var(--text-muted); margin: 15px 0;">WUG Secure System Active</p>
             <button onclick="toggleAbout()" style="padding: 12px 30px; border-radius: 12px; border: none; background: var(--accent); color: white; cursor: pointer; font-weight: bold;">Tutup</button>
         </div>
     </div>
@@ -393,6 +450,34 @@
         };
 
         function playSFX(key) { sfx[key].currentTime = 0; sfx[key].play().catch(() => {}); }
+
+        /* THEME HANDLING */
+        function initTheme() {
+            const savedTheme = localStorage.getItem('erai_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', target);
+            localStorage.setItem('erai_theme', target);
+            updateThemeIcon(target);
+            playSFX('click');
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('theme-icon');
+            const btn = document.getElementById('theme-btn');
+            if(theme === 'dark') {
+                icon.className = 'fas fa-sun';
+                btn.innerHTML = '<i class="fas fa-sun" id="theme-icon"></i> Mode Terang';
+            } else {
+                icon.className = 'fas fa-moon';
+                btn.innerHTML = '<i class="fas fa-moon" id="theme-icon"></i> Mode Gelap';
+            }
+        }
 
         function enterERAI() {
             playSFX('click');
@@ -428,7 +513,10 @@
         function switchMode(mode) {
             playSFX('click');
             currentMode = mode;
-            document.body.style.background = `var(--bg-${mode})`;
+            // Background dihandle oleh CSS variable body sekarang
+            document.body.className = mode; // Helper class if needed, but variables handle colors
+            document.body.style.background = `var(--bg-${mode})`; // Force update variable ref if needed
+            
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
@@ -582,6 +670,9 @@
 
         function autoHeight(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
         function checkEnter(e) { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+        
+        // Initialize Theme on Load
+        initTheme();
     </script>
 </body>
 </html>
