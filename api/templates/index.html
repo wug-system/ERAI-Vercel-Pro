@@ -7,6 +7,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -18,14 +19,14 @@
 
     <script>
         mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' });
-        
-        // --- REVISI KONFIGURASI MATHJAX UNTUK RUMUS KIMIA ---
         window.MathJax = {
-            loader: { load: ['[tex]/mhchem'] },
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+            svg: { fontCache: 'global' }
+                    loader: { load: ['[tex]/mhchem'] }, // Menambah modul kimia
             tex: { 
                 inlineMath: [['$', '$'], ['\\(', '\\)']], 
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                packages: { '[+]': ['mhchem'] }
+                packages: { '[+]': ['mhchem'] } // Mengaktifkan paket mhchem
             },
             svg: { fontCache: 'global' }
         };
@@ -296,7 +297,9 @@
             <i class="fas fa-exclamation-circle" style="font-size: 3.5rem; color: #ff7675; margin-bottom: 20px;"></i>
             <h2 style="margin-bottom: 10px;">Peringatan Keamanan</h2>
             <p style="color: #636e72; margin-bottom: 25px;">ERAI mendeteksi Anda keluar dari mode fokus. Mohon kembali ke Fullscreen untuk melanjutkan sesi.</p>
+            
             <script src="https://pl28657332.effectivegatecpm.com/13/bb/3a/13bb3afbca062a193f671c4db1890446.js"></script>
+
             <button onclick="enterERAI()" style="padding: 12px 30px; border-radius: 12px; border: none; background: #2d3436; color: white; cursor: pointer; font-weight: bold;">KEMBALI FOKUS</button>
         </div>
     </div>
@@ -374,6 +377,7 @@
             container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         }
 
+        // --- REVISI FUNGSI SENDMESSAGE ---
         async function sendMessage(manualMsg = null) {
             const inputEl = document.getElementById('userInput');
             const msg = manualMsg || inputEl.value.trim();
@@ -400,7 +404,8 @@
                     body: JSON.stringify({ message: msg, mode: currentMode, history: histories[currentMode] })
                 });
                 
-                if (!res.ok) throw new Error('API_LIMIT');
+                // Cek status API (WUG standard error handling)
+                if (!res.ok) throw new Error('API_LIMIT_REACHED');
 
                 const data = await res.json();
                 removeThinking();
@@ -414,13 +419,16 @@
             } catch (err) { 
                 removeThinking();
                 playSFX('warning');
+                
+                // Pesan Error Custom sesuai permintaan Kakak
                 const customError = "Aduh maaf banget Kak, kuota ERAI lagi mencapai batas nih. 😅 Saat ini ERAI sedang agak sibuk, coba lagi dalam 1-2 menit ya Kak!";
+                
                 if (currentMode === 'latihan') {
-                    document.getElementById('quiz-display').innerHTML += `<p style="color:red; margin-top:10px;">${customError}</p>`;
+                    document.getElementById('quiz-display').innerHTML += `<p style="color:red; margin-top:10px; font-weight:500;">${customError}</p>`;
                 } else {
                     appendBubble(customError, 'bot', `chat-${currentMode}`);
                 }
-                console.error("ERAI Error:", err);
+                console.error("ERAI System Error:", err);
             }
         }
 
@@ -468,16 +476,15 @@
 
             container.appendChild(div);
             
-            // Re-render MathJax dan Mermaid
             if(window.MathJax) MathJax.typesetPromise([div]);
             if(processedText.includes('class="mermaid"')) mermaid.run({ nodes: div.querySelectorAll('.mermaid') });
-            Prism.highlightAllAllUnder(div);
+            Prism.highlightAllUnder(div);
             scrollToBottom();
         }
 
         function renderQuizCard(text, isActive) {
             const display = document.getElementById('quiz-display');
-            let html = `<div class="quiz-text">${marked.parse(text)}</div>`;
+            let html = `<div class="quiz-text" style="font-size:0.95rem;">${marked.parse(text)}</div>`;
             if (isActive) {
                 html += `<div class="quiz-opt">
                     ${['A','B','C','D'].map(opt => `<button onclick="sendMessage('${opt}')" class="quiz-btn" style="padding:12px; border:2px solid var(--color-latihan); border-radius:10px; background:white; font-weight:bold; cursor:pointer;">${opt}</button>`).join('')}
