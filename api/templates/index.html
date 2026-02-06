@@ -64,26 +64,36 @@
             transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* DASHBOARD STYLES */
+        /* DASHBOARD STYLES REVISED */
         #dashboard-page {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 5000;
+            background: #fdfdfd; z-index: 5000;
             display: none; flex-direction: column; align-items: center; padding: 40px 20px;
             overflow-y: auto;
         }
+        .db-header { text-align: center; margin-bottom: 40px; }
         .db-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px; width: 100%; max-width: 1000px; margin-top: 30px;
+            gap: 20px; width: 100%; max-width: 1000px;
         }
         .db-card {
-            background: #f8f9fa; padding: 30px; border-radius: 24px; cursor: pointer;
-            transition: 0.3s; border: 2px solid transparent; text-align: center;
+            background: white; padding: 35px 25px; border-radius: 28px; cursor: pointer;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border: 1px solid #edf2f7; text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.02);
         }
-        .db-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .db-card i { font-size: 2.5rem; margin-bottom: 15px; }
-        .db-card.belajar:hover { border-color: var(--color-belajar); }
-        .db-card.latihan:hover { border-color: var(--color-latihan); }
-        .db-card.pencarian:hover { border-color: var(--color-pencarian); }
+        .db-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+        .db-card i { font-size: 3rem; margin-bottom: 20px; }
+        .db-card h3 { font-size: 1.4rem; margin-bottom: 12px; }
+        .db-card.belajar:hover { border-color: var(--color-belajar); background: rgba(9, 132, 227, 0.02); }
+        .db-card.latihan:hover { border-color: var(--color-latihan); background: rgba(214, 48, 49, 0.02); }
+        .db-card.pencarian:hover { border-color: var(--color-pencarian); background: rgba(0, 184, 148, 0.02); }
+
+        /* TAG REVISI */
+        .status-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;
+            font-weight: 700; text-transform: uppercase; margin-bottom: 15px;
+        }
 
         #start-gate {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -240,30 +250,36 @@
     </div>
 
     <div id="dashboard-page">
-        <div class="logo" style="margin-bottom: 10px;"><i class="fas fa-brain"></i><span>ERAI DASHBOARD</span></div>
-        <p style="color: #636e72;">Pilih mode untuk memulai interaksi</p>
+        <div class="db-header">
+            <div class="logo" style="justify-content: center; margin-bottom: 5px;"><i class="fas fa-brain"></i><span>ERAI DASHBOARD</span></div>
+            <p style="color: #636e72; font-weight: 500;">Pilih mode untuk memulai interaksi pintar Kakak</p>
+        </div>
         
         <div class="db-grid">
             <div class="db-card belajar" onclick="selectFromDashboard('belajar')">
+                <span class="status-badge" style="background: #e0f2fe; color: #0984e3;">Ready</span><br>
                 <i class="fas fa-book-open" style="color: var(--color-belajar);"></i>
                 <h3 style="color: var(--color-belajar);">Mode Belajar</h3>
-                <p style="font-size: 0.9rem; color: #636e72; margin-top: 10px;">Eksplorasi materi dengan penjelasan mendalam, kode, dan diagram interaktif.</p>
+                <p style="font-size: 0.9rem; color: #636e72; line-height: 1.6;">Eksplorasi materi dengan penjelasan mendalam, kode, dan diagram interaktif.</p>
             </div>
             <div class="db-card latihan" onclick="selectFromDashboard('latihan')">
+                <span class="status-badge" style="background: #fee2e2; color: #d63031;">Active</span><br>
                 <i class="fas fa-dumbbell" style="color: var(--color-latihan);"></i>
                 <h3 style="color: var(--color-latihan);">Mode Latihan</h3>
-                <p style="font-size: 0.9rem; color: #636e72; margin-top: 10px;">Uji kemampuanmu dengan kuis interaktif dan tantangan soal pilihan ganda.</p>
+                <p style="font-size: 0.9rem; color: #636e72; line-height: 1.6;">Uji kemampuanmu dengan kuis interaktif dan tantangan soal pilihan ganda.</p>
             </div>
             <div class="db-card pencarian" onclick="selectFromDashboard('pencarian')">
+                <span class="status-badge" style="background: #dcfce7; color: #00b894;">Connected</span><br>
                 <i class="fas fa-globe" style="color: var(--color-pencarian);"></i>
                 <h3 style="color: var(--color-pencarian);">Mode Pencarian</h3>
-                <p style="font-size: 0.9rem; color: #636e72; margin-top: 10px;">Cari informasi terkini dari web secara cerdas dan ringkas.</p>
+                <p style="font-size: 0.9rem; color: #636e72; line-height: 1.6;">Cari informasi terkini dari web secara cerdas, ringkas, dan akurat.</p>
             </div>
         </div>
         
-        <div style="margin-top: 30px;">
-            <button onclick="toggleAbout()" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:#b2bec3;">
-                <i class="fas fa-shield-alt"></i> System Security: WUG Active
+        <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 15px; width: 100%; max-width: 400px; text-align: center;">
+            <div style="font-size: 0.8rem; color: #b2bec3; margin-bottom: 10px; letter-spacing: 1px; font-weight: 700;">SECURITY STATUS</div>
+            <button onclick="toggleAbout()" style="background:white; border:1px solid #eee; padding: 10px 20px; border-radius: 12px; cursor:pointer; font-weight:600; color:#2d3436; display: flex; align-items: center; gap: 10px; margin: 0 auto;">
+                <i class="fas fa-shield-alt" style="color: #00b894;"></i> WUG SECURE ACTIVE
             </button>
         </div>
     </div>
@@ -380,10 +396,9 @@
             if (elem.requestFullscreen) elem.requestFullscreen();
             document.getElementById('start-gate').style.display = 'none';
             document.getElementById('modal-warning').style.display = 'none';
-            showDashboard(); // Langsung ke dashboard setelah start
+            showDashboard(); 
         }
 
-        // FUNGSI DASHBOARD
         function showDashboard() {
             playSFX('pop');
             document.getElementById('dashboard-page').style.display = 'flex';
