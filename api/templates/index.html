@@ -20,14 +20,12 @@
     <script>
         mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' });
         window.MathJax = {
-            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
-            svg: { fontCache: 'global' }
-                    loader: { load: ['[tex]/mhchem'] }, // Menambah modul kimia
             tex: { 
                 inlineMath: [['$', '$'], ['\\(', '\\)']], 
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                packages: { '[+]': ['mhchem'] } // Mengaktifkan paket mhchem
+                packages: { '[+]': ['mhchem'] } 
             },
+            loader: { load: ['[tex]/mhchem'] },
             svg: { fontCache: 'global' }
         };
     </script>
@@ -65,6 +63,27 @@
             color: var(--primary);
             transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        /* DASHBOARD STYLES */
+        #dashboard-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 5000;
+            display: none; flex-direction: column; align-items: center; padding: 40px 20px;
+            overflow-y: auto;
+        }
+        .db-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px; width: 100%; max-width: 1000px; margin-top: 30px;
+        }
+        .db-card {
+            background: #f8f9fa; padding: 30px; border-radius: 24px; cursor: pointer;
+            transition: 0.3s; border: 2px solid transparent; text-align: center;
+        }
+        .db-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .db-card i { font-size: 2.5rem; margin-bottom: 15px; }
+        .db-card.belajar:hover { border-color: var(--color-belajar); }
+        .db-card.latihan:hover { border-color: var(--color-latihan); }
+        .db-card.pencarian:hover { border-color: var(--color-pencarian); }
 
         #start-gate {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -220,6 +239,35 @@
         </button>
     </div>
 
+    <div id="dashboard-page">
+        <div class="logo" style="margin-bottom: 10px;"><i class="fas fa-brain"></i><span>ERAI DASHBOARD</span></div>
+        <p style="color: #636e72;">Pilih mode untuk memulai interaksi</p>
+        
+        <div class="db-grid">
+            <div class="db-card belajar" onclick="selectFromDashboard('belajar')">
+                <i class="fas fa-book-open" style="color: var(--color-belajar);"></i>
+                <h3 style="color: var(--color-belajar);">Mode Belajar</h3>
+                <p style="font-size: 0.9rem; color: #636e72; margin-top: 10px;">Eksplorasi materi dengan penjelasan mendalam, kode, dan diagram interaktif.</p>
+            </div>
+            <div class="db-card latihan" onclick="selectFromDashboard('latihan')">
+                <i class="fas fa-dumbbell" style="color: var(--color-latihan);"></i>
+                <h3 style="color: var(--color-latihan);">Mode Latihan</h3>
+                <p style="font-size: 0.9rem; color: #636e72; margin-top: 10px;">Uji kemampuanmu dengan kuis interaktif dan tantangan soal pilihan ganda.</p>
+            </div>
+            <div class="db-card pencarian" onclick="selectFromDashboard('pencarian')">
+                <i class="fas fa-globe" style="color: var(--color-pencarian);"></i>
+                <h3 style="color: var(--color-pencarian);">Mode Pencarian</h3>
+                <p style="font-size: 0.9rem; color: #636e72; margin-top: 10px;">Cari informasi terkini dari web secara cerdas dan ringkas.</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <button onclick="toggleAbout()" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:#b2bec3;">
+                <i class="fas fa-shield-alt"></i> System Security: WUG Active
+            </button>
+        </div>
+    </div>
+
     <header class="mobile-header">
         <div class="burger-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
         <div style="margin-left: 15px; font-weight: 800;">ERAI</div>
@@ -241,6 +289,9 @@
             </div>
         </div>
         <div class="sidebar-footer">
+            <button onclick="showDashboard()" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:#636e72; margin-bottom: 10px; display: block;">
+                <i class="fas fa-th-large"></i> Dashboard
+            </button>
             <button onclick="toggleAbout()" style="background:transparent; border:none; cursor:pointer; font-weight:600; color:#636e72;">
                 <i class="fas fa-info-circle"></i> Tentang ERAI
             </button>
@@ -297,9 +348,6 @@
             <i class="fas fa-exclamation-circle" style="font-size: 3.5rem; color: #ff7675; margin-bottom: 20px;"></i>
             <h2 style="margin-bottom: 10px;">Peringatan Keamanan</h2>
             <p style="color: #636e72; margin-bottom: 25px;">ERAI mendeteksi Anda keluar dari mode fokus. Mohon kembali ke Fullscreen untuk melanjutkan sesi.</p>
-            
-            <script src="https://pl28657332.effectivegatecpm.com/13/bb/3a/13bb3afbca062a193f671c4db1890446.js"></script>
-
             <button onclick="enterERAI()" style="padding: 12px 30px; border-radius: 12px; border: none; background: #2d3436; color: white; cursor: pointer; font-weight: bold;">KEMBALI FOKUS</button>
         </div>
     </div>
@@ -330,10 +378,20 @@
             playSFX('click');
             const elem = document.documentElement;
             if (elem.requestFullscreen) elem.requestFullscreen();
-            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-            else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
             document.getElementById('start-gate').style.display = 'none';
             document.getElementById('modal-warning').style.display = 'none';
+            showDashboard(); // Langsung ke dashboard setelah start
+        }
+
+        // FUNGSI DASHBOARD
+        function showDashboard() {
+            playSFX('pop');
+            document.getElementById('dashboard-page').style.display = 'flex';
+        }
+
+        function selectFromDashboard(mode) {
+            document.getElementById('dashboard-page').style.display = 'none';
+            switchMode(mode);
         }
 
         document.addEventListener('fullscreenchange', () => {
@@ -349,7 +407,6 @@
         }
 
         function switchMode(mode) {
-            if (currentMode === mode) return;
             playSFX('click');
             currentMode = mode;
             document.body.style.background = `var(--bg-${mode})`;
@@ -377,7 +434,6 @@
             container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         }
 
-        // --- REVISI FUNGSI SENDMESSAGE ---
         async function sendMessage(manualMsg = null) {
             const inputEl = document.getElementById('userInput');
             const msg = manualMsg || inputEl.value.trim();
@@ -404,7 +460,6 @@
                     body: JSON.stringify({ message: msg, mode: currentMode, history: histories[currentMode] })
                 });
                 
-                // Cek status API (WUG standard error handling)
                 if (!res.ok) throw new Error('API_LIMIT_REACHED');
 
                 const data = await res.json();
@@ -419,16 +474,12 @@
             } catch (err) { 
                 removeThinking();
                 playSFX('warning');
-                
-                // Pesan Error Custom sesuai permintaan Kakak
-                const customError = "Aduh maaf banget Kak, kuota ERAI lagi mencapai batas nih. 😅 Saat ini ERAI sedang agak sibuk, coba lagi dalam 1-2 menit ya Kak!";
-                
+                const customError = "Aduh maaf banget Kak, kuota ERAI lagi mencapai batas nih. 😅 Coba lagi dalam 1-2 menit ya Kak!";
                 if (currentMode === 'latihan') {
                     document.getElementById('quiz-display').innerHTML += `<p style="color:red; margin-top:10px; font-weight:500;">${customError}</p>`;
                 } else {
                     appendBubble(customError, 'bot', `chat-${currentMode}`);
                 }
-                console.error("ERAI System Error:", err);
             }
         }
 
@@ -475,7 +526,6 @@
             }
 
             container.appendChild(div);
-            
             if(window.MathJax) MathJax.typesetPromise([div]);
             if(processedText.includes('class="mermaid"')) mermaid.run({ nodes: div.querySelectorAll('.mermaid') });
             Prism.highlightAllUnder(div);
