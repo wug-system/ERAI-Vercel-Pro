@@ -108,7 +108,6 @@
         .user-bubble { align-self: flex-end; background: white; border-bottom-right-radius: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .bot-bubble { align-self: flex-start; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid white; border-bottom-left-radius: 5px; }
 
-        /* Custom Code Block Styling */
         pre[class*="language-"] {
             border-radius: 12px;
             margin: 15px 0;
@@ -371,6 +370,7 @@
             container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         }
 
+        // --- REVISI FUNGSI SENDMESSAGE ---
         async function sendMessage(manualMsg = null) {
             const inputEl = document.getElementById('userInput');
             const msg = manualMsg || inputEl.value.trim();
@@ -396,6 +396,10 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ message: msg, mode: currentMode, history: histories[currentMode] })
                 });
+                
+                // Cek status API (WUG standard error handling)
+                if (!res.ok) throw new Error('API_LIMIT_REACHED');
+
                 const data = await res.json();
                 removeThinking();
                 playSFX('pop');
@@ -405,7 +409,20 @@
                 
                 histories[currentMode].push({ role: "user", content: msg }, { role: "assistant", content: data.response });
                 scrollToBottom();
-            } catch (err) { removeThinking(); }
+            } catch (err) { 
+                removeThinking();
+                playSFX('warning');
+                
+                // Pesan Error Custom sesuai permintaan Kakak
+                const customError = "Aduh maaf banget Kak, kuota ERAI lagi mencapai batas nih. 😅 Saat ini ERAI sedang agak sibuk, coba lagi dalam 1-2 menit ya Kak!";
+                
+                if (currentMode === 'latihan') {
+                    document.getElementById('quiz-display').innerHTML += `<p style="color:red; margin-top:10px; font-weight:500;">${customError}</p>`;
+                } else {
+                    appendBubble(customError, 'bot', `chat-${currentMode}`);
+                }
+                console.error("ERAI System Error:", err);
+            }
         }
 
         function copyCode(btn, code) {
@@ -423,7 +440,6 @@
             const mermaidRegex = /```mermaid([\s\S]*?)```/g;
             processedText = processedText.replace(mermaidRegex, (match, code) => `<div class="mermaid">${code.trim()}</div>`);
 
-            // Custom Code Block Processor
             const codeRegex = /```(\w+)?([\s\S]*?)```/g;
             processedText = processedText.replace(codeRegex, (match, lang, code) => {
                 const language = lang || 'javascript';
